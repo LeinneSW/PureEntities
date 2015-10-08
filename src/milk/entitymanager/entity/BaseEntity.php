@@ -9,7 +9,7 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Timings;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\Byte;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\network\Network;
 use pocketmine\network\protocol\AddEntityPacket;
 use pocketmine\network\protocol\EntityEventPacket;
@@ -86,7 +86,7 @@ abstract class BaseEntity extends Creature{
     }
 
     public function saveNBT(){
-        $this->namedtag->Movement = new Byte("Movement", $this->isMovement());
+        $this->namedtag->Movement = new ByteTag("Movement", $this->isMovement());
         parent::saveNBT();
     }
 
@@ -141,7 +141,7 @@ abstract class BaseEntity extends Creature{
         $pk = new EntityEventPacket();
         $pk->eid = $this->getId();
         $pk->event = $this->isAlive() ? 2 : 3;
-        Server::broadcastPacket($this->hasSpawned, $pk->setChannel(Network::CHANNEL_WORLD_EVENTS));
+        Server::broadcastPacket($this->hasSpawned, $pk);
     }
 
     public function move($dx, $dy, $dz){

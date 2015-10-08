@@ -33,10 +33,10 @@ use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
 use pocketmine\level\Position;
-use pocketmine\nbt\tag\Compound;
-use pocketmine\nbt\tag\Double;
-use pocketmine\nbt\tag\Enum;
-use pocketmine\nbt\tag\Float;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\FloatTag;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
@@ -222,20 +222,20 @@ class EntityManager extends PluginBase implements Listener{
         if(!$chunk->isLoaded()) $chunk->load();
         if(!$chunk->isGenerated()) $chunk->setGenerated();
         if(!$chunk->isPopulated()) $chunk->setPopulated();
-        $nbt = new Compound("", [
-            "Pos" => new Enum("Pos", [
-                new Double("", $source->x),
-                new Double("", $source->y),
-                new Double("", $source->z)
+        $nbt = new CompoundTag("", [
+            "Pos" => new ListTag("Pos", [
+                new DoubleTag("", $source->x),
+                new DoubleTag("", $source->y),
+                new DoubleTag("", $source->z)
             ]),
-            "Motion" => new Enum("Motion", [
-                new Double("", 0),
-                new Double("", 0),
-                new Double("", 0)
+            "Motion" => new ListTag("Motion", [
+                new DoubleTag("", 0),
+                new DoubleTag("", 0),
+                new DoubleTag("", 0)
             ]),
-            "Rotation" => new Enum("Rotation", [
-                new Float("", $source instanceof Location ? $source->yaw : 0),
-                new Float("", $source instanceof Location ? $source->pitch : 0)
+            "Rotation" => new ListTag("Rotation", [
+                new FloatTag("", $source instanceof Location ? $source->yaw : 0),
+                new FloatTag("", $source instanceof Location ? $source->pitch : 0)
             ]),
         ]);
         $keys = array_keys(self::$knownEntities);

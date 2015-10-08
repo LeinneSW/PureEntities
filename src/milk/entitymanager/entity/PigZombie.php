@@ -3,7 +3,7 @@
 namespace milk\entitymanager\entity;
 
 use pocketmine\entity\Entity;
-use pocketmine\nbt\tag\Int;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -38,7 +38,7 @@ class PigZombie extends Monster{
     }
 
     public function saveNBT(){
-        $this->namedtag->Angry = new Int("Angry", $this->angry);
+        $this->namedtag->Angry = new IntTag("Angry", $this->angry);
         parent::saveNBT();
     }
 
