@@ -10,10 +10,10 @@ use pocketmine\event\entity\EntityShootBowEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\item\Item;
 use pocketmine\level\sound\LaunchSound;
-use pocketmine\nbt\tag\Compound;
-use pocketmine\nbt\tag\Double;
-use pocketmine\nbt\tag\Enum;
-use pocketmine\nbt\tag\Float;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\FloatTag;
 
 class Skeleton extends Monster implements ProjectileSource{
     const NETWORK_ID = 34;
@@ -42,20 +42,20 @@ class Skeleton extends Monster implements ProjectileSource{
             $f = 1.5;
             $yaw = $this->yaw + mt_rand(-180, 180) / 10;
             $pitch = $this->pitch + mt_rand(-90, 90) / 10;
-            $nbt = new Compound("", [
-                "Pos" => new Enum("Pos", [
-                    new Double("", $this->x),
-                    new Double("", $this->y + 1.62),
-                    new Double("", $this->z)
+            $nbt = new CompoundTag("", [
+                "Pos" => new ListTag("Pos", [
+                    new DoubleTag("", $this->x),
+                    new DoubleTag("", $this->y + 1.62),
+                    new DoubleTag("", $this->z)
                 ]),
-                "Motion" => new Enum("Motion", [
-                    new Double("", -sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * $f),
-                    new Double("", -sin($pitch / 180 * M_PI) * $f),
-                    new Double("", cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * $f)
+                "Motion" => new ListTag("Motion", [
+                    new DoubleTag("", -sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * $f),
+                    new DoubleTag("", -sin($pitch / 180 * M_PI) * $f),
+                    new DoubleTag("", cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * $f)
                 ]),
-                "Rotation" => new Enum("Rotation", [
-                    new Float("", $yaw),
-                    new Float("", $pitch)
+                "Rotation" => new ListTag("Rotation", [
+                    new FloatTag("", $yaw),
+                    new FloatTag("", $pitch)
                 ]),
             ]);
 

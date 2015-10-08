@@ -34,7 +34,7 @@ class SpawnEntityTask extends PluginTask{
             $pos->y = $player->level->getHighestBlockAt($pos->x += mt_rand(-$radius, $radius), $pos->z += mt_rand(-$radius, $radius));
             $ent = [
                 ["Cow", "Pig", "Sheep", "Chicken", null, null],
-                ["Zombie", "Creeper", "Skeleton", "Spider", "PigZombie", "Enderman"]
+                ["Zombie", "Creeper", "Zombie", "Spider", "PigZombie", "Enderman"]
             ];
             EntityManager::createEntity($ent[mt_rand(0, 1)][mt_rand(0, 5)], $pos);
         }
