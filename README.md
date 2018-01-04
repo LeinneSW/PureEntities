@@ -2,5 +2,4 @@
   
 Author(제작자): **[SW승원(milk0417)](https://github.com/milk0417)**  
 
-Sorry, This project is deprecated  
-[PureEntities-Nukkit](https://github.com/SW-Team/PureEntities)
+퓨어엔티티 재개발 예정
