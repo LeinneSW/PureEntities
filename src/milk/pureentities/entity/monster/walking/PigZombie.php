@@ -4,13 +4,14 @@ namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\monster\WalkingMonster;
 use pocketmine\entity\Entity;
-use pocketmine\item\GoldSword;
+use pocketmine\item\Sword;
+use pocketmine\item\TieredTool;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\item\Item;
 use pocketmine\entity\Creature;
-use pocketmine\network\protocol\MobEquipmentPacket;
+use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\Player;
 
 class PigZombie extends WalkingMonster{
@@ -30,8 +31,12 @@ class PigZombie extends WalkingMonster{
             $this->angry = (int) $this->namedtag["Angry"];
         }
 
-        $this->fireProof = \true;
         $this->setDamage([0, 5, 9, 13]);
+    }
+
+
+    public function isFireProof() : bool{
+        return \true;
     }
 
     public function saveNBT(){
@@ -67,10 +72,9 @@ class PigZombie extends WalkingMonster{
         parent::spawnTo($player);
 
         $pk = new MobEquipmentPacket();
-        $pk->eid = $this->getId();
-        $pk->item = new GoldSword();
-        $pk->slot = 10;
-        $pk->selectedSlot = 10;
+        $pk->entityRuntimeId = $this->getId();
+        $pk->item = new Sword(Item::GOLDEN_SWORD, 0, "Gold Sword", TieredTool::TIER_GOLD);
+        $pk->inventorySlot = $pk->hotbarSlot = 10;
         $player->dataPacket($pk);
     }
 

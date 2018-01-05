@@ -3,17 +3,17 @@
 namespace milk\pureentities\entity\animal\walking;
 
 use milk\pureentities\entity\animal\WalkingAnimal;
-use pocketmine\entity\Colorable;
 use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\entity\Creature;
 
-class Sheep extends WalkingAnimal implements Colorable{
+class Sheep extends WalkingAnimal{
     const NETWORK_ID = 13;
 
     public $width = 1.45;
-    public $height = 1.12;
+    public $height = 1.2;
+    public $eyeHeight = 0.9;
 
     public function getName() : string{
         return "Sheep";

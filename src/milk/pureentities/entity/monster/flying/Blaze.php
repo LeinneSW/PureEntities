@@ -33,13 +33,17 @@ class Blaze extends FlyingMonster implements ProjectileSource{
     public function initEntity(){
         parent::initEntity();
 
-        $this->fireProof = \true;
         $this->setDamage([0, 0, 0, 0]);
     }
 
     public function getName() : string{
         return "Blaze";
     }
+
+    public function isFireProof() : bool{
+        return \true;
+    }
+
 
     protected function checkTarget(){
         if($this->attackTime > 0){
