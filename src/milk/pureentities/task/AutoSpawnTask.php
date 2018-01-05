@@ -4,7 +4,7 @@ use pocketmine\scheduler\Task;
 
 class AutoSpawnTask extends Task{
 
-    public function onRun($currentTick){
+    public function onRun(int $currentTick){
         //TODO
     }
 

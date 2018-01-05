@@ -27,7 +27,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
     public $width = 0.65;
     public $height = 1.8;
 
-    public function getName(){
+    public function getName() : string{
         return "Skeleton";
     }
 
@@ -87,7 +87,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
         $player->dataPacket($pk);
     }
 
-    public function entityBaseTick($tickDiff = 1){
+    public function entityBaseTick(int $tickDiff = 1) : bool{
         Timings::$timerEntityBaseTick->startTiming();
 
         $hasUpdate = parent::entityBaseTick($tickDiff);
@@ -104,7 +104,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
         return $hasUpdate;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             return [
                 Item::get(Item::BONE, 0, mt_rand(0, 2)),

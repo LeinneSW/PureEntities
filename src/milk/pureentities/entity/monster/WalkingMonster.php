@@ -92,18 +92,18 @@ abstract class WalkingMonster extends WalkingEntity implements Monster{
         }
     }
 
-    public function onUpdate($currentTick){
+    public function onUpdate(int $currentTick) : bool{
         if($this->server->getDifficulty() < 1){
             $this->close();
-            return false;
+            return \false;
         }
 
         if(!$this->isAlive()){
             if(++$this->deadTicks >= 23){
                 $this->close();
-                return false;
+                return \false;
             }
-            return true;
+            return \true;
         }
 
         $tickDiff = $currentTick - $this->lastUpdate;
@@ -132,37 +132,33 @@ abstract class WalkingMonster extends WalkingEntity implements Monster{
                 $this->moveTime = 0;
             }
         }
-        return true;
+        return \true;
     }
 
-    public function entityBaseTick($tickDiff = 1){
-        Timings::$timerEntityBaseTick->startTiming();
-
+    public function entityBaseTick(int $tickDiff = 1) : bool{
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         $this->attackDelay += $tickDiff;
         if($this instanceof Enderman){
             if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) $this->y, Math::floorFloat($this->z))) instanceof Water){
                 $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                $this->attack($ev->getFinalDamage(), $ev);
+                $this->attack($ev);
                 $this->move(mt_rand(-20, 20), mt_rand(-20, 20), mt_rand(-20, 20));
             }
         }else{
             if(!$this->hasEffect(Effect::WATER_BREATHING) && $this->isInsideOfWater()){
-                $hasUpdate = true;
+                $hasUpdate = \true;
                 $airTicks = $this->getDataProperty(self::DATA_AIR) - $tickDiff;
                 if($airTicks <= -20){
                     $airTicks = 0;
                     $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                    $this->attack($ev->getFinalDamage(), $ev);
+                    $this->attack($ev);
                 }
                 $this->setDataProperty(self::DATA_AIR, self::DATA_TYPE_SHORT, $airTicks);
             }else{
                 $this->setDataProperty(self::DATA_AIR, self::DATA_TYPE_SHORT, 300);
             }
         }
-
-        Timings::$timerEntityBaseTick->stopTiming();
         return $hasUpdate;
     }
 

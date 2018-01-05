@@ -16,34 +16,31 @@ class Spider extends WalkingMonster{
 
     public $width = 1.3;
     public $height = 1.12;
-
-    public function getSpeed() : float{
-        return 1.13;
-    }
-
+    
     public function initEntity(){
         parent::initEntity();
 
+        $this->speed = 1.13;
         $this->setMaxHealth(16);
         $this->setDamage([0, 2, 2, 3]);
     }
 
-    public function getName(){
+    public function getName() : string{
         return "Spider";
     }
 
-    public function onUpdate($currentTick){
+    public function onUpdate(int $currentTick) : bool{
         if($this->server->getDifficulty() < 1){
             $this->close();
-            return false;
+            return \false;
         }
 
         if(!$this->isAlive()){
             if(++$this->deadTicks >= 23){
                 $this->close();
-                return false;
+                return \false;
             }
-            return true;
+            return \true;
         }
 
         $tickDiff = $currentTick - $this->lastUpdate;
@@ -54,22 +51,22 @@ class Spider extends WalkingMonster{
             return null;
         }
 
-        if($this->isKnockback()){
+        if($this->attackTime > 0){
             $this->move($this->motionX * $tickDiff, $this->motionY, $this->motionZ * $tickDiff);
             $this->motionY -= 0.15 * $tickDiff;
             $this->updateMovement();
             return null;
         }
 
-        $before = $this->baseTarget;
+        $before = $this->target;
         $this->checkTarget();
-        if($this->baseTarget instanceof Creature or $before !== $this->baseTarget){
-            $x = $this->baseTarget->x - $this->x;
-            $y = $this->baseTarget->y - $this->y;
-            $z = $this->baseTarget->z - $this->z;
+        if($this->target instanceof Creature or $before !== $this->target){
+            $x = $this->target->x - $this->x;
+            $y = $this->target->y - $this->y;
+            $z = $this->target->z - $this->z;
 
             $diff = abs($x) + abs($z);
-            $distance = $this->distance($target = $this->baseTarget);
+            $distance = $this->distance($target = $this->target);
             if($distance <= 2){
                 if($target instanceof Creature){
                     if($distance <= $this->width / 2 + 0.05){
@@ -88,7 +85,7 @@ class Spider extends WalkingMonster{
                         $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
                         $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
                     }
-                }else if($target != null && (pow($this->x - $target->x, 2) + pow($this->z - $target->z, 2)) <= 1){
+                }else if($target !== null && (pow($this->x - $target->x, 2) + pow($this->z - $target->z, 2)) <= 1){
                     $this->moveTime = 0;
                 }
             }else{
@@ -96,7 +93,7 @@ class Spider extends WalkingMonster{
                 $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
             }
             $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
-            $this->pitch = $y == 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
         }
 
         $dx = $this->motionX * $tickDiff;
@@ -110,7 +107,7 @@ class Spider extends WalkingMonster{
             $this->move($dx, $this->motionY * $tickDiff, $dz);
             $af = new Vector2($this->x, $this->z);
 
-            if(($be->x != $af->x || $be->y != $af->y) && !$isJump){
+            if(($be->x !== $af->x || $be->y !== $af->y) && !$isJump){
                 $this->moveTime -= 90 * $tickDiff;
             }
         }
@@ -125,7 +122,7 @@ class Spider extends WalkingMonster{
             }
         }
         $this->updateMovement();
-        return true;
+        return \true;
     }
 
     public function updateMove($tickDiff){
@@ -137,11 +134,11 @@ class Spider extends WalkingMonster{
             $this->attackDelay = 0;
 
             $ev = new EntityDamageByEntityEvent($this, $player, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getDamage());
-            $player->attack($ev->getFinalDamage(), $ev);
+            $player->attack($ev);
         }
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         return $this->lastDamageCause instanceof EntityDamageByEntityEvent ? [Item::get(Item::STRING, 0, mt_rand(0, 3))] : [];
     }
 

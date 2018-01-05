@@ -21,12 +21,11 @@
 
 namespace milk\pureentities\entity\projectile;
 
-use pocketmine\level\format\FullChunk;
+use pocketmine\entity\projectile\Projectile;
+use pocketmine\level\Level;
 use pocketmine\level\particle\CriticalParticle;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\protocol\AddEntityPacket;
 use pocketmine\Player;
-use pocketmine\entity\Projectile;
 use pocketmine\entity\Entity;
 use pocketmine\level\Explosion;
 use pocketmine\event\entity\ExplosionPrimeEvent;
@@ -43,10 +42,10 @@ class FireBall extends Projectile{
     protected $gravity = 0.05;
 
     protected $isCritical;
-    protected $canExplode = false;
+    protected $canExplode = \false;
 
-    public function __construct(FullChunk $chunk, CompoundTag $nbt, Entity $shootingEntity = null, bool $critical = false){
-        parent::__construct($chunk, $nbt, $shootingEntity);
+    public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null, bool $critical = \false){
+        parent::__construct($level, $nbt, $shootingEntity);
 
         $this->isCritical = $critical;
     }
@@ -59,9 +58,9 @@ class FireBall extends Projectile{
         $this->canExplode = $bool;
     }
 
-    public function onUpdate($currentTick){
+    public function onUpdate(int $currentTick) : bool{
         if($this->closed){
-            return false;
+            return \false;
         }
 
         $this->timings->startTiming();
@@ -74,7 +73,7 @@ class FireBall extends Projectile{
                 $this->height / 2 + mt_rand(-100, 100) / 500,
                 $this->width / 2 + mt_rand(-100, 100) / 500)));
         }elseif($this->onGround){
-            $this->isCritical = false;
+            $this->isCritical = \false;
         }
 
         if($this->age > 1200 or $this->isCollided){
@@ -89,7 +88,7 @@ class FireBall extends Projectile{
                 }
             }
             $this->kill();
-            $hasUpdate = true;
+            $hasUpdate = \true;
         }
 
         $this->timings->stopTiming();

@@ -15,7 +15,7 @@ class Sheep extends WalkingAnimal implements Colorable{
     public $width = 1.45;
     public $height = 1.12;
 
-    public function getName(){
+    public function getName() : string{
         return "Sheep";
     }
 
@@ -25,14 +25,14 @@ class Sheep extends WalkingAnimal implements Colorable{
         $this->setMaxHealth(8);
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function targetOption(Creature $creature, $distance){
         if($creature instanceof Player){
-            return $creature->spawned && $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() == Item::SEEDS && $distance <= 49;
+            return $creature->spawned && $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() === Item::SEEDS && $distance <= 49;
         }
-        return false;
+        return \false;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             return [Item::get(Item::WOOL, mt_rand(0, 15), 1)];
         }

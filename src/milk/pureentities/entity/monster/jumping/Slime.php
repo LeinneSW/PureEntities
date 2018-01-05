@@ -14,17 +14,15 @@ class Slime extends JumpingMonster{
     public $width = 1.2;
     public $height = 1.2;
 
-    public function getSpeed() : float{
-        return 0.8;
-    }
 
-    public function getName(){
+    public function getName() : string{
         return "Slime";
     }
 
     public function initEntity(){
         parent::initEntity();
 
+        $this->speed = 0.8;
         $this->setMaxHealth(4);
         $this->setDamage([0, 2, 2, 3]);
     }
@@ -33,12 +31,12 @@ class Slime extends JumpingMonster{
         // TODO
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function targetOption(Creature $creature, $distance){
         //TODO
-        return false;
+        return \false;
     }
     
-    public function getDrops(){
+    public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             return [Item::get(Item::SLIMEBALL, 0, mt_rand(0, 2))];
         }

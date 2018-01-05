@@ -12,51 +12,44 @@ use pocketmine\Player;
 
 abstract class FlyingAnimal extends FlyingEntity implements Animal{
 
-    public function getSpeed() : float{
-        return 0.7;
-    }
-
     public function initEntity(){
         parent::initEntity();
 
-        if($this->getDataProperty(self::DATA_AGEABLE_FLAGS) === null){
-            $this->setDataProperty(self::DATA_AGEABLE_FLAGS, self::DATA_TYPE_BYTE, 0);
+        $this->speed = 0.7;
+        if($this->getDataFlag(self::DATA_FLAG_BABY, 0) === null){
+            $this->setDataFlag(self::DATA_FLAG_BABY, self::DATA_TYPE_BYTE, 0);
         }
     }
 
     public function isBaby() : bool{
-        return $this->getDataFlag(self::DATA_AGEABLE_FLAGS, self::DATA_FLAG_BABY);
+        return $this->getDataFlag(self::DATA_FLAG_BABY, 0);
     }
 
-    public function entityBaseTick($tickDiff = 1){
-        Timings::$timerEntityBaseTick->startTiming();
-
+    public function entityBaseTick(int $tickDiff = 1) : bool{
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         if(!$this->hasEffect(Effect::WATER_BREATHING) && $this->isInsideOfWater()){
-            $hasUpdate = true;
+            $hasUpdate = \true;
             $airTicks = $this->getDataProperty(self::DATA_AIR) - $tickDiff;
             if($airTicks <= -20){
                 $airTicks = 0;
                 $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                $this->attack($ev->getFinalDamage(), $ev);
+                $this->attack($ev);
             }
             $this->setDataProperty(Entity::DATA_AIR, Entity::DATA_TYPE_SHORT, $airTicks);
         }else{
             $this->setDataProperty(Entity::DATA_AIR, Entity::DATA_TYPE_SHORT, 300);
         }
-
-        Timings::$timerEntityBaseTick->stopTiming();
         return $hasUpdate;
     }
 
-    public function onUpdate($currentTick){
+    public function onUpdate(int $currentTick) : bool{
         if(!$this->isAlive()){
             if(++$this->deadTicks >= 23){
                 $this->close();
-                return false;
+                return \false;
             }
-            return true;
+            return \true;
         }
 
         $tickDiff = $currentTick - $this->lastUpdate;
@@ -77,7 +70,7 @@ abstract class FlyingAnimal extends FlyingEntity implements Animal{
         ){
             $this->moveTime = 0;
         }
-        return true;
+        return \true;
     }
 
 }

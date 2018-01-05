@@ -12,7 +12,7 @@ class Bat extends FlyingAnimal{
     public $width = 0.3;
     public $height = 0.3;
 
-    public function getName(){
+    public function getName() : string{
         return "Bat";
     }
 
@@ -22,11 +22,11 @@ class Bat extends FlyingAnimal{
         $this->setMaxHealth(6);
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
-        return false;
+    public function targetOption(Creature $creature, $distance){
+        return \false;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         return [];
     }
 
