@@ -13,18 +13,15 @@ class Silverfish extends WalkingMonster{
     public $width = 0.4;
     public $height = 0.2;
 
-    public function getSpeed() : float{
-        return 1.4;
-    }
-
     public function initEntity(){
         parent::initEntity();
 
+        $this->speed = 1.4;
         $this->setMaxDamage(8);
         $this->setDamage([0, 1, 1, 1]);
     }
 
-    public function getName(){
+    public function getName() : string{
         return "Silverfish";
     }
 
@@ -33,11 +30,11 @@ class Silverfish extends WalkingMonster{
             $this->attackDelay = 0;
 
             $ev = new EntityDamageByEntityEvent($this, $player, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getDamage());
-            $player->attack($ev->getFinalDamage(), $ev);
+            $player->attack($ev);
         }
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         return [];
     }
 

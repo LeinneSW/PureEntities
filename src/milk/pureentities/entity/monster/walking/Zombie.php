@@ -17,28 +17,25 @@ class Zombie extends WalkingMonster implements Ageable{
     public $width = 0.72;
     public $height = 1.8;
 
-    public function getSpeed() : float{
-        return 1.1;
-    }
-
     public function initEntity(){
         parent::initEntity();
 
-        if($this->getDataProperty(self::DATA_AGEABLE_FLAGS) == null){
-            $this->setDataProperty(self::DATA_AGEABLE_FLAGS, self::DATA_TYPE_BYTE, 0);
-        }
+        $this->speed = 1.1;
         $this->setDamage([0, 3, 4, 6]);
+        if($this->getDataFlag(self::DATA_FLAG_BABY, 0) === null){
+            $this->setDataFlag(self::DATA_FLAG_BABY, self::DATA_TYPE_BYTE, 0);
+        }
     }
 
-    public function getName(){
+    public function getName() : string{
         return "Zombie";
     }
 
-    public function isBaby(){
-        return $this->getDataFlag(self::DATA_AGEABLE_FLAGS, self::DATA_FLAG_BABY);
+    public function isBaby() : bool{
+        return $this->getDataFlag(self::DATA_FLAG_BABY, 0);
     }
 
-    public function setHealth($amount){
+    public function setHealth(float $amount){
         parent::setHealth($amount);
 
         if($this->isAlive()){
@@ -59,11 +56,11 @@ class Zombie extends WalkingMonster implements Ageable{
             $this->attackDelay = 0;
 
             $ev = new EntityDamageByEntityEvent($this, $player, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getDamage());
-            $player->attack($ev->getFinalDamage(), $ev);
+            $player->attack($ev);
         }
     }
 
-    public function entityBaseTick($tickDiff = 1){
+    public function entityBaseTick(int $tickDiff = 1) : bool{
         Timings::$timerEntityBaseTick->startTiming();
 
         $hasUpdate = parent::entityBaseTick($tickDiff);
@@ -80,7 +77,7 @@ class Zombie extends WalkingMonster implements Ageable{
         return $hasUpdate;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         $drops = [];
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             switch(mt_rand(0, 2)){

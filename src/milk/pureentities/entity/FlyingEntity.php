@@ -10,14 +10,14 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\entity\Creature;
 
-abstract class FlyingEntity extends BaseEntity{
+abstract class FlyingEntity extends EntityBase{
 
     protected function checkTarget(){
-        if($this->isKnockback()){
+        if($this->attackTime > 0){
             return;
         }
 
-        $target = $this->baseTarget;
+        $target = $this->target;
         if(!($target instanceof Creature) or !$this->targetOption($target, $this->distanceSquared($target))){
             $near = PHP_INT_MAX;
             foreach ($this->getLevel()->getEntities() as $creature){
@@ -25,7 +25,7 @@ abstract class FlyingEntity extends BaseEntity{
                     continue;
                 }
 
-                if($creature instanceof BaseEntity && $creature->isFriendly() == $this->isFriendly()){
+                if($creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()){
                     continue;
                 }
 
@@ -34,19 +34,19 @@ abstract class FlyingEntity extends BaseEntity{
                 }
 
                 $near = $distance;
-                $this->baseTarget = $creature;
+                $this->target = $creature;
             }
         }
 
         if(
-            $this->baseTarget instanceof Creature
-            && $this->baseTarget->isAlive()
+            $this->target instanceof Creature
+            && $this->target->isAlive()
         ){
             return;
         }
 
         $maxY = max($this->getLevel()->getHighestBlockAt((int) $this->x, (int) $this->z) + 15, 120);
-        if($this->moveTime <= 0 or !$this->baseTarget instanceof Vector3){
+        if($this->moveTime <= 0 or !$this->target instanceof Vector3){
             $x = mt_rand(20, 100);
             $z = mt_rand(20, 100);
             if($this->y > $maxY){
@@ -55,7 +55,7 @@ abstract class FlyingEntity extends BaseEntity{
                 $y = mt_rand(-10, 10);
             }
             $this->moveTime = mt_rand(300, 1200);
-            $this->baseTarget = $this->add(mt_rand(0, 1) ? $x : -$x, $y, mt_rand(0, 1) ? $z : -$z);
+            $this->target = $this->add(mt_rand(0, 1) ? $x : -$x, $y, mt_rand(0, 1) ? $z : -$z);
         }
     }
 
@@ -64,18 +64,18 @@ abstract class FlyingEntity extends BaseEntity{
             return null;
         }
 
-        if($this->isKnockback()){
+        if($this->attackTime > 0){
             $this->move($this->motionX * $tickDiff, $this->motionY * $tickDiff, $this->motionZ * $tickDiff);
             $this->updateMovement();
             return null;
         }
         
-        $before = $this->baseTarget;
+        $before = $this->target;
         $this->checkTarget();
-        if($this->baseTarget instanceof Player or $before !== $this->baseTarget){
-            $x = $this->baseTarget->x - $this->x;
-            $y = $this->baseTarget->y - $this->y;
-            $z = $this->baseTarget->z - $this->z;
+        if($this->target instanceof Player or $before !== $this->target){
+            $x = $this->target->x - $this->x;
+            $y = $this->target->y - $this->y;
+            $z = $this->target->z - $this->z;
 
             $diff = abs($x) + abs($z);
             if($x ** 2 + $z ** 2 < 0.5){
@@ -87,11 +87,11 @@ abstract class FlyingEntity extends BaseEntity{
                 $this->motionY = $this->getSpeed() * 0.27 * ($y / $diff);
             }
             $this->yaw = rad2deg(-atan2($x / $diff, $z / $diff));
-            $this->pitch = $y == 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
         }
 
-        $target = $this->baseTarget;
-        $isJump = false;
+        $target = $this->target;
+        $isJump = \false;
         $dx = $this->motionX * $tickDiff;
         $dy = $this->motionY * $tickDiff;
         $dz = $this->motionZ * $tickDiff;
@@ -100,14 +100,14 @@ abstract class FlyingEntity extends BaseEntity{
         $this->move($dx, $dy, $dz);
         $af = new Vector2($this->x, $this->z);
 
-        if($be->x != $af->x || $be->y != $af->y){
+        if($be->x !== $af->x || $be->y !== $af->y){
             if($this instanceof Blaze){
                 $x = 0;
                 $z = 0;
-                if($be->x - $af->x != 0){
+                if($be->x - $af->x !== 0){
                     $x = $be->x > $af->x ? 1 : -1;
                 }
-                if($be->y - $af->y != 0){
+                if($be->y - $af->y !== 0){
                     $z = $be->y > $af->y ? 1 : -1;
                 }
 
@@ -118,9 +118,9 @@ abstract class FlyingEntity extends BaseEntity{
                     $bb = $block2->getBoundingBox();
                     if(
                         $this->motionY > -$this->gravity * 4
-                        && ($block2->canPassThrough() || ($bb == null || $bb->maxY - $this->y <= 1))
+                        && ($block2->canPassThrough() || ($bb === null || $bb->maxY - $this->y <= 1))
                     ){
-                        $isJump = true;
+                        $isJump = \true;
                         if($this->motionY >= 0.3){
                             $this->motionY += $this->gravity;
                         }else{

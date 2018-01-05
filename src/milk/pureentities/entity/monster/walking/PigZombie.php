@@ -22,18 +22,15 @@ class PigZombie extends WalkingMonster{
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
-    public function getSpeed() : float{
-        return 1.15;
-    }
-
     public function initEntity(){
         parent::initEntity();
 
+        $this->speed = 1.15;
         if(isset($this->namedtag->Angry)){
             $this->angry = (int) $this->namedtag["Angry"];
         }
 
-        $this->fireProof = true;
+        $this->fireProof = \true;
         $this->setDamage([0, 5, 9, 13]);
     }
 
@@ -42,7 +39,7 @@ class PigZombie extends WalkingMonster{
         $this->namedtag->Angry = new IntTag("Angry", $this->angry);
     }
 
-    public function getName(){
+    public function getName() : string{
         return "PigZombie";
     }
 
@@ -54,12 +51,12 @@ class PigZombie extends WalkingMonster{
         $this->angry = $val;
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function targetOption(Creature $creature, $distance){
         return $this->isAngry() && parent::targetOption($creature, $distance);
     }
 
-    public function attack($damage, EntityDamageEvent $source){
-        parent::attack($damage, $source);
+    public function attack(EntityDamageEvent $source){
+        parent::attack($source);
 
         if(!$source->isCancelled()){
             $this->setAngry(1000);
@@ -82,11 +79,11 @@ class PigZombie extends WalkingMonster{
             $this->attackDelay = 0;
 
             $ev = new EntityDamageByEntityEvent($this, $player, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getDamage());
-            $player->attack($ev->getFinalDamage(), $ev);
+            $player->attack($ev);
         }
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         $drops = [];
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             switch(mt_rand(0, 2)){

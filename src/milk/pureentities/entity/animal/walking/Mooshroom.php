@@ -14,7 +14,7 @@ class Mooshroom extends WalkingAnimal{
     public $width = 1.45;
     public $height = 1.12;
 
-    public function getName(){
+    public function getName() : string{
         return "Mooshroom";
     }
 
@@ -24,14 +24,14 @@ class Mooshroom extends WalkingAnimal{
         $this->setMaxHealth(10);
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function targetOption(Creature $creature, $distance){
         if($creature instanceof Player){
-            return $creature->spawned && $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() == Item::WHEAT && $distance <= 49;
+            return $creature->spawned && $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() === Item::WHEAT && $distance <= 49;
         }
-        return false;
+        return \false;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         $drops = [];
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
               $drops[] = Item::get(Item::MUSHROOM_STEW, 0, 1);

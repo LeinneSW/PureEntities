@@ -3,13 +3,13 @@
 namespace milk\pureentities\tile;
 
 use milk\pureentities\PureEntities;
-use milk\randomjoin\Player;
-use pocketmine\level\format\FullChunk;
+use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\Player;
 use pocketmine\tile\Spawnable;
 
 class Spawner extends Spawnable{
@@ -24,8 +24,8 @@ class Spawner extends Spawnable{
     protected $minSpawnDelay;
     protected $maxSpawnDelay;
 
-    public function __construct(FullChunk $chunk, CompoundTag $nbt){
-        parent::__construct($chunk, $nbt);
+    public function __construct(Level $level, CompoundTag $nbt){
+        parent::__construct($level, $nbt);
 
         if(isset($this->namedtag->EntityId)){
             $this->entityId = $this->namedtag["EntityId"];
@@ -60,20 +60,20 @@ class Spawner extends Spawnable{
         $this->scheduleUpdate();
     }
 
-    public function onUpdate(){
+    public function onUpdate() : bool{
         if($this->closed){
-            return false;
+            return \false;
         }
 
         if($this->delay++ >= mt_rand($this->minSpawnDelay, $this->maxSpawnDelay)){
             $this->delay = 0;
 
             $list = [];
-            $isValid = false;
+            $isValid = \false;
             foreach($this->level->getEntities() as $entity){
                 if($entity->distance($this) <= $this->requiredPlayerRange){
                     if($entity instanceof Player){
-                        $isValid = true;
+                        $isValid = \true;
                     }
                     $list[] = $entity;
                     break;
@@ -88,15 +88,15 @@ class Spawner extends Spawnable{
                     $this->level
                 );
                 $entity = PureEntities::create($this->entityId, $pos);
-                if($entity != null){
+                if($entity !== null){
                     $entity->spawnToAll();
                 }
             }
         }
-        return true;
+        return \true;
     }
 
-    public function saveNBT(){
+    public function saveNBT() : void{
         parent::saveNBT();
 
         $this->namedtag->EntityId = new ShortTag("EntityId", $this->entityId);
@@ -107,16 +107,14 @@ class Spawner extends Spawnable{
         $this->namedtag->RequiredPlayerRange = new ShortTag("RequiredPlayerRange", $this->requiredPlayerRange);
     }
 
-    public function getSpawnCompound(){
-        return new CompoundTag("", [
-            new StringTag("id", "MobSpawner"),
-            new IntTag("EntityId", $this->entityId)
-        ]);
+    public function addAdditionalSpawnData(CompoundTag $tag) : void{
+        $tag->id = new StringTag("id", "MobSpawner");
+        $tag->EntityId = new IntTag("EntityId", $this->entityId);
     }
 
     public function setSpawnEntityType(int $entityId){
         $this->entityId = $entityId;
-        $this->spawnToAll();
+        $this->onChanged();
     }
 
     public function setMinSpawnDelay(int $minDelay){

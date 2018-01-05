@@ -89,18 +89,18 @@ abstract class JumpingMonster extends JumpingEntity implements Monster{
         }
     }
 
-    public function onUpdate($currentTick){
+    public function onUpdate(int $currentTick) : bool{
         if($this->server->getDifficulty() < 1){
             $this->close();
-            return false;
+            return \false;
         }
 
         if(!$this->isAlive()){
             if(++$this->deadTicks >= 23){
                 $this->close();
-                return false;
+                return \false;
             }
-            return true;
+            return \true;
         }
 
         $tickDiff = $currentTick - $this->lastUpdate;
@@ -129,22 +129,22 @@ abstract class JumpingMonster extends JumpingEntity implements Monster{
                 $this->moveTime = 0;
             }
         }
-        return true;
+        return \true;
     }
 
-    public function entityBaseTick($tickDiff = 1){
+    public function entityBaseTick(int $tickDiff = 1) : bool{
         Timings::$timerEntityBaseTick->startTiming();
 
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         $this->attackDelay += $tickDiff;
         if(!$this->hasEffect(Effect::WATER_BREATHING) && $this->isInsideOfWater()){
-            $hasUpdate = true;
+            $hasUpdate = \true;
             $airTicks = $this->getDataProperty(self::DATA_AIR) - $tickDiff;
             if($airTicks <= -20){
                 $airTicks = 0;
                 $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                $this->attack($ev->getFinalDamage(), $ev);
+                $this->attack($ev);
             }
             $this->setDataProperty(self::DATA_AIR, self::DATA_TYPE_SHORT, $airTicks);
         }else{

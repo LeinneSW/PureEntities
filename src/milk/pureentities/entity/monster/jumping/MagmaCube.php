@@ -13,30 +13,30 @@ class MagmaCube extends JumpingMonster{
     public $width = 1.2;
     public $height = 1.2;
 
-    public function getSpeed() : float{
-        return 0.8;
-    }
-
     public function initEntity(){
         parent::initEntity();
 
-        $this->fireProof = true;
+        $this->speed = 0.8;
         $this->setDamage([0, 3, 4, 6]);
     }
 
-    public function getName(){
+    public function getName() : string{
         return "MagmaCube";
+    }
+
+    public function isFireProof() : bool{
+        return \true;
     }
 
     public function attackEntity(Entity $player){
         if($this->attackDelay > 10 && $this->distanceSquared($player) < 1){
             $this->attackDelay = 0;
             $ev = new EntityDamageByEntityEvent($this, $player, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getDamage());
-            $player->attack($ev->getFinalDamage(), $ev);
+            $player->attack($ev);
         }
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         return [];
     }
 

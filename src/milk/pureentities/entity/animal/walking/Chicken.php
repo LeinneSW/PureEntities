@@ -15,7 +15,7 @@ class Chicken extends WalkingAnimal{
     public $height = 0.7;
     public $eyeHeight = 0.7;
 
-    public function getName(){
+    public function getName() : string{
         return "Chicken";
     }
 
@@ -25,14 +25,14 @@ class Chicken extends WalkingAnimal{
         $this->setMaxHealth(4);
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function targetOption(Creature $creature, $distance){
         if($creature instanceof Player){
-            return $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() == Item::SEEDS && $distance <= 49;
+            return $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() === Item::SEEDS && $distance <= 49;
         }
-        return false;
+        return \false;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             switch(mt_rand(0, 2)){
                 case 0:

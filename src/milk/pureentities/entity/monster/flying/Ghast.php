@@ -7,8 +7,8 @@ use milk\pureentities\entity\projectile\FireBall;
 use milk\pureentities\PureEntities;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
+use pocketmine\entity\projectile\ProjectileSource;
 use pocketmine\event\entity\ProjectileLaunchEvent;
-use pocketmine\entity\ProjectileSource;
 use pocketmine\level\Location;
 use pocketmine\level\sound\LaunchSound;
 use pocketmine\math\Vector3;
@@ -20,23 +20,23 @@ class Ghast extends FlyingMonster implements ProjectileSource{
     public $width = 4;
     public $height = 4;
 
-    public function getSpeed() : float{
-        return 1.2;
-    }
-
     public function initEntity(){
         parent::initEntity();
 
-        $this->fireProof = true;
+        $this->speed = 1.2;
         $this->setMaxHealth(10);
         $this->setDamage([0, 0, 0, 0]);
     }
 
-    public function getName(){
+    public function getName() : string{
         return "Ghast";
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function isFireProof() : bool{
+        return \true;
+    }
+
+    public function targetOption(Creature $creature, $distance){
         return (!($creature instanceof Player) || ($creature->isSurvival() && $creature->spawned)) && $creature->isAlive() && !$creature->closed && $distance <= 10000;
     }
 
@@ -60,7 +60,7 @@ class Ghast extends FlyingMonster implements ProjectileSource{
                 return;
             }
 
-            $fireball->setExplode(true);
+            $fireball->setExplode(\true);
             $fireball->setMotion(new Vector3(
                 -sin(rad2deg($yaw)) * cos(rad2deg($pitch)) * $f * $f,
                 -sin(rad2deg($pitch)) * $f * $f,
@@ -77,7 +77,7 @@ class Ghast extends FlyingMonster implements ProjectileSource{
         }
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         return [];
     }
 

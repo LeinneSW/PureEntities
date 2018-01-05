@@ -15,7 +15,7 @@ class Cow extends WalkingAnimal{
     public $height = 1.3;
     public $eyeHeight = 1.2;
 
-    public function getName(){
+    public function getName() : string{
         return "Cow";
     }
 
@@ -25,14 +25,14 @@ class Cow extends WalkingAnimal{
         $this->setMaxHealth(10);
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function targetOption(Creature $creature, $distance){
         if($creature instanceof Player){
-            return $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() == Item::WHEAT && $distance <= 49;
+            return $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() === Item::WHEAT && $distance <= 49;
         }
-        return false;
+        return \false;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             switch(mt_rand(0, 1)){
                 case 0:

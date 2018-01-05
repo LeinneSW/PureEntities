@@ -2,7 +2,7 @@
 
 namespace milk\pureentities\entity;
 
-abstract class JumpingEntity extends BaseEntity{
+abstract class JumpingEntity extends EntityBase{
 
     protected function checkTarget(){
         //TODO

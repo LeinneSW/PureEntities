@@ -13,28 +13,26 @@ class Rabbit extends WalkingAnimal{
     public $width = 0.4;
     public $height = 0.75;
 
-    public function getSpeed() : float{
-        return 1.2;
-    }
     
-    public function getName(){
+    public function getName() : string{
         return "Rabbit";
     }
 
     public function initEntity(){
         parent::initEntity();
 
+        $this->speed = 1.2;
         $this->setMaxHealth(3);
     }
 
-    public function targetOption(Creature $creature, float $distance) : bool{
+    public function targetOption(Creature $creature, $distance){
         if($creature instanceof Player){
-            return $creature->spawned && $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() == Item::SEEDS && $distance <= 49;
+            return $creature->spawned && $creature->isAlive() && !$creature->closed && $creature->getInventory()->getItemInHand()->getId() === Item::SEEDS && $distance <= 49;
         }
-        return false;
+        return \false;
     }
 
-    public function getDrops(){
+    public function getDrops() : array{
         return [];
     }
 
