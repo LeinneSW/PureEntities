@@ -5,12 +5,21 @@ Development: **[Leinne](https://github.com/LeinneSW)**
 PureEntities is a Plug-in that makes implement the entity.
 This Plug-in provides a simple Entity AI.
 
+## Start developing again!
+I decided to start development again.  
+I want lots of issues and interests.
+
 ## Notice
 #### Welcome Github issue!
 This plug-in is in development. Therefore, It is possible to function abnormally.
 
+## Supported Server software
+[PocketMine-MP](https://pmmp.io/)
+
 ## Sub Module
-[EntityManager](https://github.com/LeinneSW/EntityManager)  
+[EntityManager](https://github.com/LeinneSW/EntityManager)
+* This Plugin is managing your server's entities.
+* It also provides automatic cleaning at certain intervals.
 
 ## Method list
   * PureEntities
@@ -33,7 +42,7 @@ This plug-in is in development. Therefore, It is possible to function abnormally
     * `double getMaxDamage(int $difficulty)`
     * `void setDamage(double $damage)`
     * `void setDamage(double[] $damage)`
-    * `void setDamage(double damage, int difficulty)`
+    * `void setDamage(double $damage, int $difficulty)`
 
 ## Example
 ``` php
@@ -42,20 +51,21 @@ foreach(Server::getInstance()->getDefaultLevel()->getEntities() as $entity){
     $entity->setMovement(!$entity->isMovement());
 
     if($entity instanceof Monster){
-        $entity->setDamage(10);
+        $entity->setDamage(10); //Both max / min are set.
 
         $entity->setMaxDamage(10);
         $entity->setMinDamage(10);
+        //If you do not specify the difficulty level, it is set to the current server difficulty level.
     }
 });
 
-$zombie = PureEntities.create("Zombie", $position);
-if($zombie != null){
+$zombie = PureEntities::create("Zombie", $position);
+if($zombie !== null){
     $zombie->spawnToAll(); //if you don't use this method, you couldn't see this
 }
 
-$arrow = PureEntities.create("Arrow", $position, $player, true);
-if($arrow != null){
+$arrow = PureEntities::create("Arrow", $position, $player, true);
+if($arrow !== null){
     $arrow->spawnToAll();
 }
 ```
