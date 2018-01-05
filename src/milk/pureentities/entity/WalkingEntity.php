@@ -8,8 +8,6 @@ use pocketmine\block\Block;
 use pocketmine\block\Fence;
 use pocketmine\block\FenceGate;
 use pocketmine\block\Liquid;
-use pocketmine\block\Slab;
-use pocketmine\block\Stair;
 use pocketmine\math\Math;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
@@ -67,7 +65,7 @@ abstract class WalkingEntity extends EntityBase{
 
     protected function checkJump($dx, $dz){
         if($this->motionY == $this->gravity * 2){
-            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) $this->y, Math::floorFloat($this->z))) instanceof Liquid;
+            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.1), Math::floorFloat($this->z))) instanceof Liquid;
         }else{
             if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.8), Math::floorFloat($this->z))) instanceof Liquid){
                 $this->motionY = $this->gravity * 2;
