@@ -10,11 +10,11 @@ I decided to **start development again**.
 I want lots of **issues** and **interests**.
 
 ## Notice
-### Welcome Github issue!
-This plug-in is in development. Therefore, It is possible to function abnormally.
-
 ### Supported Server software
 [PocketMine-MP](https://pmmp.io/)
+
+### Welcome Github issue!
+This plug-in is in development. Therefore, It is possible to function abnormally.
 
 ## Sub Module
 [EntityManager](https://github.com/LeinneSW/EntityManager)

@@ -26,7 +26,6 @@ class Wolf extends WalkingMonster{
         }
 
         $this->setMaxHealth(8);
-        $this->fireProof = \true;
         $this->setDamage([0, 3, 4, 6]);
     }
 
@@ -37,6 +36,10 @@ class Wolf extends WalkingMonster{
 
     public function getName() : string{
         return "Wolf";
+    }
+
+    public function isFireProof() : bool{
+        return \true;
     }
 
     public function isAngry() : bool{
