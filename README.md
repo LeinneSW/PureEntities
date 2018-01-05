@@ -6,14 +6,14 @@ PureEntities is a Plug-in that makes implement the entity.
 This Plug-in provides a simple Entity AI.
 
 ## Start developing again!
-I decided to start development again.  
-I want lots of issues and interests.
+I decided to **start development again**.  
+I want lots of **issues** and **interests**.
 
 ## Notice
-#### Welcome Github issue!
+### Welcome Github issue!
 This plug-in is in development. Therefore, It is possible to function abnormally.
 
-## Supported Server software
+### Supported Server software
 [PocketMine-MP](https://pmmp.io/)
 
 ## Sub Module

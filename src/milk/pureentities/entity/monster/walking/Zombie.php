@@ -16,6 +16,7 @@ class Zombie extends WalkingMonster implements Ageable{
 
     public $width = 0.72;
     public $height = 1.8;
+    public $eyeHeight = 1.62;
 
     public function initEntity(){
         parent::initEntity();
