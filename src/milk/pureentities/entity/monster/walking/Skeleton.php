@@ -4,8 +4,8 @@ namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\monster\WalkingMonster;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Projectile;
-use pocketmine\entity\ProjectileSource;
+use pocketmine\entity\projectile\Projectile;
+use pocketmine\entity\projectile\ProjectileSource;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityShootBowEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
@@ -18,7 +18,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\FloatTag;
-use pocketmine\network\protocol\MobEquipmentPacket;
+use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\Player;
 
 class Skeleton extends WalkingMonster implements ProjectileSource{
@@ -56,7 +56,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
             ]);
 
             /** @var Projectile $arrow */
-            $arrow = Entity::createEntity("Arrow", $this->chunk, $nbt, $this);
+            $arrow = Entity::createEntity("Arrow", $this->level, $nbt, $this);
 
             $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, $f);
             $this->server->getPluginManager()->callEvent($ev);
@@ -80,10 +80,9 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
         parent::spawnTo($player);
 
         $pk = new MobEquipmentPacket();
-        $pk->eid = $this->getId();
+        $pk->entityRuntimeId = $this->getId();
         $pk->item = new Bow();
-        $pk->slot = 10;
-        $pk->selectedSlot = 10;
+        $pk->inventorySlot = $pk->hotbarSlot = 10;
         $player->dataPacket($pk);
     }
 
@@ -97,7 +96,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
             !$this->isOnFire()
             && ($time < Level::TIME_NIGHT || $time > Level::TIME_SUNRISE)
         ){
-            $this->setOnFire(100);
+            $this->setOnFire(1);
         }
 
         Timings::$timerEntityBaseTick->startTiming();

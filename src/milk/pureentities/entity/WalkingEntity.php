@@ -20,6 +20,10 @@ abstract class WalkingEntity extends EntityBase{
             return;
         }
 
+        if($this->followTarget != null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+            return;
+        }
+
         $target = $this->target;
         if(!$target instanceof Creature or !$this->targetOption($target, $this->distanceSquared($target))){
             $near = PHP_INT_MAX;
@@ -63,12 +67,12 @@ abstract class WalkingEntity extends EntityBase{
         }
     }
 
-    protected function checkJump($dx, $dz){
+    protected function checkJump($tickDiff, $dx = 0, $dz = 0){
         if($this->motionY == $this->gravity * 2){
-            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.1), Math::floorFloat($this->z))) instanceof Liquid;
+            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.2), Math::floorFloat($this->z))) instanceof Liquid;
         }else{
-            if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.8), Math::floorFloat($this->z))) instanceof Liquid){
-                $this->motionY = $this->gravity * 2;
+            if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 1.1), Math::floorFloat($this->z))) instanceof Liquid){
+                $this->motionY = $this->gravity * 2 * $tickDiff;
                 return \true;
             }
         }
@@ -77,24 +81,20 @@ abstract class WalkingEntity extends EntityBase{
             return \false;
         }
 
-        $sides = [Block::SIDE_SOUTH, Block::SIDE_WEST, Block::SIDE_NORTH, Block::SIDE_EAST];
-        $that = $this->getLevel()->getBlock(new Vector3(Math::floorFloat($this->x + $dx), (int) $this->y, Math::floorFloat($this->z + $dz)));
-        if($this->getDirection() === null){
-            return \false;
-        }
-
-        $block = $that->getSide($sides[$this->getDirection()]);
+        $xWidth = $dx > 0 ? $this->width / 2 : -($this->width / 2);
+        $zWidth = $dz > 0 ? $this->width / 2 : -($this->width / 2);
+        $block = $this->getLevel()->getBlock(new Vector3(Math::ceilFloat($this->x + $xWidth + $dx * 2), $this->y, Math::ceilFloat($this->z + $zWidth + $dz * 2)));
         if(
-            !$block->canPassThrough()
+            $block->getId() !== Block::AIR && !$block->canPassThrough()
             && $block->getSide(Block::SIDE_UP)->canPassThrough()
-            && $that->getSide(Block::SIDE_UP, 2)->canPassThrough()
+            && $block->getSide(Block::SIDE_UP, 2)->canPassThrough()
         ){
             if($block instanceof Fence || $block instanceof FenceGate){
-                $this->motionY = $this->gravity;
-            }else if($this->motionY <= $this->gravity * 4){
-                $this->motionY = $this->gravity * 4;
+                $this->motionY = $this->gravity* $tickDiff;
+            }else if($this->motionY <= $this->gravity * 4 * $tickDiff){
+                $this->motionY = $this->gravity * 4 * $tickDiff;
             }else{
-                $this->motionY += $this->gravity * 0.25;
+                $this->motionY += $this->gravity * 0.25 * $tickDiff;
             }
             return \true;
         }
@@ -102,6 +102,7 @@ abstract class WalkingEntity extends EntityBase{
     }
 
     public function updateMove($tickDiff){
+        echo "{$this->motionX}, {$this->motionZ}\n";
         if(!$this->isMovement()){
             return null;
         }
@@ -112,7 +113,24 @@ abstract class WalkingEntity extends EntityBase{
             $this->updateMovement();
             return null;
         }
-        
+
+        if($this->followTarget !== \null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+            $x = $this->followTarget->x - $this->x;
+            $y = $this->followTarget->y - $this->y;
+            $z = $this->followTarget->z - $this->z;
+
+            $diff = abs($x) + abs($z);
+            if($x ** 2 + $z ** 2 < 0.7){
+                $this->motionX = 0;
+                $this->motionZ = 0;
+            }else{
+                $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
+                $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
+            }
+            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
+            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+        }
+
         $before = $this->target;
         $this->checkTarget();
         if($this->target instanceof Creature or $before !== $this->target){
@@ -134,7 +152,7 @@ abstract class WalkingEntity extends EntityBase{
 
         $dx = $this->motionX * $tickDiff;
         $dz = $this->motionZ * $tickDiff;
-        $isJump = $this->checkJump($dx, $dz);
+        $isJump = $this->checkJump($tickDiff, $dx, $dz);
         if($this->stayTime > 0){
             $this->stayTime -= $tickDiff;
             $this->move(0, $this->motionY * $tickDiff, 0);
@@ -152,7 +170,7 @@ abstract class WalkingEntity extends EntityBase{
             if($this->onGround){
                 $this->motionY = 0;
             }else if($this->motionY > -$this->gravity * 4){
-                if(!($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.8), Math::floorFloat($this->z))) instanceof Liquid)){
+                if(!($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 1.1), Math::floorFloat($this->z))) instanceof Liquid)){
                     $this->motionY -= $this->gravity * $tickDiff;
                 }
             }else{

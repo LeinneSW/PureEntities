@@ -1,8 +1,8 @@
 # PureEntities
 
-Development: **[Leinne](https://github.com/LeinneSW)**
+Development: **[Leinne](https://github.com/LeinneSW)** (before milk0417)
 
-PureEntities is a Plug-in that makes implement the entity.
+PureEntities is a Plug-in that makes implement the entity.  
 This Plug-in provides a simple Entity AI.
 
 ## Start developing again!

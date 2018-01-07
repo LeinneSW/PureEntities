@@ -44,7 +44,6 @@ class Blaze extends FlyingMonster implements ProjectileSource{
         return \true;
     }
 
-
     protected function checkTarget(){
         if($this->attackTime > 0){
             return;

@@ -7,7 +7,6 @@ use milk\pureentities\entity\monster\walking\Zombie;
 use milk\pureentities\tile\Spawner;
 use pocketmine\block\Air;
 use pocketmine\entity\Entity;
-use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -24,7 +23,6 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
-use pocketmine\block\Block;
 
 class PureEntities extends PluginBase implements Listener{
 
@@ -156,8 +154,9 @@ class PureEntities extends PluginBase implements Listener{
                 $block->getSide(Vector3::SIDE_DOWN)->getId() === Item::IRON_BLOCK
                 && $block->getSide(Vector3::SIDE_DOWN, 2)->getId() === Item::IRON_BLOCK
             ){
-                $first = $block->getSide(Vector3::SIDE_EAST);
-                $second = $block->getSide(Vector3::SIDE_EAST);
+                $down = $block->getSide(Vector3::SIDE_DOWN);
+                $first = $down->getSide(Vector3::SIDE_EAST);
+                $second = $down->getSide(Vector3::SIDE_WEST);
                 if(
                     $first->getId() === Item::IRON_BLOCK
                     && $second->getId() === Item::IRON_BLOCK
@@ -165,8 +164,8 @@ class PureEntities extends PluginBase implements Listener{
                     $block->getLevel()->setBlock($first, new Air());
                     $block->getLevel()->setBlock($second, new Air());
                 }else{
-                    $first = $block->getSide(Vector3::SIDE_NORTH);
-                    $second = $block->getSide(Vector3::SIDE_SOUTH);
+                    $first = $down->getSide(Vector3::SIDE_NORTH);
+                    $second = $down->getSide(Vector3::SIDE_SOUTH);
                     if(
                         $first->getId() === Item::IRON_BLOCK
                         && $second->getId() === Item::IRON_BLOCK
@@ -184,15 +183,16 @@ class PureEntities extends PluginBase implements Listener{
                         $entity->spawnToAll();
                     }
 
-                    $block->getLevel()->setBlock($entity, new Air());
-                    $block->getLevel()->setBlock($block->add(0, -1, 0), new Air());
+                    $down->getLevel()->setBlock($entity, new Air());
+                    $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
                     $ev->setCancelled();
                 }
             }
         }
     }
 
-    public function BlockBreakEvent(BlockBreakEvent $ev){
+    //TODO: SilverFish will be soon coming.
+    /*public function BlockBreakEvent(BlockBreakEvent $ev){
         if($ev->isCancelled()){
             return;
         }
@@ -211,6 +211,6 @@ class PureEntities extends PluginBase implements Listener{
                 $entity->spawnToAll();
             }
         }
-    }
+    }*/
 
 }

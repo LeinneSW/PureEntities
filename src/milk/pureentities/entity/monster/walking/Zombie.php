@@ -3,13 +3,15 @@
 namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\monster\WalkingMonster;
+use pocketmine\block\Water;
 use pocketmine\entity\Ageable;
 use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\Timings;
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\math\Math;
+use pocketmine\math\Vector3;
 
 class Zombie extends WalkingMonster implements Ageable{
     const NETWORK_ID = 32;
@@ -62,19 +64,16 @@ class Zombie extends WalkingMonster implements Ageable{
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
-        Timings::$timerEntityBaseTick->startTiming();
-
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         $time = $this->getLevel()->getTime() % Level::TIME_FULL;
         if(
             !$this->isOnFire()
             && ($time < Level::TIME_NIGHT || $time > Level::TIME_SUNRISE)
+            && !($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) $this->y, Math::floorFloat($this->z))) instanceof Water)
         ){
-            $this->setOnFire(100);
+            $this->setOnFire(1);
         }
-
-        Timings::$timerEntityBaseTick->startTiming();
         return $hasUpdate;
     }
 

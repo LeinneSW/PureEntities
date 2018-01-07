@@ -5,10 +5,10 @@ namespace milk\pureentities\entity\monster;
 use milk\pureentities\entity\monster\walking\Enderman;
 use milk\pureentities\entity\WalkingEntity;
 use pocketmine\block\Water;
+use pocketmine\entity\Creature;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\Timings;
 use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -18,10 +18,17 @@ abstract class WalkingMonster extends WalkingEntity implements Monster{
 
     protected $attackDelay = 0;
 
+    protected $canAttack = \true;
+
     private $minDamage = [0, 0, 0, 0];
     private $maxDamage = [0, 0, 0, 0];
 
     public abstract function attackEntity(Entity $player);
+
+    public function setTarget(Entity $target, $attack = \null){
+        parent::setTarget($target);
+        $this->canAttack = ($attack === null ? $target instanceof Creature : (bool) $attack);
+    }
 
     public function getDamage(int $difficulty = null) : float{
         return mt_rand($this->getMinDamage($difficulty), $this->getMaxDamage($difficulty));
