@@ -102,7 +102,6 @@ abstract class WalkingEntity extends EntityBase{
     }
 
     public function updateMove($tickDiff){
-        echo "{$this->motionX}, {$this->motionZ}\n";
         if(!$this->isMovement()){
             return null;
         }
