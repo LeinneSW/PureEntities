@@ -133,7 +133,7 @@ class Creeper extends WalkingMonster implements Explosive{
 
         $dx = $this->motionX * $tickDiff;
         $dz = $this->motionZ * $tickDiff;
-        $isJump = $this->checkJump($dx, $dz);
+        $isJump = $this->checkJump($tickDiff, $dx, $dz);
         if($this->stayTime > 0){
             $this->stayTime -= $tickDiff;
             $this->move(0, $this->motionY * $tickDiff, 0);

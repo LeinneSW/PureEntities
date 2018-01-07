@@ -14,8 +14,9 @@ use pocketmine\Player;
 class IronGolem extends WalkingMonster{
     const NETWORK_ID = 20;
 
-    public $width = 1.9;
-    public $height = 2.1;
+    public $width = 2.1;
+    public $height = 2.8;
+    public $eyeHeight = 2.5;
 
     public function initEntity(){
         $this->setMaxHealth(100);

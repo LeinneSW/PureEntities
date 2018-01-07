@@ -22,7 +22,10 @@ abstract class EntityBase extends Creature{
     protected $moveTime = 0;
 
     /** @var Vector3|Entity */
-    protected $target = null;
+    protected $target = \null;
+
+    /** @var Vector3|Entity */
+    protected $followTarget = \null;
 
     private $movement = \true;
     private $friendly = \false;
@@ -65,6 +68,18 @@ abstract class EntityBase extends Creature{
         return $this->speed;
     }
 
+    public function getTarget(){
+        return $this->followTarget != null ? $this->followTarget : ($this->target instanceof Entity ? $this->target : null);
+    }
+
+    public function setTarget(Entity $target){
+        $this->followTarget = $target;
+        
+        $this->moveTime = 0;
+        $this->stayTime = 0;
+        $this->target = \null;
+    }
+    
     public function initEntity(){
         parent::initEntity();
 

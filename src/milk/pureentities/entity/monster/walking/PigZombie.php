@@ -34,7 +34,6 @@ class PigZombie extends WalkingMonster{
         $this->setDamage([0, 5, 9, 13]);
     }
 
-
     public function isFireProof() : bool{
         return \true;
     }
