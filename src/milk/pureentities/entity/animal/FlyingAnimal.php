@@ -3,10 +3,6 @@
 namespace milk\pureentities\entity\animal;
 
 use milk\pureentities\entity\FlyingEntity;
-use pocketmine\entity\Effect;
-use pocketmine\entity\Entity;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\Timings;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -28,17 +24,11 @@ abstract class FlyingAnimal extends FlyingEntity implements Animal{
     public function entityBaseTick(int $tickDiff = 1) : bool{
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
-        if(!$this->hasEffect(Effect::WATER_BREATHING) && $this->isInsideOfWater()){
+        if(!$this->canBreathe()){
             $hasUpdate = \true;
-            $airTicks = $this->getDataProperty(self::DATA_AIR) - $tickDiff;
-            if($airTicks <= -20){
-                $airTicks = 0;
-                $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                $this->attack($ev);
-            }
-            $this->setDataProperty(Entity::DATA_AIR, Entity::DATA_TYPE_SHORT, $airTicks);
+            $this->doAirSupplyTick($tickDiff);
         }else{
-            $this->setDataProperty(Entity::DATA_AIR, Entity::DATA_TYPE_SHORT, 300);
+            $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
         }
         return $hasUpdate;
     }

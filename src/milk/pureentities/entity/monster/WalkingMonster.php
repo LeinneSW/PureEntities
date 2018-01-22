@@ -6,9 +6,7 @@ use milk\pureentities\entity\monster\walking\Enderman;
 use milk\pureentities\entity\WalkingEntity;
 use pocketmine\block\Water;
 use pocketmine\entity\Creature;
-use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -148,22 +146,15 @@ abstract class WalkingMonster extends WalkingEntity implements Monster{
         $this->attackDelay += $tickDiff;
         if($this instanceof Enderman){
             if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) $this->y, Math::floorFloat($this->z))) instanceof Water){
-                $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                $this->attack($ev);
+                $this->onAirExpired();
                 $this->move(mt_rand(-20, 20), mt_rand(-20, 20), mt_rand(-20, 20));
             }
         }else{
-            if(!$this->hasEffect(Effect::WATER_BREATHING) && $this->isInsideOfWater()){
+            if(!$this->canBreathe()){
                 $hasUpdate = \true;
-                $airTicks = $this->getDataProperty(self::DATA_AIR) - $tickDiff;
-                if($airTicks <= -20){
-                    $airTicks = 0;
-                    $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                    $this->attack($ev);
-                }
-                $this->setDataProperty(self::DATA_AIR, self::DATA_TYPE_SHORT, $airTicks);
+                $this->doAirSupplyTick($tickDiff);
             }else{
-                $this->setDataProperty(self::DATA_AIR, self::DATA_TYPE_SHORT, 300);
+                $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
             }
         }
         return $hasUpdate;

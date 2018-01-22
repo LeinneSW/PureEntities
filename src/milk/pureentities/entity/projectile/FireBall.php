@@ -25,7 +25,6 @@ use pocketmine\entity\projectile\Projectile;
 use pocketmine\level\Level;
 use pocketmine\level\particle\CriticalParticle;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
 use pocketmine\entity\Entity;
 use pocketmine\level\Explosion;
 use pocketmine\event\entity\ExplosionPrimeEvent;
@@ -80,7 +79,7 @@ class FireBall extends Projectile{
             if($this->isCollided and $this->canExplode){
                 $this->server->getPluginManager()->callEvent($ev = new ExplosionPrimeEvent($this, 2.8));
                 if(!$ev->isCancelled()){
-                    $explosion = new Explosion($this, $ev->getForce(), $this->shootingEntity);
+                    $explosion = new Explosion($this, $ev->getForce(), $this->getTargetEntity());
                     if($ev->isBlockBreaking()){
                         $explosion->explodeA();
                     }
@@ -93,22 +92,6 @@ class FireBall extends Projectile{
 
         $this->timings->stopTiming();
         return $hasUpdate;
-    }
-
-    public function spawnTo(Player $player){
-        $pk = new AddEntityPacket();
-        $pk->type = self::NETWORK_ID;
-        $pk->eid = $this->getId();
-        $pk->x = $this->x;
-        $pk->y = $this->y;
-        $pk->z = $this->z;
-        $pk->speedX = $this->motionX;
-        $pk->speedY = $this->motionY;
-        $pk->speedZ = $this->motionZ;
-        $pk->metadata = $this->dataProperties;
-        $player->dataPacket($pk);
-
-        parent::spawnTo($player);
     }
 
 }
