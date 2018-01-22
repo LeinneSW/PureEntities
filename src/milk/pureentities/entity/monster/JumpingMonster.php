@@ -3,9 +3,7 @@
 namespace milk\pureentities\entity\monster;
 
 use milk\pureentities\entity\JumpingEntity;
-use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Timings;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -138,17 +136,11 @@ abstract class JumpingMonster extends JumpingEntity implements Monster{
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         $this->attackDelay += $tickDiff;
-        if(!$this->hasEffect(Effect::WATER_BREATHING) && $this->isInsideOfWater()){
+        if(!$this->canBreathe()){
             $hasUpdate = \true;
-            $airTicks = $this->getDataProperty(self::DATA_AIR) - $tickDiff;
-            if($airTicks <= -20){
-                $airTicks = 0;
-                $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
-                $this->attack($ev);
-            }
-            $this->setDataProperty(self::DATA_AIR, self::DATA_TYPE_SHORT, $airTicks);
+            $this->doAirSupplyTick($tickDiff);
         }else{
-            $this->setDataProperty(self::DATA_AIR, self::DATA_TYPE_SHORT, 300);
+            $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
         }
 
         Timings::$timerEntityBaseTick->stopTiming();

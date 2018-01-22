@@ -67,9 +67,9 @@ abstract class WalkingEntity extends EntityBase{
         }
     }
 
-    protected function checkJump($tickDiff, $dx = 0, $dz = 0){
+    protected function checkJump($tickDiff, $dx, $dz){
         if($this->motionY == $this->gravity * 2){
-            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.2), Math::floorFloat($this->z))) instanceof Liquid;
+            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.5), Math::floorFloat($this->z))) instanceof Liquid;
         }else{
             if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 1.1), Math::floorFloat($this->z))) instanceof Liquid){
                 $this->motionY = $this->gravity * 2 * $tickDiff;

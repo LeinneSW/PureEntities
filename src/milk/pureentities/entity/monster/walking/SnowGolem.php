@@ -4,8 +4,8 @@ namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\monster\WalkingMonster;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Projectile;
-use pocketmine\entity\ProjectileSource;
+use pocketmine\entity\projectile\Projectile;
+use pocketmine\entity\projectile\ProjectileSource;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\item\Item;
@@ -62,7 +62,7 @@ class SnowGolem extends WalkingMonster implements ProjectileSource{
             ]);
 
             /** @var Projectile $snowball */
-            $snowball = Entity::createEntity("Snowball", $this->chunk, $nbt, $this);
+            $snowball = Entity::createEntity("Snowball", $this->level, $nbt, $this);
             $snowball->setMotion($snowball->getMotion()->multiply($f));
 
             $this->server->getPluginManager()->callEvent($launch = new ProjectileLaunchEvent($snowball));

@@ -3,6 +3,7 @@
 namespace milk\pureentities;
 
 use milk\pureentities\entity\monster\walking\IronGolem;
+use milk\pureentities\entity\monster\walking\Skeleton;
 use milk\pureentities\entity\monster\walking\Zombie;
 use milk\pureentities\tile\Spawner;
 use pocketmine\block\Air;
@@ -44,7 +45,7 @@ class PureEntities extends PluginBase implements Listener{
             //Rabbit::class,
             //Sheep::class,
             //Silverfish::class,
-            //Skeleton::class,
+            Skeleton::class,
             //Slime::class,
             //SnowGolem::class,
             //Spider::class,
