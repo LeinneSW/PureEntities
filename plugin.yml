@@ -6,7 +6,7 @@ version: "1.0"
 api: ["3.0.0-ALPHA10"]
 
 load: STARTUP
-author: milk0417
-description: Implement all MCPE entities
-website: https://github.com/milk0417/PureEntities
+author: Leinne
+description: Implement all MCBE entities
+website: https://github.com/LeinneSW/PureEntities
 commands: []
