@@ -73,7 +73,7 @@ class PigZombie extends WalkingMonster{
         $pk = new MobEquipmentPacket();
         $pk->entityRuntimeId = $this->getId();
         $pk->item = new Sword(Item::GOLDEN_SWORD, 0, "Gold Sword", TieredTool::TIER_GOLD);
-        $pk->inventorySlot = $pk->hotbarSlot = 10;
+        $pk->inventorySlot = $pk->hotbarSlot = 0;
         $player->dataPacket($pk);
     }
 

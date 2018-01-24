@@ -24,19 +24,24 @@ abstract class WalkingEntity extends EntityBase{
             return;
         }
 
+        $option = \true;
         $target = $this->target;
-        if(!$target instanceof Creature or !$this->targetOption($target, $this->distanceSquared($target))){
+        if(!($target instanceof Creature) or !($option = $this->targetOption($target, $this->distanceSquared($target)))){
+            if(!$option) $this->target = \null;
+
             $near = PHP_INT_MAX;
             foreach ($this->getLevel()->getEntities() as $creature){
-                if($creature === $this || !($creature instanceof Creature) || $creature instanceof Animal){
-                    continue;
-                }
-
-                if($creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()){
-                    continue;
-                }
-
                 $distance = $this->distanceSquared($creature);
+                if(
+                    $creature === $this
+                    || !($creature instanceof Creature)
+                    || $creature instanceof Animal
+                    || $creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()
+                    || $distance > $near or !$this->targetOption($creature, $distance)
+                ){
+                    continue;
+                }
+
                 if(
                     $distance <= 100
                     && $this instanceof PigZombie && $this->isAngry()
@@ -45,12 +50,7 @@ abstract class WalkingEntity extends EntityBase{
                     $creature->setAngry(1000);
                 }
 
-                if($distance > $near or !$this->targetOption($creature, $distance)){
-                    continue;
-                }
                 $near = $distance;
-
-                $this->moveTime = 0;
                 $this->target = $creature;
             }
         }
