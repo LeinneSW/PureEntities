@@ -63,8 +63,17 @@ class PigZombie extends WalkingMonster{
         parent::attack($source);
 
         if(!$source->isCancelled()){
-            $this->setAngry(1000);
+            $this->setAngry(1200); //TODO: 화가났다는게 틱개념인가 true/false 개념인가...
         }
+    }
+
+    public function entityBaseTick(int $tickDiff = 1): bool{
+        $hasUpdate = parent::entityBaseTick($tickDiff);
+
+        if($this->angry > 0){
+            $this->angry -= $tickDiff;
+        }
+        return $hasUpdate;
     }
 
     public function spawnTo(Player $player){
