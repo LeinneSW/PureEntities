@@ -36,8 +36,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
     public function attackEntity(Entity $player){
         if($this->attackDelay > 30 && mt_rand(1, 32) < 4 && $this->distanceSquared($player) <= 55){
             $this->attackDelay = 0;
-        
-            $f = 1.2;
+
             $yaw = $this->yaw + mt_rand(-220, 220) / 10;
             $pitch = $this->pitch + mt_rand(-120, 120) / 10;
             $nbt = new CompoundTag("", [
@@ -47,9 +46,9 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
                     new DoubleTag("", $this->z +(cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5))
                 ]),
                 "Motion" => new ListTag("Motion", [
-                    new DoubleTag("", -sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * $f),
-                    new DoubleTag("", -sin($pitch / 180 * M_PI) * $f),
-                    new DoubleTag("", cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * $f)
+                    new DoubleTag("", -sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 1.2),
+                    new DoubleTag("", -sin($pitch / 180 * M_PI) * 1.2),
+                    new DoubleTag("", cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 1.2)
                 ]),
                 "Rotation" => new ListTag("Rotation", [
                     new FloatTag("", $yaw),
@@ -60,7 +59,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
             /** @var Projectile $arrow */
             $arrow = Entity::createEntity("Arrow", $this->level, $nbt, $this);
 
-            $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, $f);
+            $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, 1.2);
             $this->server->getPluginManager()->callEvent($ev);
 
             $projectile = $ev->getProjectile();
@@ -84,7 +83,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
         $pk = new MobEquipmentPacket();
         $pk->entityRuntimeId = $this->getId();
         $pk->item = new Bow();
-        $pk->inventorySlot = $pk->hotbarSlot = 10;
+        $pk->inventorySlot = $pk->hotbarSlot = 0;
         $player->dataPacket($pk);
     }
 

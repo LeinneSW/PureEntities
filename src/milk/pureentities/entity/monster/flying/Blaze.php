@@ -5,8 +5,10 @@ namespace milk\pureentities\entity\monster\flying;
 use milk\pureentities\entity\animal\Animal;
 use milk\pureentities\entity\EntityBase;
 use milk\pureentities\entity\monster\FlyingMonster;
-use milk\pureentities\entity\projectile\FireBall;
-use milk\pureentities\PureEntities;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\block\Liquid;
 use pocketmine\block\Slab;
 use pocketmine\block\Stair;
@@ -16,7 +18,6 @@ use pocketmine\entity\projectile\ProjectileSource;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\item\Item;
-use pocketmine\level\Location;
 use pocketmine\level\sound\LaunchSound;
 use pocketmine\math\Math;
 use pocketmine\math\Vector2;
@@ -49,19 +50,25 @@ class Blaze extends FlyingMonster implements ProjectileSource{
             return;
         }
 
+        if($this->followTarget != null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+            return;
+        }
+
+        $option = \true;
         $target = $this->target;
-        if(!($target instanceof Creature) or !$this->targetOption($target, $this->distanceSquared($target))){
+        if(!($target instanceof Creature) or !($option = $this->targetOption($target, $this->distanceSquared($target)))){
+            if(!$option) $this->target = \null;
+
             $near = PHP_INT_MAX;
             foreach ($this->getLevel()->getEntities() as $creature){
-                if($creature === $this || !($creature instanceof Creature) || $creature instanceof Animal){
-                    continue;
-                }
-
-                if($creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()){
-                    continue;
-                }
-
-                if(($distance = $this->distanceSquared($creature)) > $near or !$this->targetOption($creature, $distance)){
+                $distance = $this->distanceSquared($creature);
+                if(
+                    $creature === $this
+                    || !($creature instanceof Creature)
+                    || $creature instanceof Animal
+                    || $creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()
+                    || $distance > $near or !$this->targetOption($creature, $distance)
+                ){
                     continue;
                 }
 
@@ -70,14 +77,11 @@ class Blaze extends FlyingMonster implements ProjectileSource{
             }
         }
 
-        if(
-            $this->target instanceof Creature
-            && $this->target->isAlive()
-        ){
+        if($this->target instanceof Creature && $this->target->isAlive()){
             return;
         }
 
-        if($this->moveTime <= 0 or !$this->target instanceof Vector3){
+        if($this->moveTime <= 0 or !($this->target instanceof Vector3)){
             $x = mt_rand(20, 100);
             $z = mt_rand(20, 100);
             $this->moveTime = mt_rand(300, 1200);
@@ -141,9 +145,10 @@ class Blaze extends FlyingMonster implements ProjectileSource{
                 if($this->target instanceof Creature){
                     $this->motionX = 0;
                     $this->motionZ = 0;
-                    if($this->distance($this->target) > $this->y - $this->getLevel()->getHighestBlockAt((int) $this->x, (int) $this->z)){
+                    $height = $this->y - $this->getLevel()->getHighestBlockAt((int) $this->x, (int) $this->z);
+                    if($height < 8){
                         $this->motionY = $this->gravity;
-                    }else{
+                    }elseif(($height | 0) === 8){
                         $this->motionY = 0;
                     }
                 }else{
@@ -188,28 +193,28 @@ class Blaze extends FlyingMonster implements ProjectileSource{
         if($this->attackDelay > 20 && mt_rand(1, 32) < 4 && $this->distance($player) <= 18){
             $this->attackDelay = 0;
 
-            $f = 1.2;
-            $yaw = $this->yaw + mt_rand(-220, 220) / 10;
-            $pitch = $this->pitch + mt_rand(-120, 120) / 10;
-            $pos = new Location(
-                $this->x + (-sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5),
-                $this->getEyeHeight(),
-                $this->z +(cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5),
-                $yaw,
-                $pitch,
-                $this->level
-            );
-            $fireball = PureEntities::create("FireBall", $pos, $this);
-            if(!($fireball instanceof FireBall)){
+            $yaw = $this->yaw + mt_rand(-50, 50) / 10;
+            $pitch = $this->pitch + mt_rand(-50, 50) / 10;
+            $fireball = Entity::createEntity('LargeFireBall', $this->level, new CompoundTag("", [
+                "Pos" => new ListTag("Pos", [
+                    new DoubleTag("", $this->x + (-sin(deg2rad($yaw)) * cos(deg2rad($pitch)) * 0.5)),
+                    new DoubleTag("", $this->y),
+                    new DoubleTag("", $this->z +(cos(deg2rad($yaw)) * cos(deg2rad($pitch)) * 0.5))
+                ]),
+                "Motion" => new ListTag("Motion", [
+                    new DoubleTag("", -sin(deg2rad($yaw)) * cos(deg2rad($pitch)) * 1.2),
+                    new DoubleTag("", -sin(deg2rad($pitch)) * 1.2),
+                    new DoubleTag("", cos(deg2rad($yaw)) * cos(deg2rad($pitch)) * 1.2)
+                ]),
+                "Rotation" => new ListTag("Rotation", [
+                    new FloatTag("", 0),
+                    new FloatTag("", 0)
+                ]),
+            ]), $this);
+
+            if($fireball === \null){
                 return;
             }
-
-            $fireball->setExplode(\true);
-            $fireball->setMotion(new Vector3(
-                -sin(rad2deg($yaw)) * cos(rad2deg($pitch)) * $f * $f,
-                -sin(rad2deg($pitch)) * $f * $f,
-                cos(rad2deg($yaw)) * cos(rad2deg($pitch)) * $f * $f
-            ));
 
             $this->server->getPluginManager()->callEvent($launch = new ProjectileLaunchEvent($fireball));
             if($launch->isCancelled()){
@@ -219,6 +224,10 @@ class Blaze extends FlyingMonster implements ProjectileSource{
                 $this->level->addSound(new LaunchSound($this), $this->getViewers());
             }
         }
+    }
+
+    public function targetOption(Creature $creature, $distance){
+        return (!($creature instanceof Player) || ($creature->isSurvival() && $creature->spawned)) && $creature->isAlive() && !$creature->closed && $distance <= 400;
     }
 
     public function getDrops() : array{

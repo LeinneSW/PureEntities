@@ -17,19 +17,23 @@ abstract class FlyingEntity extends EntityBase{
             return;
         }
 
+        if($this->followTarget != null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+            return;
+        }
+
+        $option = \true;
         $target = $this->target;
-        if(!($target instanceof Creature) or !$this->targetOption($target, $this->distanceSquared($target))){
+        if(!($target instanceof Creature) or !($option = $this->targetOption($target, $this->distanceSquared($target)))){
+            if(!$option) $this->target = \null;
+
             $near = PHP_INT_MAX;
             foreach ($this->getLevel()->getEntities() as $creature){
-                if($creature === $this || !($creature instanceof Creature) || $creature instanceof Animal){
-                    continue;
-                }
-
-                if($creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()){
-                    continue;
-                }
-
-                if(($distance = $this->distanceSquared($creature)) > $near or !$this->targetOption($creature, $distance)){
+                if(
+                    $creature === $this
+                    || !($creature instanceof Creature)
+                    || $creature instanceof Animal
+                    || $creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()
+                    || ($distance = $this->distanceSquared($creature)) > $near or !$this->targetOption($creature, $distance)){
                     continue;
                 }
 

@@ -3,15 +3,15 @@
 namespace milk\pureentities\entity\monster\flying;
 
 use milk\pureentities\entity\monster\FlyingMonster;
-use milk\pureentities\entity\projectile\FireBall;
-use milk\pureentities\PureEntities;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\ProjectileSource;
 use pocketmine\event\entity\ProjectileLaunchEvent;
-use pocketmine\level\Location;
 use pocketmine\level\sound\LaunchSound;
-use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
 
 class Ghast extends FlyingMonster implements ProjectileSource{
@@ -43,29 +43,29 @@ class Ghast extends FlyingMonster implements ProjectileSource{
     public function attackEntity(Entity $player){
         if($this->attackDelay > 30 && mt_rand(1, 32) < 4 && $this->distance($player) <= 100){
             $this->attackDelay = 0;
-        
-            $f = 2;
-            $yaw = $this->yaw + mt_rand(-220, 220) / 10;
-            $pitch = $this->pitch + mt_rand(-120, 120) / 10;
-            $pos = new Location(
-                $this->x + (-sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5),
-                $this->getEyeHeight(),
-                $this->z +(cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5),
-                $yaw,
-                $pitch,
-                $this->level
-            );
-            $fireball = PureEntities::create("FireBall", $pos, $this);
-            if(!($fireball instanceof FireBall)){
+
+            $yaw = $this->yaw + mt_rand(-110, 110) / 10;
+            $pitch = $this->pitch + mt_rand(-110, 110) / 10;
+            $fireball = Entity::createEntity('LargeFireBall', $this->level, new CompoundTag("", [
+                "Pos" => new ListTag("Pos", [
+                    new DoubleTag("", $this->x + (-sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5)),
+                    new DoubleTag("", $this->y),
+                    new DoubleTag("", $this->z +(cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5))
+                ]),
+                "Motion" => new ListTag("Motion", [
+                    new DoubleTag("", -sin(rad2deg($yaw)) * cos(rad2deg($pitch)) * 1.44),
+                    new DoubleTag("", -sin(rad2deg($pitch)) * 4),
+                    new DoubleTag("", cos(rad2deg($yaw)) * cos(rad2deg($pitch)) * 1.44)
+                ]),
+                "Rotation" => new ListTag("Rotation", [
+                    new FloatTag("", 0),
+                    new FloatTag("", 0)
+                ]),
+            ]), $this);
+
+            if($fireball === \null){
                 return;
             }
-
-            $fireball->setExplode(\true);
-            $fireball->setMotion(new Vector3(
-                -sin(rad2deg($yaw)) * cos(rad2deg($pitch)) * $f * $f,
-                -sin(rad2deg($pitch)) * $f * $f,
-                cos(rad2deg($yaw)) * cos(rad2deg($pitch)) * $f * $f
-            ));
 
             $this->server->getPluginManager()->callEvent($launch = new ProjectileLaunchEvent($fireball));
             if($launch->isCancelled()){

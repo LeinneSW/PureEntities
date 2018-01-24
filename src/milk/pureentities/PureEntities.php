@@ -2,9 +2,13 @@
 
 namespace milk\pureentities;
 
+use milk\pureentities\entity\monster\flying\Blaze;
 use milk\pureentities\entity\monster\walking\IronGolem;
 use milk\pureentities\entity\monster\walking\Skeleton;
 use milk\pureentities\entity\monster\walking\Zombie;
+use milk\pureentities\entity\projectile\FireBall;
+use milk\pureentities\entity\projectile\LargeFireBall;
+use milk\pureentities\entity\projectile\SmallFireBall;
 use milk\pureentities\tile\Spawner;
 use pocketmine\block\Air;
 use pocketmine\entity\Entity;
@@ -29,7 +33,7 @@ class PureEntities extends PluginBase implements Listener{
 
     public function onLoad(){
         $classes = [
-            //Blaze::class,
+            Blaze::class,
             //CaveSpider::class,
             //Chicken::class,
             //Cow::class,
@@ -52,7 +56,8 @@ class PureEntities extends PluginBase implements Listener{
             //Wolf::class,
             Zombie::class,
             //ZombieVillager::class,
-            //FireBall::class
+            SmallFireBall::class,
+            LargeFireBall::class
         ];
         foreach($classes as $name){
             Entity::registerEntity($name);
