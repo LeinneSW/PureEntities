@@ -22,7 +22,7 @@ class Wolf extends WalkingMonster{
 
         $this->speed = 1.2;
         if(isset($this->namedtag->Angry)){
-            $this->angry = (int) $this->namedtag["Angry"];
+            $this->angry = (int) $this->namedtag['Angry'];
         }
 
         $this->setMaxHealth(8);
@@ -31,11 +31,11 @@ class Wolf extends WalkingMonster{
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->Angry = new IntTag("Angry", $this->angry);
+        $this->namedtag->Angry = new IntTag('Angry', $this->angry);
     }
 
     public function getName() : string{
-        return "Wolf";
+        return 'Wolf';
     }
 
     public function isFireProof() : bool{

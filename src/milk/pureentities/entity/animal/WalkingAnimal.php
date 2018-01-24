@@ -3,7 +3,6 @@
 namespace milk\pureentities\entity\animal;
 
 use milk\pureentities\entity\WalkingEntity;
-use pocketmine\event\Timings;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -13,18 +12,13 @@ abstract class WalkingAnimal extends WalkingEntity implements Animal{
         parent::initEntity();
 
         $this->speed = 0.7;
-        if($this->getDataFlag(self::DATA_FLAG_BABY, 0) === null){
-            $this->setDataFlag(self::DATA_FLAG_BABY, self::DATA_TYPE_BYTE, 0);
-        }
     }
 
     public function isBaby() : bool{
-        return $this->getDataFlag(self::DATA_FLAG_BABY, 0);
+        return $this->getGenericFlag(self::DATA_FLAG_BABY);
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
-        Timings::$timerEntityBaseTick->startTiming();
-
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         if(!$this->canBreathe()){
@@ -33,8 +27,6 @@ abstract class WalkingAnimal extends WalkingEntity implements Animal{
         }else{
             $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
         }
-
-        Timings::$timerEntityBaseTick->stopTiming();
         return $hasUpdate;
     }
 

@@ -3,16 +3,13 @@
 namespace milk\pureentities\entity;
 
 use milk\pureentities\entity\monster\flying\Blaze;
-use milk\pureentities\entity\monster\Monster;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\Timings;
 use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
-use pocketmine\Player;
 
 abstract class EntityBase extends Creature{
 
@@ -34,6 +31,8 @@ abstract class EntityBase extends Creature{
     public function __destruct(){}
 
     public abstract function updateMove($tickDiff);
+
+    public abstract function targetOption(Creature $creature, $distance);
 
     public function getSaveId(){
         $class = new \ReflectionClass(get_class($this));
@@ -84,22 +83,22 @@ abstract class EntityBase extends Creature{
         parent::initEntity();
 
         if(isset($this->namedtag->Movement)){
-            $this->setMovement($this->namedtag["Movement"]);
+            $this->setMovement($this->namedtag['Movement']);
         }
         if(isset($this->namedtag->Friendly)){
-            $this->setFriendly($this->namedtag["Friendly"]);
+            $this->setFriendly($this->namedtag['Friendly']);
         }
         if(isset($this->namedtag->WallCheck)){
-            $this->setWallCheck($this->namedtag["WallCheck"]);
+            $this->setWallCheck($this->namedtag['WallCheck']);
         }
         $this->setImmobile(\true);
     }
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->Movement = new ByteTag("Movement", $this->isMovement());
-        $this->namedtag->Friendly = new ByteTag("Friendly", $this->isFriendly());
-        $this->namedtag->WallCheck = new ByteTag("WallCheck", $this->isWallCheck());
+        $this->namedtag->Movement = new ByteTag('Movement', $this->isMovement());
+        $this->namedtag->Friendly = new ByteTag('Friendly', $this->isFriendly());
+        $this->namedtag->WallCheck = new ByteTag('WallCheck', $this->isWallCheck());
     }
 
     public function updateMovement(){
@@ -171,41 +170,29 @@ abstract class EntityBase extends Creature{
     }
 
     public function move(float $dx, float $dy, float $dz) : bool{
-        Timings::$entityMoveTimer->startTiming();
-
         $movX = $dx;
         $movY = $dy;
         $movZ = $dz;
 
         $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
-        if($this->isWallCheck()){
-            foreach($list as $bb){
+        foreach($list as $bb){
+            if($this->isWallCheck()){
                 $dx = $bb->calculateXOffset($this->boundingBox, $dx);
-            }
-            $this->boundingBox->offset($dx, 0, 0);
-
-            foreach($list as $bb){
                 $dz = $bb->calculateZOffset($this->boundingBox, $dz);
             }
-            $this->boundingBox->offset(0, 0, $dz);
-        }
-        foreach($list as $bb){
             $dy = $bb->calculateYOffset($this->boundingBox, $dy);
         }
-        $this->boundingBox->offset(0, $dy, 0);
+        $this->boundingBox->offset($dx, $dy, $dz);
 
-        $this->setComponents($this->x + $dx, $this->y + $dy, $this->z + $dz);
+        $this->x += $dx;
+        $this->y += $dy;
+        $this->z += $dz;
+
         $this->checkChunks();
-
+        $this->checkBlockCollision();
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
-
-        Timings::$entityMoveTimer->stopTiming();
         return \true;
-    }
-
-    public function targetOption(Creature $creature, $distance){
-        return $this instanceof Monster && (!($creature instanceof Player) || ($creature->isSurvival() && $creature->spawned)) && $creature->isAlive() && !$creature->closed && $distance <= 81;
     }
 
 }

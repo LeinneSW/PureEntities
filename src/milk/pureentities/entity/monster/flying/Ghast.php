@@ -29,7 +29,7 @@ class Ghast extends FlyingMonster implements ProjectileSource{
     }
 
     public function getName() : string{
-        return "Ghast";
+        return 'Ghast';
     }
 
     public function isFireProof() : bool{
@@ -46,20 +46,20 @@ class Ghast extends FlyingMonster implements ProjectileSource{
 
             $yaw = $this->yaw + mt_rand(-110, 110) / 10;
             $pitch = $this->pitch + mt_rand(-110, 110) / 10;
-            $fireball = Entity::createEntity('LargeFireBall', $this->level, new CompoundTag("", [
-                "Pos" => new ListTag("Pos", [
-                    new DoubleTag("", $this->x + (-sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5)),
-                    new DoubleTag("", $this->y),
-                    new DoubleTag("", $this->z +(cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5))
+            $fireball = Entity::createEntity('LargeFireBall', $this->level, new CompoundTag('', [
+                'Pos' => new ListTag('Pos', [
+                    new DoubleTag('', $this->x + (-\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5)),
+                    new DoubleTag('', $this->y),
+                    new DoubleTag('', $this->z +(\cos(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5))
                 ]),
-                "Motion" => new ListTag("Motion", [
-                    new DoubleTag("", -sin(rad2deg($yaw)) * cos(rad2deg($pitch)) * 1.44),
-                    new DoubleTag("", -sin(rad2deg($pitch)) * 4),
-                    new DoubleTag("", cos(rad2deg($yaw)) * cos(rad2deg($pitch)) * 1.44)
+                'Motion' => new ListTag('Motion', [
+                    new DoubleTag('', -\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 1.2),
+                    new DoubleTag('', -\sin(\deg2rad($pitch)) * 1.2),
+                    new DoubleTag('', \cos(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 1.2)
                 ]),
-                "Rotation" => new ListTag("Rotation", [
-                    new FloatTag("", 0),
-                    new FloatTag("", 0)
+                'Rotation' => new ListTag('Rotation', [
+                    new FloatTag('', 0),
+                    new FloatTag('', 0)
                 ]),
             ]), $this);
 

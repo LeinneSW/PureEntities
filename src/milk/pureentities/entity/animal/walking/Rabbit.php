@@ -15,7 +15,7 @@ class Rabbit extends WalkingAnimal{
 
     
     public function getName() : string{
-        return "Rabbit";
+        return 'Rabbit';
     }
 
     public function initEntity(){

@@ -15,7 +15,7 @@ class Mooshroom extends WalkingAnimal{
     public $height = 1.12;
 
     public function getName() : string{
-        return "Mooshroom";
+        return 'Mooshroom';
     }
 
     public function initEntity(){

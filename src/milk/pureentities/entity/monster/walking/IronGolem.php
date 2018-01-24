@@ -29,7 +29,7 @@ class IronGolem extends WalkingMonster{
     }
 
     public function getName() : string{
-        return "IronGolem";
+        return 'IronGolem';
     }
 
     public function attackEntity(Entity $player){

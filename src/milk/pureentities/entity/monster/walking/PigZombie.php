@@ -28,7 +28,7 @@ class PigZombie extends WalkingMonster{
 
         $this->speed = 1.15;
         if(isset($this->namedtag->Angry)){
-            $this->angry = (int) $this->namedtag["Angry"];
+            $this->angry = (int) $this->namedtag['Angry'];
         }
 
         $this->setDamage([0, 5, 9, 13]);
@@ -40,11 +40,11 @@ class PigZombie extends WalkingMonster{
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->Angry = new IntTag("Angry", $this->angry);
+        $this->namedtag->Angry = new IntTag('Angry', $this->angry);
     }
 
     public function getName() : string{
-        return "PigZombie";
+        return 'PigZombie';
     }
 
     public function isAngry() : bool{
@@ -72,7 +72,7 @@ class PigZombie extends WalkingMonster{
 
         $pk = new MobEquipmentPacket();
         $pk->entityRuntimeId = $this->getId();
-        $pk->item = new Sword(Item::GOLDEN_SWORD, 0, "Gold Sword", TieredTool::TIER_GOLD);
+        $pk->item = new Sword(Item::GOLDEN_SWORD, 0, 'Gold Sword', TieredTool::TIER_GOLD);
         $pk->inventorySlot = $pk->hotbarSlot = 0;
         $player->dataPacket($pk);
     }

@@ -26,7 +26,7 @@ class Spider extends WalkingMonster{
     }
 
     public function getName() : string{
-        return "Spider";
+        return 'Spider';
     }
 
     public function onUpdate(int $currentTick) : bool{

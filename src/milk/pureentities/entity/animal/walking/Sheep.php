@@ -16,7 +16,7 @@ class Sheep extends WalkingAnimal{
     public $eyeHeight = 0.9;
 
     public function getName() : string{
-        return "Sheep";
+        return 'Sheep';
     }
 
     public function initEntity(){

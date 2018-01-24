@@ -13,7 +13,7 @@ class Bat extends FlyingAnimal{
     public $height = 0.3;
 
     public function getName() : string{
-        return "Bat";
+        return 'Bat';
     }
 
     public function initEntity(){

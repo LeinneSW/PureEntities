@@ -16,11 +16,6 @@ I want lots of **issues** and **interests**.
 ### Welcome Github issue!
 This plug-in is in development. Therefore, It is possible to function abnormally.
 
-## Sub Module
-[EntityManager](https://github.com/LeinneSW/EntityManager)
-* This Plugin is managing your server's entities.
-* It also provides automatic cleaning at certain intervals.
-
 ## Method list
   * PureEntities
     * `static EntityBase create(int|string $type, Position $pos, Object... $args)`
@@ -59,13 +54,13 @@ foreach(Server::getInstance()->getDefaultLevel()->getEntities() as $entity){
     }
 });
 
-$zombie = PureEntities::create("Zombie", $position);
-if($zombie !== null){
+$zombie = PureEntities::create('Zombie', $position);
+if($zombie !== \null){
     $zombie->spawnToAll(); //if you don't use this method, you couldn't see this
 }
 
-$arrow = PureEntities::create("Arrow", $position, $player, true);
-if($arrow !== null){
+$arrow = PureEntities::create('Arrow', $position, $player, true);
+if($arrow !== \null){
     $arrow->spawnToAll();
 }
 ```

@@ -16,7 +16,7 @@ class Chicken extends WalkingAnimal{
     public $eyeHeight = 0.7;
 
     public function getName() : string{
-        return "Chicken";
+        return 'Chicken';
     }
 
     public function initEntity(){

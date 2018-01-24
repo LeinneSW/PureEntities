@@ -22,7 +22,7 @@ class ZombieVillager extends WalkingMonster{
     }
 
     public function getName() : string{
-        return "ZombieVillager";
+        return 'ZombieVillager';
     }
 
     public function attackEntity(Entity $player){

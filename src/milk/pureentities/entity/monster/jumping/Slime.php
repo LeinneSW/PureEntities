@@ -16,7 +16,7 @@ class Slime extends JumpingMonster{
 
 
     public function getName() : string{
-        return "Slime";
+        return 'Slime';
     }
 
     public function initEntity(){
