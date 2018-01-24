@@ -33,7 +33,8 @@ abstract class FlyingEntity extends EntityBase{
                     || !($creature instanceof Creature)
                     || $creature instanceof Animal
                     || $creature instanceof EntityBase && $creature->isFriendly() === $this->isFriendly()
-                    || ($distance = $this->distanceSquared($creature)) > $near or !$this->targetOption($creature, $distance)){
+                    || ($distance = $this->distanceSquared($creature)) > $near or !$this->targetOption($creature, $distance)
+                ){
                     continue;
                 }
 

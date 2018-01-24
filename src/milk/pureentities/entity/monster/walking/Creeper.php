@@ -27,32 +27,32 @@ class Creeper extends WalkingMonster implements Explosive{
 
         $this->speed = 0.9;
         if(isset($this->namedtag->IsPowered)){
-            $this->setDataProperty(self::DATA_POWERED, self::DATA_TYPE_BYTE, $this->namedtag->IsPowered ? 1 : 0);
+            $this->setGenericFlag(self::DATA_POWERED, $this->namedtag->IsPowered ? 1 : 0);
         }elseif(isset($this->namedtag->powered)){
-            $this->setDataProperty(self::DATA_POWERED, self::DATA_TYPE_BYTE, $this->namedtag->powered ? 1 : 0);
+            $this->setGenericFlag(self::DATA_POWERED, $this->namedtag->powered ? 1 : 0);
         }
 
         if(isset($this->namedtag->BombTime)){
-            $this->bombTime = (int) $this->namedtag["BombTime"];
+            $this->bombTime = (int) $this->namedtag['BombTime'];
         }
     }
 
     public function isPowered(){
-        return $this->getDataProperty(self::DATA_POWERED) === 1;
+        return $this->getGenericFlag(self::DATA_POWERED);
     }
 
     public function setPowered($value = \true){
         $this->namedtag->powered = $value;
-        $this->setDataProperty(self::DATA_POWERED, self::DATA_TYPE_BYTE, $value ? 1 : 0);
+        $this->setGenericFlag(self::DATA_POWERED, $value ? 1 : 0);
     }
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->BombTime = new IntTag("BombTime", $this->bombTime);
+        $this->namedtag->BombTime = new IntTag('BombTime', $this->bombTime);
     }
 
     public function getName() : string{
-        return "Creeper";
+        return 'Creeper';
     }
 
     public function explode(){

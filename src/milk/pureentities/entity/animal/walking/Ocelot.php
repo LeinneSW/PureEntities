@@ -21,7 +21,7 @@ class Ocelot extends WalkingAnimal{
     }
 
     public function getName() : string{
-        return "Ocelot";
+        return 'Ocelot';
     }
 
     public function targetOption(Creature $creature, $distance){

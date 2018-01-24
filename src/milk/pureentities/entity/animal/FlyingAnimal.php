@@ -12,13 +12,10 @@ abstract class FlyingAnimal extends FlyingEntity implements Animal{
         parent::initEntity();
 
         $this->speed = 0.7;
-        if($this->getDataFlag(self::DATA_FLAG_BABY, 0) === null){
-            $this->setDataFlag(self::DATA_FLAG_BABY, self::DATA_TYPE_BYTE, 0);
-        }
     }
 
     public function isBaby() : bool{
-        return $this->getDataFlag(self::DATA_FLAG_BABY, 0);
+        return $this->getGenericFlag(self::DATA_FLAG_BABY);
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
@@ -56,7 +53,7 @@ abstract class FlyingAnimal extends FlyingEntity implements Animal{
             }
         }elseif(
             $target instanceof Vector3
-            && $this->distance($target) <= 1
+            && $this->distanceSquared($target) <= 1
         ){
             $this->moveTime = 0;
         }

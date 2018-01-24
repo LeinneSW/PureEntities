@@ -23,7 +23,7 @@ class CaveSpider extends WalkingMonster{
     }
 
     public function getName() : string{
-        return "CaveSpider";
+        return 'CaveSpider';
     }
 
     public function attackEntity(Entity $player){

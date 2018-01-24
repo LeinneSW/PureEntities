@@ -25,17 +25,14 @@ class Zombie extends WalkingMonster implements Ageable{
 
         $this->speed = 1.1;
         $this->setDamage([0, 3, 4, 6]);
-        if($this->getDataFlag(self::DATA_FLAG_BABY, 0) === null){
-            $this->setDataFlag(self::DATA_FLAG_BABY, self::DATA_TYPE_BYTE, 0);
-        }
     }
 
     public function getName() : string{
-        return "Zombie";
+        return 'Zombie';
     }
 
     public function isBaby() : bool{
-        return $this->getDataFlag(self::DATA_FLAG_BABY, 0);
+        return $this->getGenericFlag(self::DATA_FLAG_BABY);
     }
 
     public function setHealth(float $amount){

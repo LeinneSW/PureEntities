@@ -21,7 +21,7 @@ class MagmaCube extends JumpingMonster{
     }
 
     public function getName() : string{
-        return "MagmaCube";
+        return 'MagmaCube';
     }
 
     public function isFireProof() : bool{

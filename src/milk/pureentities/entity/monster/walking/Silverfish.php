@@ -22,7 +22,7 @@ class Silverfish extends WalkingMonster{
     }
 
     public function getName() : string{
-        return "Silverfish";
+        return 'Silverfish';
     }
 
     public function attackEntity(Entity $player){

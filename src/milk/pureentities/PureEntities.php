@@ -6,7 +6,6 @@ use milk\pureentities\entity\monster\flying\Blaze;
 use milk\pureentities\entity\monster\walking\IronGolem;
 use milk\pureentities\entity\monster\walking\Skeleton;
 use milk\pureentities\entity\monster\walking\Zombie;
-use milk\pureentities\entity\projectile\FireBall;
 use milk\pureentities\entity\projectile\LargeFireBall;
 use milk\pureentities\entity\projectile\SmallFireBall;
 use milk\pureentities\tile\Spawner;
@@ -77,33 +76,33 @@ class PureEntities extends PluginBase implements Listener{
 
         Tile::registerTile(Spawner::class);
 
-        $this->getServer()->getLogger()->info(TextFormat::GOLD . "[PureEntities]All entities were registered");
+        $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]All entities were registered');
     }
 
     public function onEnable(){
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getServer()->getLogger()->info(TextFormat::GOLD . "[PureEntities]Plugin has been enabled");
+        $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
 
     public function onDisable(){
-        $this->getServer()->getLogger()->info(TextFormat::GOLD . "[PureEntities]Plugin has been disabled");
+        $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been disabled');
     }
 
     public static function create($type, Position $source, ...$args){
-        return Entity::createEntity($type, $source->getLevel(), new CompoundTag("", [
-            "Pos" => new ListTag("Pos", [
-                new DoubleTag("", $source->x),
-                new DoubleTag("", $source->y),
-                new DoubleTag("", $source->z)
+        return Entity::createEntity($type, $source->getLevel(), new CompoundTag('', [
+            'Pos' => new ListTag('Pos', [
+                new DoubleTag('', $source->x),
+                new DoubleTag('', $source->y),
+                new DoubleTag('', $source->z)
             ]),
-            "Motion" => new ListTag("Motion", [
-                new DoubleTag("", 0),
-                new DoubleTag("", 0),
-                new DoubleTag("", 0)
+            'Motion' => new ListTag('Motion', [
+                new DoubleTag('', 0),
+                new DoubleTag('', 0),
+                new DoubleTag('', 0)
             ]),
-            "Rotation" => new ListTag("Rotation", [
-                new FloatTag("", $source instanceof Location ? $source->yaw : 0),
-                new FloatTag("", $source instanceof Location ? $source->pitch : 0)
+            'Rotation' => new ListTag('Rotation', [
+                new FloatTag('', $source instanceof Location ? $source->yaw : 0),
+                new FloatTag('', $source instanceof Location ? $source->pitch : 0)
             ]),
         ]), ...$args);
     }
@@ -125,12 +124,12 @@ class PureEntities extends PluginBase implements Listener{
                 if($tile !== null){
                     $tile->close();
                 }
-                $nbt = new CompoundTag("", [
-                    new StringTag("id", Tile::MOB_SPAWNER),
-                    new IntTag("EntityId", $item->getId()),
-                    new IntTag("x", $block->x),
-                    new IntTag("y", $block->y),
-                    new IntTag("z", $block->z),
+                $nbt = new CompoundTag('', [
+                    new StringTag('id', Tile::MOB_SPAWNER),
+                    new IntTag('EntityId', $item->getId()),
+                    new IntTag('x', $block->x),
+                    new IntTag('y', $block->y),
+                    new IntTag('z', $block->z),
                 ]);
                 new Spawner($block->getLevel(), $nbt);
             }
@@ -151,7 +150,7 @@ class PureEntities extends PluginBase implements Listener{
                 for($y = 1; $y < 3; $y++){
                     $block->getLevel()->setBlock($block->add(0, -$y, 0), new Air());
                 }
-                $entity = PureEntities::create("SnowGolem", Position::fromObject($block->add(0.5, -2, 0.5), $block->level));
+                $entity = PureEntities::create('SnowGolem', Position::fromObject($block->add(0.5, -2, 0.5), $block->level));
                 if($entity !== null){
                     $entity->spawnToAll();
                 }
@@ -184,7 +183,7 @@ class PureEntities extends PluginBase implements Listener{
                 }
 
                 if($second !== null){
-                    $entity = PureEntities::create("IronGolem", Position::fromObject($block->add(0.5, -2, 0.5), $block->level));
+                    $entity = PureEntities::create('IronGolem', Position::fromObject($block->add(0.5, -2, 0.5), $block->level));
                     if($entity !== null){
                         $entity->spawnToAll();
                     }
@@ -212,7 +211,7 @@ class PureEntities extends PluginBase implements Listener{
                 or $block->getId() === Block::STONE_BRICK_STAIRS
             ) && ($block->level->getBlockLightAt((int) $block->x, (int) $block->y, (int) $block->z) < 12 and mt_rand(1, 5) < 2)
         ){
-            $entity = PureEntities::create("Silverfish", $block);
+            $entity = PureEntities::create('Silverfish', $block);
             if($entity !== null){
                 $entity->spawnToAll();
             }

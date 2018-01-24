@@ -3,8 +3,8 @@
 namespace milk\pureentities\entity\monster;
 
 use milk\pureentities\entity\JumpingEntity;
+use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
-use pocketmine\event\Timings;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -131,8 +131,6 @@ abstract class JumpingMonster extends JumpingEntity implements Monster{
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
-        Timings::$timerEntityBaseTick->startTiming();
-
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         $this->attackDelay += $tickDiff;
@@ -142,9 +140,11 @@ abstract class JumpingMonster extends JumpingEntity implements Monster{
         }else{
             $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
         }
-
-        Timings::$timerEntityBaseTick->stopTiming();
         return $hasUpdate;
+    }
+
+    public function targetOption(Creature $creature, $distance){
+        return (!($creature instanceof Player) || ($creature->isSurvival() && $creature->spawned)) && $creature->isAlive() && !$creature->closed && $distance <= 144;
     }
 
 }

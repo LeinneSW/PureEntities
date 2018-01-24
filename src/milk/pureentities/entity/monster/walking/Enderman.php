@@ -22,7 +22,7 @@ class Enderman extends WalkingMonster{
     }
 
     public function getName() : string{
-        return "Enderman";
+        return 'Enderman';
     }
 
     public function attackEntity(Entity $player){

@@ -30,7 +30,7 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
     public $height = 1.8;
 
     public function getName() : string{
-        return "Skeleton";
+        return 'Skeleton';
     }
 
     public function attackEntity(Entity $player){
@@ -39,25 +39,22 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
 
             $yaw = $this->yaw + mt_rand(-220, 220) / 10;
             $pitch = $this->pitch + mt_rand(-120, 120) / 10;
-            $nbt = new CompoundTag("", [
-                "Pos" => new ListTag("Pos", [
-                    new DoubleTag("", $this->x + (-sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5)),
-                    new DoubleTag("", $this->y + 1.62),
-                    new DoubleTag("", $this->z +(cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 0.5))
+            $arrow = Entity::createEntity('Arrow', $this->level, new CompoundTag('', [
+                'Pos' => new ListTag('Pos', [
+                    new DoubleTag('', $this->x + (-\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5)),
+                    new DoubleTag('', $this->y),
+                    new DoubleTag('', $this->z +(\cos(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5))
                 ]),
-                "Motion" => new ListTag("Motion", [
-                    new DoubleTag("", -sin($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 1.2),
-                    new DoubleTag("", -sin($pitch / 180 * M_PI) * 1.2),
-                    new DoubleTag("", cos($yaw / 180 * M_PI) * cos($pitch / 180 * M_PI) * 1.2)
+                'Motion' => new ListTag('Motion', [
+                    new DoubleTag('', -\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 1.2),
+                    new DoubleTag('', -\sin(\deg2rad($pitch)) * 1.2),
+                    new DoubleTag('', \cos(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 1.2)
                 ]),
-                "Rotation" => new ListTag("Rotation", [
-                    new FloatTag("", $yaw),
-                    new FloatTag("", $pitch)
+                'Rotation' => new ListTag('Rotation', [
+                    new FloatTag('', 0),
+                    new FloatTag('', 0)
                 ]),
-            ]);
-
-            /** @var Projectile $arrow */
-            $arrow = Entity::createEntity("Arrow", $this->level, $nbt, $this);
+            ]), $this);
 
             $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, 1.2);
             $this->server->getPluginManager()->callEvent($ev);

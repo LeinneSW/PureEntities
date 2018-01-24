@@ -160,4 +160,8 @@ abstract class WalkingMonster extends WalkingEntity implements Monster{
         return $hasUpdate;
     }
 
+    public function targetOption(Creature $creature, $distance){
+        return (!($creature instanceof Player) || ($creature->isSurvival() && $creature->spawned)) && $creature->isAlive() && !$creature->closed && $distance <= 144;
+    }
+
 }
