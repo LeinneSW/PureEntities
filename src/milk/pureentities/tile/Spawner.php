@@ -65,7 +65,7 @@ class Spawner extends Spawnable{
             return \false;
         }
 
-        if($this->delay++ >= mt_rand($this->minSpawnDelay, $this->maxSpawnDelay)){
+        if(++$this->delay >= mt_rand($this->minSpawnDelay, $this->maxSpawnDelay)){
             $this->delay = 0;
 
             $list = [];
