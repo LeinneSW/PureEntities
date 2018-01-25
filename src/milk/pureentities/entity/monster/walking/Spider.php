@@ -88,15 +88,15 @@ class Spider extends WalkingMonster{
                         $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
                         $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
                     }
-                }else if($target !== null && (pow($this->x - $target->x, 2) + pow($this->z - $target->z, 2)) <= 1){
+                }else if($target !== null && (($this->x - $target->x) ** 2 + ($this->z - $target->z) ** 2) <= 1){
                     $this->moveTime = 0;
                 }
             }else{
                 $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
                 $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
             }
-            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
-            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->yaw = \rad2deg(-\atan2($x / $diff, $z / $diff));
+            $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
         }
 
         $dx = $this->motionX * $tickDiff;

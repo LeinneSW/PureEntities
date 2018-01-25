@@ -114,8 +114,8 @@ class Blaze extends WalkingMonster implements ProjectileSource{
                 $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
                 $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
             }
-            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
-            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->yaw = \rad2deg(-\atan2($x / $diff, $z / $diff));
+            $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
         }
 
         $before = $this->target;
@@ -144,8 +144,8 @@ class Blaze extends WalkingMonster implements ProjectileSource{
                     $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
                 }
             }
-            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
-            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->yaw = \rad2deg(-\atan2($x / $diff, $z / $diff));
+            $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
         }
 
         $dx = $this->motionX * $tickDiff;
