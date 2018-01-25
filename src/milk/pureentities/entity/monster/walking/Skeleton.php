@@ -3,7 +3,6 @@
 namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\monster\WalkingMonster;
-use pocketmine\block\Water;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\entity\projectile\ProjectileSource;
@@ -12,10 +11,7 @@ use pocketmine\event\entity\EntityShootBowEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\item\Bow;
 use pocketmine\item\Item;
-use pocketmine\level\Level;
 use pocketmine\level\sound\LaunchSound;
-use pocketmine\math\Math;
-use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\ListTag;
@@ -87,14 +83,14 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
     public function entityBaseTick(int $tickDiff = 1) : bool{
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
-        $time = $this->getLevel()->getTime() % Level::TIME_FULL;
+        //TODO: 밝기 측정 추후수정
+        /*$time = $this->getLevel()->getTime() % Level::TIME_FULL;
         if(
             !$this->isOnFire()
             && ($time < Level::TIME_NIGHT || $time > Level::TIME_SUNRISE)
-            && !($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) $this->y, Math::floorFloat($this->z))) instanceof Water)
         ){
             $this->setOnFire(1);
-        }
+        }*/
         return $hasUpdate;
     }
 
