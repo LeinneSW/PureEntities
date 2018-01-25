@@ -13,7 +13,7 @@ abstract class FlyingEntity extends EntityBase{
             return;
         }
 
-        if($this->followTarget != null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+        if($this->followTarget !== \null && !$this->followTarget->closed && $this->followTarget->isAlive()){
             return;
         }
 
@@ -48,27 +48,27 @@ abstract class FlyingEntity extends EntityBase{
 
         $maxY = max($this->getLevel()->getHighestBlockAt((int) $this->x, (int) $this->z) + 15, 120);
         if($this->moveTime <= 0 or !$this->target instanceof Vector3){
-            $x = mt_rand(20, 100);
-            $z = mt_rand(20, 100);
+            $x = \mt_rand(20, 100);
+            $z = \mt_rand(20, 100);
             if($this->y > $maxY){
-                $y = mt_rand(-12, -4);
+                $y = \mt_rand(-12, -4);
             }else{
-                $y = mt_rand(-10, 10);
+                $y = \mt_rand(-10, 10);
             }
-            $this->moveTime = mt_rand(300, 1200);
-            $this->target = $this->add(mt_rand(0, 1) ? $x : -$x, $y, mt_rand(0, 1) ? $z : -$z);
+            $this->moveTime = \mt_rand(300, 1200);
+            $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, $y, \mt_rand(0, 1) ? $z : -$z);
         }
     }
 
     public function updateMove($tickDiff){
         if(!$this->isMovement()){
-            return null;
+            return \null;
         }
 
         if($this->attackTime > 0){
             $this->move($this->motionX * $tickDiff, $this->motionY * $tickDiff, $this->motionZ * $tickDiff);
             $this->updateMovement();
-            return null;
+            return \null;
         }
 
         //TODO: 재설계중...
@@ -79,7 +79,7 @@ abstract class FlyingEntity extends EntityBase{
             $y = $this->target->y - $this->y;
             $z = $this->target->z - $this->z;
 
-            $diff = abs($x) + abs($z);
+            $diff = \abs($x) + \abs($z);
             if($x ** 2 + $z ** 2 < 0.5){
                 $this->motionX = 0;
                 $this->motionZ = 0;
@@ -89,8 +89,8 @@ abstract class FlyingEntity extends EntityBase{
 
                 $this->motionY = $this->getSpeed() * 0.27 * ($y / $diff);
             }
-            $this->yaw = rad2deg(-atan2($x / $diff, $z / $diff));
-            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->yaw = \rad2deg(-\atan2($x / $diff, $z / $diff));
+            $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
         }
 
         $target = $this->target;

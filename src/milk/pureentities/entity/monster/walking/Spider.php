@@ -68,7 +68,7 @@ class Spider extends WalkingMonster{
             $y = $this->target->y - $this->y;
             $z = $this->target->z - $this->z;
 
-            $diff = abs($x) + abs($z);
+            $diff = \abs($x) + \abs($z);
             $distance = $this->distance($target = $this->target);
             if($distance <= 2){
                 if($target instanceof Creature){
@@ -144,7 +144,7 @@ class Spider extends WalkingMonster{
     }
 
     public function getDrops() : array{
-        return $this->lastDamageCause instanceof EntityDamageByEntityEvent ? [Item::get(Item::STRING, 0, mt_rand(0, 3))] : [];
+        return $this->lastDamageCause instanceof EntityDamageByEntityEvent ? [Item::get(Item::STRING, 0, \mt_rand(0, 3))] : [];
     }
 
 }

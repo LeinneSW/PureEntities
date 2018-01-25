@@ -34,7 +34,7 @@ class Sheep extends WalkingAnimal{
 
     public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
-            return [Item::get(Item::WOOL, mt_rand(0, 15), 1)];
+            return [Item::get(Item::WOOL, \mt_rand(0, 15), 1)];
         }
         return [];
     }

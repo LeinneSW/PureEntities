@@ -51,7 +51,7 @@ class IronGolem extends WalkingMonster{
 
     public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
-            switch(mt_rand(0, 2)){
+            switch(\mt_rand(0, 2)){
                 case 0:
                     return [Item::get(Item::FEATHER, 0, 1)];
                 case 1:

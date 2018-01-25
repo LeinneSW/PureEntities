@@ -29,7 +29,7 @@ abstract class WalkingMonster extends WalkingEntity implements Monster{
     }
 
     public function getDamage(int $difficulty = null) : float{
-        return mt_rand($this->getMinDamage($difficulty), $this->getMaxDamage($difficulty));
+        return \mt_rand($this->getMinDamage($difficulty), $this->getMaxDamage($difficulty));
     }
 
     public function getMinDamage(int $difficulty = null) : float{
@@ -147,7 +147,7 @@ abstract class WalkingMonster extends WalkingEntity implements Monster{
         if($this instanceof Enderman){
             if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) $this->y, Math::floorFloat($this->z))) instanceof Water){
                 $this->onAirExpired();
-                $this->move(mt_rand(-20, 20), mt_rand(-20, 20), mt_rand(-20, 20));
+                $this->move(\mt_rand(-20, 20), \mt_rand(-20, 20), \mt_rand(-20, 20));
             }
         }else{
             if(!$this->canBreathe()){

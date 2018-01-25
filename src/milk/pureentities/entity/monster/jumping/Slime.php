@@ -38,7 +38,7 @@ class Slime extends JumpingMonster{
     
     public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
-            return [Item::get(Item::SLIMEBALL, 0, mt_rand(0, 2))];
+            return [Item::get(Item::SLIMEBALL, 0, \mt_rand(0, 2))];
         }
         return [];
     }

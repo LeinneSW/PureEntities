@@ -35,7 +35,7 @@ class CaveSpider extends WalkingMonster{
     }
 
     public function getDrops() : array{
-        return $this->lastDamageCause instanceof EntityDamageByEntityEvent ? [Item::get(Item::STRING, 0, mt_rand(0, 2))] : [];
+        return $this->lastDamageCause instanceof EntityDamageByEntityEvent ? [Item::get(Item::STRING, 0, \mt_rand(0, 2))] : [];
     }
 
 }

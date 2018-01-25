@@ -30,11 +30,11 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
     }
 
     public function attackEntity(Entity $player){
-        if($this->attackDelay > 30 && mt_rand(1, 32) < 4 && $this->distanceSquared($player) <= 55){
+        if($this->attackDelay > 30 && \mt_rand(1, 32) < 4 && $this->distanceSquared($player) <= 70){
             $this->attackDelay = 0;
 
-            $yaw = $this->yaw + mt_rand(-220, 220) / 10;
-            $pitch = $this->pitch + mt_rand(-120, 120) / 10;
+            $yaw = $this->yaw + \mt_rand(-220, 220) / 10;
+            $pitch = $this->pitch + \mt_rand(-120, 120) / 10;
             $arrow = Entity::createEntity('Arrow', $this->level, new CompoundTag('', [
                 'Pos' => new ListTag('Pos', [
                     new DoubleTag('', $this->x + (-\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5)),
@@ -97,8 +97,8 @@ class Skeleton extends WalkingMonster implements ProjectileSource{
     public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
             return [
-                Item::get(Item::BONE, 0, mt_rand(0, 2)),
-                Item::get(Item::ARROW, 0, mt_rand(0, 3)),
+                Item::get(Item::BONE, 0, \mt_rand(0, 2)),
+                Item::get(Item::ARROW, 0, \mt_rand(0, 3)),
             ];
         }
         return [];

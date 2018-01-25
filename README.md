@@ -42,7 +42,7 @@ This plug-in is in development. Therefore, It is possible to function abnormally
 ## Example
 ``` php
 foreach(Server::getInstance()->getDefaultLevel()->getEntities() as $entity){
-    $entity->setWallCheck(false);
+    $entity->setWallCheck(\false);
     $entity->setMovement(!$entity->isMovement());
 
     if($entity instanceof Monster){
@@ -59,7 +59,7 @@ if($zombie !== \null){
     $zombie->spawnToAll(); //if you don't use this method, you couldn't see this
 }
 
-$arrow = Entity::createEntity('Arrow', $position->level, Entity::createBaseNBT($position), $player, true);
+$arrow = Entity::createEntity('Arrow', $position->level, Entity::createBaseNBT($position), $player, \true);
 if($arrow !== \null){
     $arrow->spawnToAll();
 }
