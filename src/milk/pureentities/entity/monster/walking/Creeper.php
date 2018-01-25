@@ -108,7 +108,7 @@ class Creeper extends WalkingMonster implements Explosive{
             $y = $this->target->y - $this->y;
             $z = $this->target->z - $this->z;
 
-            $diff = abs($x) + abs($z);
+            $diff = \abs($x) + \abs($z);
             $target = $this->target;
             $distance = ($this->x - $target->x) ** 2 + ($this->z - $target->z) ** 2;
             if($distance <= 20){
@@ -175,7 +175,7 @@ class Creeper extends WalkingMonster implements Explosive{
 
     public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
-            switch(mt_rand(0, 2)){
+            switch(\mt_rand(0, 2)){
                 case 0:
                     return [Item::get(Item::FLINT, 0, 1)];
                 case 1:

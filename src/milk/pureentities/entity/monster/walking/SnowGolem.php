@@ -4,7 +4,6 @@ namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\monster\WalkingMonster;
 use pocketmine\entity\Entity;
-use pocketmine\entity\projectile\Projectile;
 use pocketmine\entity\projectile\ProjectileSource;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
@@ -38,11 +37,11 @@ class SnowGolem extends WalkingMonster implements ProjectileSource{
     }
 
     public function attackEntity(Entity $player){
-        if($this->attackDelay > 23  && mt_rand(1, 32) < 4 && $this->distanceSquared($player) <= 55){
+        if($this->attackDelay > 23  && \mt_rand(1, 32) < 4 && $this->distanceSquared($player) <= 55){
             $this->attackDelay = 0;
 
-            $yaw = $this->yaw + mt_rand(-220, 220) / 10;
-            $pitch = $this->pitch + mt_rand(-120, 120) / 10;
+            $yaw = $this->yaw + \mt_rand(-220, 220) / 10;
+            $pitch = $this->pitch + \mt_rand(-120, 120) / 10;
             $snowball = Entity::createEntity('Snowball', $this->level, new CompoundTag('', [
                 'Pos' => new ListTag('Pos', [
                     new DoubleTag('', $this->x + (-\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5)),

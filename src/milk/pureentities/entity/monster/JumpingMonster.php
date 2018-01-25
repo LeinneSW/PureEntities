@@ -19,7 +19,7 @@ abstract class JumpingMonster extends JumpingEntity implements Monster{
     public abstract function attackEntity(Entity $player);
 
     public function getDamage(int $difficulty = null) : float{
-        return mt_rand($this->getMinDamage($difficulty), $this->getMaxDamage($difficulty));
+        return \mt_rand($this->getMinDamage($difficulty), $this->getMaxDamage($difficulty));
     }
 
     public function getMinDamage(int $difficulty = null) : float{

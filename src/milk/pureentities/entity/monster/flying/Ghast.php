@@ -41,11 +41,11 @@ class Ghast extends FlyingMonster implements ProjectileSource{
     }
 
     public function attackEntity(Entity $player){
-        if($this->attackDelay > 30 && mt_rand(1, 32) < 4 && $this->distance($player) <= 100){
+        if($this->attackDelay > 30 && \mt_rand(1, 32) < 4 && $this->distanceSquared($player) <= 10000){
             $this->attackDelay = 0;
 
-            $yaw = $this->yaw + mt_rand(-110, 110) / 10;
-            $pitch = $this->pitch + mt_rand(-110, 110) / 10;
+            $yaw = $this->yaw + \mt_rand(-110, 110) / 10;
+            $pitch = $this->pitch + \mt_rand(-110, 110) / 10;
             $fireball = Entity::createEntity('LargeFireBall', $this->level, new CompoundTag('', [
                 'Pos' => new ListTag('Pos', [
                     new DoubleTag('', $this->x + (-\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5)),

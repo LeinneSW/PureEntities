@@ -78,10 +78,10 @@ class Blaze extends WalkingMonster implements ProjectileSource{
         }
 
         if($this->moveTime <= 0 or !($this->target instanceof Vector3)){
-            $x = mt_rand(20, 100);
-            $z = mt_rand(20, 100);
-            $this->moveTime = mt_rand(300, 1200);
-            $this->target = $this->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z);
+            $x = \mt_rand(20, 100);
+            $z = \mt_rand(20, 100);
+            $this->moveTime = \mt_rand(300, 1200);
+            $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
         }
     }
 
@@ -106,7 +106,7 @@ class Blaze extends WalkingMonster implements ProjectileSource{
             $y = $this->followTarget->y - $this->y;
             $z = $this->followTarget->z - $this->z;
 
-            $diff = abs($x) + abs($z);
+            $diff = \abs($x) + \abs($z);
             if($x ** 2 + $z ** 2 < 0.7){
                 $this->motionX = 0;
                 $this->motionZ = 0;
@@ -125,7 +125,7 @@ class Blaze extends WalkingMonster implements ProjectileSource{
             $y = $this->target->y - $this->y;
             $z = $this->target->z - $this->z;
 
-            $diff = abs($x) + abs($z);
+            $diff = \abs($x) + \abs($z);
             if($x ** 2 + $z ** 2 < 0.7){
                 $this->motionX = 0;
                 $this->motionZ = 0;
@@ -176,11 +176,11 @@ class Blaze extends WalkingMonster implements ProjectileSource{
     }
 
     public function attackEntity(Entity $player){
-        if($this->attackDelay > 20 && mt_rand(1, 32) < 4 && $this->distance($player) <= 18){
+        if($this->attackDelay > 20 && \mt_rand(1, 32) < 4 && $this->distanceSquared($player) <= 324){
             $this->attackDelay = 0;
 
-            $yaw = $this->yaw + mt_rand(-50, 50) / 10;
-            $pitch = $this->pitch + mt_rand(-50, 50) / 10;
+            $yaw = $this->yaw + \mt_rand(-50, 50) / 10;
+            $pitch = $this->pitch + \mt_rand(-50, 50) / 10;
             $fireball = Entity::createEntity('LargeFireBall', $this->level, new CompoundTag('', [
                 'Pos' => new ListTag('Pos', [
                     new DoubleTag('', $this->x + (-\sin(\deg2rad($yaw)) * \cos(\deg2rad($pitch)) * 0.5)),
@@ -218,7 +218,7 @@ class Blaze extends WalkingMonster implements ProjectileSource{
 
     public function getDrops() : array{
         if($this->lastDamageCause instanceof EntityDamageByEntityEvent){
-            return [Item::get(Item::GLOWSTONE_DUST, 0, mt_rand(0, 2))];
+            return [Item::get(Item::GLOWSTONE_DUST, 0, \mt_rand(0, 2))];
         }
         return [];
     }
