@@ -69,9 +69,9 @@ abstract class WalkingEntity extends EntityBase{
 
     protected function checkJump($tickDiff, $dx, $dz){
         if($this->motionY == $this->gravity * 2){
-            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), ($this->y + 0.3) | 0, Math::floorFloat($this->z))) instanceof Liquid;
+            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.3), Math::floorFloat($this->z))) instanceof Liquid;
         }else{
-            if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), ($this->y + 0.9) | 0, Math::floorFloat($this->z))) instanceof Liquid){
+            if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.9), Math::floorFloat($this->z))) instanceof Liquid){
                 $this->motionY = $this->gravity * 2 * $tickDiff;
                 return \true;
             }
@@ -169,7 +169,7 @@ abstract class WalkingEntity extends EntityBase{
             if($this->onGround){
                 $this->motionY = 0;
             }else if($this->motionY > -$this->gravity * 4){
-                if(!($this->level->getBlock(new Vector3(Math::floorFloat($this->x), ($this->y + 0.9) | 0, Math::floorFloat($this->z))) instanceof Liquid)){
+                if(!($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.9), Math::floorFloat($this->z))) instanceof Liquid)){
                     $this->motionY -= $this->gravity * $tickDiff;
                 }
             }else{

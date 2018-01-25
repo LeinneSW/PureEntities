@@ -148,7 +148,7 @@ class Blaze extends FlyingMonster implements ProjectileSource{
                     $height = $this->y - $this->getLevel()->getHighestBlockAt((int) $this->x, (int) $this->z);
                     if($height < 8){
                         $this->motionY = $this->gravity;
-                    }elseif(($height | 0) === 8){
+                    }elseif((int) $height === 8){
                         $this->motionY = 0;
                     }
                 }else{
