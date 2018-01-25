@@ -5,6 +5,7 @@ namespace milk\pureentities;
 use milk\pureentities\entity\monster\walking\Blaze;
 use milk\pureentities\entity\monster\walking\IronGolem;
 use milk\pureentities\entity\monster\walking\Skeleton;
+use milk\pureentities\entity\monster\walking\Zombie;
 use milk\pureentities\entity\projectile\LargeFireBall;
 use milk\pureentities\entity\projectile\SmallFireBall;
 use milk\pureentities\tile\Spawner;
@@ -47,7 +48,7 @@ class PureEntities extends PluginBase implements Listener{
         //Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
         //Entity::registerEntity(Spider::class, \false, ['minecraft:spider']);
         //Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
-        //Entity::registerEntity(Zombie::class, \false, ['minecraft:zombie']);
+        Entity::registerEntity(Zombie::class, \false, ['minecraft:zombie']);
         //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombievillager']);
         Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
         Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
