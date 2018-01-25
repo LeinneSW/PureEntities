@@ -17,8 +17,6 @@ I want lots of **issues** and **interests**.
 This plug-in is in development. Therefore, It is possible to function abnormally.
 
 ## Method list
-  * PureEntities
-    * `static EntityBase create(int|string $type, Position $pos, Object... $args)`
   * EntityBase
     * `Entity getTarget()`
     * `boolean isMovement()`
