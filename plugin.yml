@@ -2,7 +2,7 @@
 name: PureEntities
 main: milk\pureentities\PureEntities
 #remember version and api is string, don't write it like this: 1.0.0, or there will be an exception
-version: "1.0"
+version: "1.0.0"
 api: ["3.0.0-ALPHA10"]
 
 load: STARTUP
