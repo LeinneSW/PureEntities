@@ -1,6 +1,6 @@
 <?php
 
-namespace milk\pureentities\entity\monster\walking;
+namespace milk\pureentities\entity\monster\flying;
 
 use milk\pureentities\entity\monster\FlyingMonster;
 use pocketmine\entity\Creature;
