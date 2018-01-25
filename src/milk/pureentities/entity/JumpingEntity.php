@@ -10,6 +10,6 @@ abstract class JumpingEntity extends EntityBase{
 
     public function updateMove($tickDiff){
         // TODO
-        return null;
+        return \null;
     }
 }

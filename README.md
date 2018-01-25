@@ -54,12 +54,12 @@ foreach(Server::getInstance()->getDefaultLevel()->getEntities() as $entity){
     }
 });
 
-$zombie = PureEntities::create('Zombie', $position);
+$zombie = Entity::createEntity('Zombie', $position->level, Entity::createBaseNBT($position));
 if($zombie !== \null){
     $zombie->spawnToAll(); //if you don't use this method, you couldn't see this
 }
 
-$arrow = PureEntities::create('Arrow', $position, $player, true);
+$arrow = Entity::createEntity('Arrow', $position->level, Entity::createBaseNBT($position), $player, true);
 if($arrow !== \null){
     $arrow->spawnToAll();
 }

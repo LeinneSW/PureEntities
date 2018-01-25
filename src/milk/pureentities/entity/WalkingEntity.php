@@ -85,7 +85,7 @@ abstract class WalkingEntity extends EntityBase{
         $zWidth = $dz > 0 ? $this->width / 2 : -($this->width / 2);
         $block = $this->getLevel()->getBlock(new Vector3(Math::ceilFloat($this->x + $xWidth + $dx * 2), $this->y, Math::ceilFloat($this->z + $zWidth + $dz * 2)));
         if(
-            $block->getId() !== Block::AIR && !$block->canPassThrough()
+            $block->getId() !== Block::AIR && !$block->canPassThrough() && (($aabb = $block->getBoundingBox())->maxY - $aabb->minY) <= 1
             && $block->getSide(Block::SIDE_UP)->canPassThrough()
             && $block->getSide(Block::SIDE_UP, 2)->canPassThrough()
         ){
@@ -168,7 +168,7 @@ abstract class WalkingEntity extends EntityBase{
         if(!$isJump){
             if($this->onGround){
                 $this->motionY = 0;
-            }else if($this->motionY > -$this->gravity * 4){
+            }elseif($this->motionY > -$this->gravity * 4){
                 if(!($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.9), Math::floorFloat($this->z))) instanceof Liquid)){
                     $this->motionY -= $this->gravity * $tickDiff;
                 }

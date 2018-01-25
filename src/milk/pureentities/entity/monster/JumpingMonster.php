@@ -88,7 +88,7 @@ abstract class JumpingMonster extends JumpingEntity implements Monster{
     }
 
     public function onUpdate(int $currentTick) : bool{
-        if($this->server->getDifficulty() < 1){
+        if($this->server->getDifficulty() < 1 || $this->isFlaggedForDespawn()){
             $this->close();
             return \false;
         }

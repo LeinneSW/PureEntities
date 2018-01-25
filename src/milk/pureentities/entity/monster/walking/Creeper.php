@@ -3,12 +3,15 @@
 namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\monster\WalkingMonster;
+use pocketmine\block\Liquid;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Explosive;
 use pocketmine\event\entity\ExplosionPrimeEvent;
 use pocketmine\level\Explosion;
+use pocketmine\math\Math;
 use pocketmine\math\Vector2;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\item\Item;
@@ -69,7 +72,7 @@ class Creeper extends WalkingMonster implements Explosive{
     }
 
     public function onUpdate(int $currentTick) : bool{
-        if($this->server->getDifficulty() < 1){
+        if($this->server->getDifficulty() < 1 || $this->isFlaggedForDespawn()){
             $this->close();
             return \false;
         }
@@ -151,9 +154,11 @@ class Creeper extends WalkingMonster implements Explosive{
             if($this->onGround){
                 $this->motionY = 0;
             }elseif($this->motionY > -$this->gravity * 4){
-                $this->motionY = -$this->gravity * 4;
+                if(!($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.9), Math::floorFloat($this->z))) instanceof Liquid)){
+                    $this->motionY -= $this->gravity * $tickDiff;
+                }
             }else{
-                $this->motionY -= $this->gravity;
+                $this->motionY -= $this->gravity * $tickDiff;
             }
         }
         $this->updateMovement();
