@@ -60,10 +60,10 @@ abstract class WalkingEntity extends EntityBase{
         }
 
         if($this->moveTime <= 0 or !($this->target instanceof Vector3)){
-            $x = mt_rand(20, 100);
-            $z = mt_rand(20, 100);
-            $this->moveTime = mt_rand(300, 1200);
-            $this->target = $this->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z);
+            $x = \mt_rand(20, 100);
+            $z = \mt_rand(20, 100);
+            $this->moveTime = \mt_rand(300, 1200);
+            $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
         }
     }
 
@@ -118,7 +118,7 @@ abstract class WalkingEntity extends EntityBase{
             $y = $this->followTarget->y - $this->y;
             $z = $this->followTarget->z - $this->z;
 
-            $diff = abs($x) + abs($z);
+            $diff = \abs($x) + \abs($z);
             if($x ** 2 + $z ** 2 < 0.7){
                 $this->motionX = 0;
                 $this->motionZ = 0;
@@ -126,8 +126,8 @@ abstract class WalkingEntity extends EntityBase{
                 $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
                 $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
             }
-            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
-            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->yaw = \rad2deg(-\atan2($x / $diff, $z / $diff));
+            $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
         }
 
         $before = $this->target;
@@ -137,7 +137,7 @@ abstract class WalkingEntity extends EntityBase{
             $y = $this->target->y - $this->y;
             $z = $this->target->z - $this->z;
 
-            $diff = abs($x) + abs($z);
+            $diff = \abs($x) + \abs($z);
             if($x ** 2 + $z ** 2 < 0.7){
                 $this->motionX = 0;
                 $this->motionZ = 0;
@@ -145,8 +145,8 @@ abstract class WalkingEntity extends EntityBase{
                 $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
                 $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
             }
-            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
-            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+            $this->yaw = \rad2deg(-\atan2($x / $diff, $z / $diff));
+            $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
         }
 
         $dx = $this->motionX * $tickDiff;
