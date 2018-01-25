@@ -2,7 +2,7 @@
 
 namespace milk\pureentities\tile;
 
-use milk\pureentities\PureEntities;
+use pocketmine\entity\Entity;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\nbt\tag\CompoundTag;
@@ -87,7 +87,7 @@ class Spawner extends Spawnable{
                     $this->z + mt_rand(-$this->spawnRange, $this->spawnRange),
                     $this->level
                 );
-                $entity = PureEntities::create($this->entityId, $pos);
+                $entity = Entity::createEntity($this->entityId, $pos->level, Entity::createBaseNBT($pos));
                 if($entity !== null){
                     $entity->spawnToAll();
                 }

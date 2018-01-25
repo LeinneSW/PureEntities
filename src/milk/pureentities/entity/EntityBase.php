@@ -2,12 +2,10 @@
 
 namespace milk\pureentities\entity;
 
-use milk\pureentities\entity\monster\flying\Blaze;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 
@@ -102,26 +100,26 @@ abstract class EntityBase extends Creature{
     }
 
     public function updateMovement(){
-        if(
-            $this->lastX !== $this->x
-            || $this->lastY !== $this->y
-            || $this->lastZ !== $this->z
-            || $this->lastYaw !== $this->yaw
-            || $this->lastPitch !== $this->pitch
-        ){
+        if($this->lastX !== $this->x){
             $this->lastX = $this->x;
+        }
+
+        if($this->lastY !== $this->y){
             $this->lastY = $this->y;
+        }
+
+        if($this->lastZ !== $this->z){
             $this->lastZ = $this->z;
+        }
+
+        if($this->lastYaw !== $this->yaw){
             $this->lastYaw = $this->yaw;
+        }
+
+        if($this->lastPitch !== $this->pitch){
             $this->lastPitch = $this->pitch;
         }
         $this->broadcastMovement();
-    }
-
-    public function isInsideOfSolid() : bool{
-        $block = $this->level->getBlock($this->temporalVector->setComponents(Math::floorFloat($this->x), Math::floorFloat($this->y + $this->height - 0.18), Math::floorFloat($this->z)));
-        $bb = $block->getBoundingBox();
-        return $bb !== null and $block->isSolid() and !$block->isTransparent() and $bb->intersectsWith($this->getBoundingBox());
     }
 
     public function attack(EntityDamageEvent $source){
@@ -140,7 +138,7 @@ abstract class EntityBase extends Creature{
         $motion = (new Vector3($this->x - $damager->x, $this->y - $damager->y, $this->z - $damager->z))->normalize();
         $this->motionX = $motion->x * 0.19;
         $this->motionZ = $motion->z * 0.19;
-        if(($this instanceof FlyingEntity) && !($this instanceof Blaze)){
+        if($this instanceof FlyingEntity){
             $this->motionY = $motion->y * 0.19;
         }else{
             $this->motionY = 0.6;

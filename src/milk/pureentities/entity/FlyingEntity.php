@@ -3,11 +3,7 @@
 namespace milk\pureentities\entity;
 
 use milk\pureentities\entity\animal\Animal;
-use milk\pureentities\entity\monster\flying\Blaze;
-use pocketmine\math\Math;
-use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
 use pocketmine\entity\Creature;
 
 abstract class FlyingEntity extends EntityBase{
@@ -74,8 +70,9 @@ abstract class FlyingEntity extends EntityBase{
             $this->updateMovement();
             return null;
         }
-        
-        $before = $this->target;
+
+        //TODO: 재설계중...
+        /*$before = $this->target;
         $this->checkTarget();
         if($this->target instanceof Player or $before !== $this->target){
             $x = $this->target->x - $this->x;
@@ -89,6 +86,7 @@ abstract class FlyingEntity extends EntityBase{
             }else{
                 $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
                 $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
+
                 $this->motionY = $this->getSpeed() * 0.27 * ($y / $diff);
             }
             $this->yaw = rad2deg(-atan2($x / $diff, $z / $diff));
@@ -96,7 +94,6 @@ abstract class FlyingEntity extends EntityBase{
         }
 
         $target = $this->target;
-        $isJump = \false;
         $dx = $this->motionX * $tickDiff;
         $dy = $this->motionY * $tickDiff;
         $dz = $this->motionZ * $tickDiff;
@@ -106,55 +103,40 @@ abstract class FlyingEntity extends EntityBase{
         $af = new Vector2($this->x, $this->z);
 
         if($be->x !== $af->x || $be->y !== $af->y){
-            if($this instanceof Blaze){
-                $x = 0;
-                $z = 0;
-                if($be->x - $af->x !== 0){
-                    $x = $be->x > $af->x ? 1 : -1;
-                }
-                if($be->y - $af->y !== 0){
-                    $z = $be->y > $af->y ? 1 : -1;
-                }
-
-                $vec = new Vector3(Math::floorFloat($be->x) + $x, $this->y, Math::floorFloat($be->y) + $z);
-                $block = $this->level->getBlock($vec->add($x, 0, $z));
-                $block2 = $this->level->getBlock($vec->add($x, 1, $z));
-                if(!$block->canPassThrough()){
-                    $bb = $block2->getBoundingBox();
-                    if(
-                        $this->motionY > -$this->gravity * 4
-                        && ($block2->canPassThrough() || ($bb === null || $bb->maxY - $this->y <= 1))
-                    ){
-                        $isJump = \true;
-                        if($this->motionY >= 0.3){
-                            $this->motionY += $this->gravity;
-                        }else{
-                            $this->motionY = 0.3;
-                        }
-                    }
-                }
-
-                if(!$isJump){
-                    $this->moveTime -= 90 * $tickDiff;
-                }
-            }else{
-                $this->moveTime -= 90 * $tickDiff;
-            }
+            $this->moveTime -= 90 * $tickDiff;
         }
 
-        if($this instanceof Blaze){
-            if($this->onGround && !$isJump){
-                $this->motionY = 0;
-            }else if(!$isJump){
-                if($this->motionY > -$this->gravity * 4){
-                    $this->motionY = -$this->gravity * 4;
-                }else{
-                    $this->motionY -= $this->gravity;
-                }
+        $this->updateMovement();*/
+        return \null;
+    }
+
+    public function fall(float $fallDistance){
+
+    }
+
+    public function move(float $dx, float $dy, float $dz) : bool{
+        $movX = $dx;
+        $movY = $dy;
+        $movZ = $dz;
+
+        $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
+        foreach($list as $bb){
+            if($this->isWallCheck()){
+                $dx = $bb->calculateXOffset($this->boundingBox, $dx);
+                $dz = $bb->calculateZOffset($this->boundingBox, $dz);
             }
+            $dy = $bb->calculateYOffset($this->boundingBox, $dy);
         }
-        $this->updateMovement();
-        return $target;
+        $this->boundingBox->offset($dx, $dy, $dz);
+
+        $this->x += $dx;
+        $this->y += $dy;
+        $this->z += $dz;
+
+        $this->checkChunks();
+        $this->checkBlockCollision();
+        $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
+        return \true;
     }
 
 }

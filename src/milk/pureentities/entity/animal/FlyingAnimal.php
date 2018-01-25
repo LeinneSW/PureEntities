@@ -31,6 +31,11 @@ abstract class FlyingAnimal extends FlyingEntity implements Animal{
     }
 
     public function onUpdate(int $currentTick) : bool{
+        if($this->isFlaggedForDespawn()){
+            $this->close();
+            return \false;
+        }
+
         if(!$this->isAlive()){
             if(++$this->deadTicks >= 23){
                 $this->close();

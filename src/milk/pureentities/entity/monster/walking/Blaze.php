@@ -1,17 +1,14 @@
 <?php
 
-namespace milk\pureentities\entity\monster\flying;
+namespace milk\pureentities\entity\monster\walking;
 
 use milk\pureentities\entity\animal\Animal;
 use milk\pureentities\entity\EntityBase;
-use milk\pureentities\entity\monster\FlyingMonster;
+use milk\pureentities\entity\monster\WalkingMonster;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\ListTag;
-use pocketmine\block\Liquid;
-use pocketmine\block\Slab;
-use pocketmine\block\Stair;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\ProjectileSource;
@@ -19,12 +16,11 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\item\Item;
 use pocketmine\level\sound\LaunchSound;
-use pocketmine\math\Math;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-class Blaze extends FlyingMonster implements ProjectileSource{
+class Blaze extends WalkingMonster implements ProjectileSource{
     const NETWORK_ID = 43;
 
     public $width = 0.72;
@@ -89,34 +85,8 @@ class Blaze extends FlyingMonster implements ProjectileSource{
         }
     }
 
-    /**
-     * @param int $dx
-     * @param int $dz
-     *
-     * @return bool
-     */
-    protected function checkJump($dx, $dz){
-        if($this->motionY < 0){
-            return \false;
-        }
+    public function fall(float $fallDistance){
 
-        if($this->motionY === $this->gravity * 2){
-            return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) $this->y, Math::floorFloat($this->z))) instanceof Liquid;
-        }else if($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.8), Math::floorFloat($this->z))) instanceof Liquid){
-            $this->motionY = $this->gravity * 2;
-            return \true;
-        }
-
-        if($this->stayTime > 0){
-            return \false;
-        }
-
-        $block = $this->level->getBlock($this->add($dx, 0, $dz));
-        if($block instanceof Slab || $block instanceof Stair){
-            $this->motionY = 0.5;
-            return \true;
-        }
-        return \false;
     }
 
     public function updateMove($tickDiff){
@@ -125,20 +95,38 @@ class Blaze extends FlyingMonster implements ProjectileSource{
         }
 
         if($this->attackTime > 0){
-            $this->move($this->motionX * $tickDiff, $this->motionY * $tickDiff, $this->motionZ * $tickDiff);
+            $this->move($this->motionX * $tickDiff, $this->motionY, $this->motionZ * $tickDiff);
+            $this->motionY -= 0.2 * $tickDiff;
             $this->updateMovement();
             return null;
         }
 
+        if($this->followTarget !== \null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+            $x = $this->followTarget->x - $this->x;
+            $y = $this->followTarget->y - $this->y;
+            $z = $this->followTarget->z - $this->z;
+
+            $diff = abs($x) + abs($z);
+            if($x ** 2 + $z ** 2 < 0.7){
+                $this->motionX = 0;
+                $this->motionZ = 0;
+            }else{
+                $this->motionX = $this->getSpeed() * 0.15 * ($x / $diff);
+                $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
+            }
+            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
+            $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
+        }
+
         $before = $this->target;
         $this->checkTarget();
-        if($this->target instanceof Player or $before !== $this->target){
+        if($this->target instanceof Creature or $before !== $this->target){
             $x = $this->target->x - $this->x;
             $y = $this->target->y - $this->y;
             $z = $this->target->z - $this->z;
 
             $diff = abs($x) + abs($z);
-            if($x ** 2 + $z ** 2 < 0.5){
+            if($x ** 2 + $z ** 2 < 0.7){
                 $this->motionX = 0;
                 $this->motionZ = 0;
             }else{
@@ -156,13 +144,13 @@ class Blaze extends FlyingMonster implements ProjectileSource{
                     $this->motionZ = $this->getSpeed() * 0.15 * ($z / $diff);
                 }
             }
-            $this->yaw = rad2deg(-atan2($x / $diff, $z / $diff));
+            $this->yaw = -atan2($x / $diff, $z / $diff) * 180 / M_PI;
             $this->pitch = $y === 0 ? 0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)));
         }
 
         $dx = $this->motionX * $tickDiff;
         $dz = $this->motionZ * $tickDiff;
-        $isJump = $this->checkJump($dx, $dz);
+        $isJump = $this->checkJump($tickDiff, $dx, $dz);
         if($this->stayTime > 0){
             $this->stayTime -= $tickDiff;
             $this->move(0, $this->motionY * $tickDiff, 0);
@@ -179,10 +167,8 @@ class Blaze extends FlyingMonster implements ProjectileSource{
         if(!$isJump){
             if($this->onGround){
                 $this->motionY = 0;
-            }elseif($this->motionY > -$this->gravity * 4){
-                $this->motionY = -$this->gravity * 4;
             }else{
-                $this->motionY -= $this->gravity;
+                $this->motionY = -$this->gravity;
             }
         }
         $this->updateMovement();
