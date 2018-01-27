@@ -12,7 +12,7 @@ use pocketmine\item\Item;
 class Zombie extends WalkingMonster implements Ageable{
     const NETWORK_ID = 32;
 
-    public $width = 0.72;
+    public $width = 0.5;
     public $height = 1.8;
     public $eyeHeight = 1.62;
 

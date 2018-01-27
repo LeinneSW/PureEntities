@@ -22,8 +22,9 @@ use pocketmine\Player;
 class Skeleton extends WalkingMonster implements ProjectileSource{
     const NETWORK_ID = 34;
 
-    public $width = 0.65;
+    public $width = 0.45;
     public $height = 1.8;
+    public $eyeHeight = 1.62;
 
     public function getName() : string{
         return 'Skeleton';
