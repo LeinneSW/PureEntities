@@ -5,16 +5,17 @@ Development: **[Leinne](https://github.com/LeinneSW)** (before milk0417)
 PureEntities is a Plug-in that makes implement the entity.  
 This Plug-in provides a simple Entity AI.
 
-## Start developing again!
+## Notice
+
+### Start developing again!
 I decided to **start development again**.  
 I want lots of **issues** and **interests**.
 
-## Notice
-### Supported Server software
-[PocketMine-MP](https://pmmp.io/)
-
 ### Welcome Github issue!
 This plug-in is in development. Therefore, It is possible to function abnormally.
+
+### Supported Server software
+[PocketMine-MP](https://pmmp.io/)
 
 ## Method list
   * EntityBase

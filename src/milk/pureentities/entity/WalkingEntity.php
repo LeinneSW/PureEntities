@@ -5,8 +5,6 @@ namespace milk\pureentities\entity;
 use milk\pureentities\entity\animal\Animal;
 use milk\pureentities\entity\monster\walking\PigZombie;
 use pocketmine\block\Block;
-use pocketmine\block\Fence;
-use pocketmine\block\FenceGate;
 use pocketmine\block\Liquid;
 use pocketmine\math\Math;
 use pocketmine\math\Vector2;
@@ -85,16 +83,15 @@ abstract class WalkingEntity extends EntityBase{
         $zWidth = $dz > 0 ? $this->width / 2 : -($this->width / 2);
         $block = $this->getLevel()->getBlock(new Vector3(Math::ceilFloat($this->x + $xWidth + $dx * 2), $this->y, Math::ceilFloat($this->z + $zWidth + $dz * 2)));
         if(
-            $block->getId() !== Block::AIR && !$block->canPassThrough() && (($aabb = $block->getBoundingBox())->maxY - $aabb->minY) <= 1
-            && $block->getSide(Block::SIDE_UP)->canPassThrough()
-            && $block->getSide(Block::SIDE_UP, 2)->canPassThrough()
+            $block->getId() !== Block::AIR && ($aabb = $block->getBoundingBox()) !== \null
+            && $aabb->maxY - $aabb->minY <= 1
+            && $block->getSide(Block::SIDE_UP)->getBoundingBox() === \null
+            && $block->getSide(Block::SIDE_UP, 2)->getBoundingBox() === \null
         ){
-            if($block instanceof Fence || $block instanceof FenceGate){
-                $this->motionY = $this->gravity* $tickDiff;
-            }else if($this->motionY <= $this->gravity * 4 * $tickDiff){
+            if($this->motionY < $this->gravity * 4 * $tickDiff){
                 $this->motionY = $this->gravity * 4 * $tickDiff;
             }else{
-                $this->motionY += $this->gravity * 0.25 * $tickDiff;
+                $this->motionY += $this->gravity * $tickDiff;
             }
             return \true;
         }
