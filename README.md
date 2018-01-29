@@ -7,6 +7,8 @@ This Plug-in provides a simple Entity AI.
 
 ## Notice
 
+[![](https://poggit.pmmp.io/shield.state/PureEntities)](https://poggit.pmmp.io/p/PureEntities)
+
 ### Start developing again!
 I decided to **start development again**.  
 I want lots of **issues** and **interests**.
