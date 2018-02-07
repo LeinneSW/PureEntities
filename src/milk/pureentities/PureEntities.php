@@ -2,6 +2,12 @@
 
 namespace milk\pureentities;
 
+use milk\pureentities\entity\animal\walking\Chicken;
+use milk\pureentities\entity\animal\walking\Cow;
+use milk\pureentities\entity\animal\walking\Mooshroom;
+use milk\pureentities\entity\animal\walking\Pig;
+use milk\pureentities\entity\animal\walking\Rabbit;
+use milk\pureentities\entity\animal\walking\Sheep;
 use milk\pureentities\entity\monster\walking\Blaze;
 use milk\pureentities\entity\monster\walking\IronGolem;
 use milk\pureentities\entity\monster\walking\Skeleton;
@@ -27,21 +33,24 @@ use pocketmine\utils\TextFormat;
 class PureEntities extends PluginBase implements Listener{
 
     public function onLoad(){
+        //Register Animal
+        Entity::registerEntity(Chicken::class, \false, ['minecraft:chicken']);
+        Entity::registerEntity(Cow::class, \false, ['minecraft:cow']);
+        Entity::registerEntity(Mooshroom::class, \false, ['minecraft:mooshroom']);
+        Entity::registerEntity(Pig::class, \false, ['minecraft:pig']);
+        Entity::registerEntity(Rabbit::class, \false, ['minecraft:rabbit']);
+        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);
+
+        //Register Mob
         Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
         //Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
-        //Entity::registerEntity(Chicken::class, \false, ['minecraft:chicken']);
-        //Entity::registerEntity(Cow::class, \false, ['minecraft:cow']);
         //Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
         //Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
         //Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
         Entity::registerEntity(IronGolem::class, \false, ['minecraft:irongolem']);
         //Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
-        //Entity::registerEntity(Mooshroom::class, \false, ['minecraft:mooshroom']);
         //Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
-        //Entity::registerEntity(Pig::class, \false, ['minecraft:pig']);
         //Entity::registerEntity(PigZombie::class, \false, ['minecraft:pigzombie']);
-        //Entity::registerEntity(Rabbit::class, \false, ['minecraft:rabbit']);
-        //Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);
         //Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
         Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
         //Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
@@ -50,6 +59,8 @@ class PureEntities extends PluginBase implements Listener{
         //Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
         Entity::registerEntity(Zombie::class, \false, ['minecraft:zombie']);
         //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombievillager']);
+
+        //Register Projectile
         Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
         Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
 
