@@ -99,7 +99,7 @@ abstract class EntityBase extends Creature{
         $this->namedtag->WallCheck = new ByteTag('WallCheck', $this->isWallCheck());
     }
 
-    public function updateMovement(){
+    public function updateMovement(bool $teleport = false){
         if($this->lastX !== $this->x){
             $this->lastX = $this->x;
         }
