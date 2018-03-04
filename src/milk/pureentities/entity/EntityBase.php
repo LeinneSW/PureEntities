@@ -50,15 +50,15 @@ abstract class EntityBase extends Creature{
     }
 
     public function setMovement($value){
-        $this->movement = $value;
+        $this->movement = (bool) $value;
     }
 
-    public function setFriendly($bool){
-        $this->friendly = $bool;
+    public function setFriendly($value){
+        $this->friendly = (bool) $value;
     }
 
     public function setWallCheck($value){
-        $this->wallcheck = $value;
+        $this->wallcheck = (bool) $value;
     }
 
     public function getSpeed(){
@@ -80,23 +80,23 @@ abstract class EntityBase extends Creature{
     public function initEntity(){
         parent::initEntity();
 
-        if(isset($this->namedtag->Movement)){
-            $this->setMovement($this->namedtag['Movement']);
+        if($this->namedtag->hasTag('Movement', ByteTag::class)){
+            $this->setMovement($this->namedtag->getByte('Movement'));
         }
-        if(isset($this->namedtag->Friendly)){
-            $this->setFriendly($this->namedtag['Friendly']);
+        if($this->namedtag->hasTag('Friendly', ByteTag::class)){
+            $this->setFriendly($this->namedtag->getByte('Friendly'));
         }
-        if(isset($this->namedtag->WallCheck)){
-            $this->setWallCheck($this->namedtag['WallCheck']);
+        if($this->namedtag->hasTag('WallCheck', ByteTag::class)){
+            $this->setWallCheck($this->namedtag->getByte('WallCheck'));
         }
         $this->setImmobile(\true);
     }
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->Movement = new ByteTag('Movement', $this->isMovement());
-        $this->namedtag->Friendly = new ByteTag('Friendly', $this->isFriendly());
-        $this->namedtag->WallCheck = new ByteTag('WallCheck', $this->isWallCheck());
+        $this->namedtag->setByte('Movement', $this->isMovement() ? 1 : 0);
+        $this->namedtag->setByte('Friendly', $this->isFriendly() ? 1 : 0);
+        $this->namedtag->setByte('WallCheck', $this->isWallCheck() ? 1 : 0);
     }
 
     public function updateMovement(){

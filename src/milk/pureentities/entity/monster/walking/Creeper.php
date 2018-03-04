@@ -12,6 +12,7 @@ use pocketmine\level\Explosion;
 use pocketmine\math\Math;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\item\Item;
@@ -29,14 +30,14 @@ class Creeper extends WalkingMonster implements Explosive{
         parent::initEntity();
 
         $this->speed = 0.9;
-        if(isset($this->namedtag->IsPowered)){
-            $this->setGenericFlag(self::DATA_POWERED, $this->namedtag->IsPowered ? 1 : 0);
-        }elseif(isset($this->namedtag->powered)){
-            $this->setGenericFlag(self::DATA_POWERED, $this->namedtag->powered ? 1 : 0);
+        if($this->namedtag->hasTag('IsPowered', ByteTag::class)){
+            $this->setGenericFlag(self::DATA_POWERED, $this->namedtag->getByte('IsPowered'));
+        }elseif($this->namedtag->hasTag('powered', ByteTag::class)){
+            $this->setGenericFlag(self::DATA_POWERED, $this->namedtag->getByte('powered'));
         }
 
-        if(isset($this->namedtag->BombTime)){
-            $this->bombTime = (int) $this->namedtag['BombTime'];
+        if($this->namedtag->hasTag('BombTime', IntTag::class)){
+            $this->bombTime = $this->namedtag->getInt('BombTime');
         }
     }
 
@@ -45,13 +46,13 @@ class Creeper extends WalkingMonster implements Explosive{
     }
 
     public function setPowered($value = \true){
-        $this->namedtag->powered = $value;
+        $this->namedtag->setByte('powered', $value ? 1 : 0);
         $this->setGenericFlag(self::DATA_POWERED, $value ? 1 : 0);
     }
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->BombTime = new IntTag('BombTime', $this->bombTime);
+        $this->namedtag->setInt('BombTime', $this->bombTime);
     }
 
     public function getName() : string{
