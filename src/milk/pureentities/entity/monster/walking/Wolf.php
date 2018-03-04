@@ -21,8 +21,8 @@ class Wolf extends WalkingMonster{
         parent::initEntity();
 
         $this->speed = 1.2;
-        if(isset($this->namedtag->Angry)){
-            $this->angry = (int) $this->namedtag['Angry'];
+        if($this->namedtag->hasTag('Angry', IntTag::class)){
+            $this->angry = $this->namedtag->getInt('Angry');
         }
 
         $this->setMaxHealth(8);
@@ -31,7 +31,7 @@ class Wolf extends WalkingMonster{
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->Angry = new IntTag('Angry', $this->angry);
+        $this->namedtag->setInt('Angry', $this->angry);
     }
 
     public function getName() : string{

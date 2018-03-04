@@ -27,8 +27,8 @@ class PigZombie extends WalkingMonster{
         parent::initEntity();
 
         $this->speed = 1.15;
-        if(isset($this->namedtag->Angry)){
-            $this->angry = (int) $this->namedtag['Angry'];
+        if($this->namedtag->hasTag('Angry', IntTag::class)){
+            $this->angry = $this->namedtag->getInt('Angry');
         }
 
         $this->setDamage([0, 5, 9, 13]);
@@ -40,7 +40,7 @@ class PigZombie extends WalkingMonster{
 
     public function saveNBT(){
         parent::saveNBT();
-        $this->namedtag->Angry = new IntTag('Angry', $this->angry);
+        $this->namedtag->setInt('Angry', $this->angry);
     }
 
     public function getName() : string{
