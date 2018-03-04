@@ -140,7 +140,8 @@ abstract class EntityBase extends Creature{
             //TODO
             //$this->motionY = $motion->y * 0.19;
         }else{
-            $this->motionY = 0.6;$this->motionX = $motion->x * 0.19;
+            $this->motionX = $motion->x * 0.19;
+            $this->motionY = 0.6;
             $this->motionZ = $motion->z * 0.19;
         }
     }
