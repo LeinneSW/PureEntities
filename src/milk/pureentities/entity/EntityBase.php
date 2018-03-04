@@ -33,7 +33,7 @@ abstract class EntityBase extends Creature{
     public abstract function targetOption(Creature $creature, $distance);
 
     public function getSaveId(){
-        $class = new \ReflectionClass(get_class($this));
+        $class = new \ReflectionClass(\get_class($this));
         return $class->getShortName();
     }
 
@@ -99,7 +99,7 @@ abstract class EntityBase extends Creature{
         $this->namedtag->setByte('WallCheck', $this->isWallCheck() ? 1 : 0);
     }
 
-    public function updateMovement(bool $teleport = false){
+    public function updateMovement(bool $teleport = \false){
         if($this->lastX !== $this->x){
             $this->lastX = $this->x;
         }
@@ -136,12 +136,12 @@ abstract class EntityBase extends Creature{
 
         $damager = $source->getDamager();
         $motion = (new Vector3($this->x - $damager->x, $this->y - $damager->y, $this->z - $damager->z))->normalize();
-        $this->motionX = $motion->x * 0.19;
-        $this->motionZ = $motion->z * 0.19;
         if($this instanceof FlyingEntity){
-            $this->motionY = $motion->y * 0.19;
+            //TODO
+            //$this->motionY = $motion->y * 0.19;
         }else{
-            $this->motionY = 0.6;
+            $this->motionY = 0.6;$this->motionX = $motion->x * 0.19;
+            $this->motionZ = $motion->z * 0.19;
         }
     }
 
