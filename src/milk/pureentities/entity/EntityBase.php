@@ -168,7 +168,7 @@ abstract class EntityBase extends Creature{
         return $hasUpdate;
     }
 
-    public function move(float $dx, float $dy, float $dz) : bool{
+    public function move(float $dx, float $dy, float $dz) : void{
         $movX = $dx;
         $movY = $dy;
         $movZ = $dz;
@@ -191,7 +191,7 @@ abstract class EntityBase extends Creature{
         $this->checkBlockCollision();
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
-        return \true;
+        
     }
 
 }
