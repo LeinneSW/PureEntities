@@ -108,8 +108,8 @@ class Spawner extends Spawnable{
     }
 
     public function addAdditionalSpawnData(CompoundTag $tag) : void{
-        $tag->id = new StringTag('id', 'MobSpawner');
-        $tag->EntityId = new IntTag('EntityId', $this->entityId);
+        $tag->setString('id', 'MobSpawner');
+        $tag->setInt('EntityId', $this->entityId);
     }
 
     public function setSpawnEntityType(int $entityId){
