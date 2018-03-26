@@ -134,16 +134,12 @@ abstract class EntityBase extends Creature{
         $this->stayTime = 0;
         $this->moveTime = 0;
 
+        //TODO: FlyingEntity
         $damager = $source->getDamager();
         $motion = (new Vector3($this->x - $damager->x, $this->y - $damager->y, $this->z - $damager->z))->normalize();
-        if($this instanceof FlyingEntity){
-            //TODO
-            //$this->motionY = $motion->y * 0.19;
-        }else{
-            $this->motionX = $motion->x * 0.19;
-            $this->motionY = 0.6;
-            $this->motionZ = $motion->z * 0.19;
-        }
+        $this->motionX = $motion->x * 0.19;
+        $this->motionY = 0.6;
+        $this->motionZ = $motion->z * 0.19;
     }
 
     public function knockBack(Entity $attacker, float $damage, float $x, float $z, float $base = 0.4){
@@ -168,7 +164,7 @@ abstract class EntityBase extends Creature{
         return $hasUpdate;
     }
 
-    public function move(float $dx, float $dy, float $dz) : bool{
+    public function move(float $dx, float $dy, float $dz) : void{
         $movX = $dx;
         $movY = $dy;
         $movZ = $dz;
@@ -191,7 +187,6 @@ abstract class EntityBase extends Creature{
         $this->checkBlockCollision();
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
-        return \true;
     }
 
 }

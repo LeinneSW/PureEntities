@@ -114,7 +114,7 @@ abstract class FlyingEntity extends EntityBase{
 
     }
 
-    public function move(float $dx, float $dy, float $dz) : bool{
+    public function move(float $dx, float $dy, float $dz) : void{
         $movX = $dx;
         $movY = $dy;
         $movZ = $dz;
@@ -136,7 +136,6 @@ abstract class FlyingEntity extends EntityBase{
         $this->checkChunks();
         $this->checkBlockCollision();
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
-        return \true;
     }
 
 }
