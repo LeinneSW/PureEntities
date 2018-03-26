@@ -6,9 +6,7 @@ use pocketmine\entity\Entity;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Spawnable;
 
@@ -108,8 +106,8 @@ class Spawner extends Spawnable{
     }
 
     public function addAdditionalSpawnData(CompoundTag $tag) : void{
-        $tag->id = new StringTag('id', 'MobSpawner');
-        $tag->EntityId = new IntTag('EntityId', $this->entityId);
+        $tag->setString('id', 'MobSpawner');
+        $tag->setint('EntityId', $this->entityId);
     }
 
     public function setSpawnEntityType(int $entityId){
