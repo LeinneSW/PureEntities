@@ -89,7 +89,7 @@ class PigZombie extends Monster{
         return $this->angry;
     }
 
-    public function setAngry($angry = \true) : void{
+    public function setAngry(bool $angry = \true) : void{
         $this->angry = $angry;
     }
 
