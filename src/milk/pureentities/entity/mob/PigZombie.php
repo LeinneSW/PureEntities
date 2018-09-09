@@ -35,7 +35,7 @@ class PigZombie extends Monster{
     }
 
     public function isHostility(Creature $target, float $distance) : bool{
-        return parent::isHostility($target, $distance) && $this->isAngry();
+        return $this->isAngry() && parent::isHostility($target, $distance);
     }
 
     public function attack(EntityDamageEvent $source) : void{
@@ -75,8 +75,8 @@ class PigZombie extends Monster{
         $calZ = $z / $diff;
 
         if(!$this->interactTarget() && $this->onGround){
-            $this->motion->x += $this->getSpeed() * 0.07 * $calX;
-            $this->motion->z += $this->getSpeed() * 0.07 * $calZ;
+            $this->motion->x += $this->getSpeed() * 0.12 * $calX;
+            $this->motion->z += $this->getSpeed() * 0.12 * $calZ;
         }
 
         $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
@@ -98,6 +98,12 @@ class PigZombie extends Monster{
     }
 
     public function interactTarget() : bool{
+        if($this->getSpeed() < 2.5 && $this->isAngry() && $this->target instanceof Creature){
+            $this->setSpeed(2.4);
+        }elseif($this->getSpeed() === 2.5){
+            $this->setSpeed(0.9);
+        }
+
         if(
             !($this->target instanceof Creature)
             || \abs($this->x - $this->target->x) > 0.4
@@ -116,6 +122,13 @@ class PigZombie extends Monster{
             }
         }
         return \true;
+    }
+
+    public function saveNBT() : CompoundTag{
+        $nbt = parent::saveNBT();
+        $nbt->setByte("Angry", $this->angry ? 1 : 0);
+
+        return $nbt;
     }
 
 }

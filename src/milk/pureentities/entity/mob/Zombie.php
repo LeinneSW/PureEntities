@@ -53,8 +53,8 @@ class Zombie extends Monster{
         $calZ = $z / $diff;
 
         if(!$this->interactTarget() && $this->onGround){
-            $this->motion->x += $this->getSpeed() * 0.07 * $calX;
-            $this->motion->z += $this->getSpeed() * 0.07 * $calZ;
+            $this->motion->x += $this->getSpeed() * 0.12 * $calX;
+            $this->motion->z += $this->getSpeed() * 0.12 * $calZ;
         }
 
         $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
