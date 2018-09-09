@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace milk\pureentities\entity;
 
+use milk\pureentities\inventory\MobInventory;
 use pocketmine\entity\Creature;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -40,38 +41,6 @@ abstract class EntityBase extends Creature{
         parent::initEntity($nbt);
 
         $this->setImmobile();
-    }
-
-    public function entityBaseTick(int $tickDiff = 1) : bool{
-        if($this->closed){
-            return \false;
-        }
-
-        parent::entityBaseTick($tickDiff);
-
-        $target = $this->checkTarget();
-
-        $x = $target->x - $this->x;
-        $y = $target->y - $this->y;
-        $z = $target->z - $this->z;
-
-        $diff = \abs($x) + \abs($z);
-        if($diff === 0){
-            return \true;
-        }
-
-        $calX = $x / $diff;
-        $calZ = $z / $diff;
-
-        if(!$this->interactTarget() && $this->onGround){
-            $this->motion->x += $this->getSpeed() * 0.08 * $calX;
-            $this->motion->z += $this->getSpeed() * 0.08 * $calZ;
-        }
-
-        $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
-        $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
-
-        return \true;
     }
 
     public function updateMovement(bool $teleport = \false) : void{

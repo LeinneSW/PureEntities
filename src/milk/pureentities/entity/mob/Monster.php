@@ -5,16 +5,26 @@ declare(strict_types=1);
 namespace milk\pureentities\entity\mob;
 
 use milk\pureentities\entity\EntityBase;
+use milk\pureentities\inventory\MobInventory;
 use pocketmine\entity\Creature;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\Server;
 
 abstract class Monster extends EntityBase {
 
+    protected $inventory;
+
     protected $attackDelay = 0;
 
     private $minDamage = [0, 0, 0, 0];
     private $maxDamage = [0, 0, 0, 0];
+
+    protected function initEntity(CompoundTag $nbt) : void{
+        parent::initEntity($nbt);
+
+        $this->inventory = new MobInventory($this);
+    }
 
     public function isHostility(Creature $target, float $distance) : bool{
         return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 121;
