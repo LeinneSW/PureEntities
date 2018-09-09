@@ -1,12 +1,10 @@
-#name, main, version and api are required
 name: PureEntities
 main: milk\pureentities\PureEntities
-#remember version and api is string, don't write it like this: 1.0.0, or there will be an exception
-version: 1.0.0
-api: [3.0.0-ALPHA10, 3.0.0-ALPHA11]
+version: 2.0.0
+api: [4.0.0]
 
 load: STARTUP
-author: Leinne
+author: LeinneSW
 description: Implement all MCBE entities
 website: https://github.com/LeinneSW/PureEntities
 commands: []
