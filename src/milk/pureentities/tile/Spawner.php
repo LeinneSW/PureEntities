@@ -32,39 +32,28 @@ class Spawner extends Spawnable{
         $this->scheduleUpdate();
     }
 
-    protected function readSaveData(CompoundTag $nbt): void{
-        if($nbt->hasTag('EntityId', ShortTag::class)){
-            $this->entityId = $nbt['EntityId'];
-        }
+    protected function readSaveData(CompoundTag $nbt) : void{
+        $this->entityId = $nbt->getShort('EntityId', 0);
+        $this->spawnRange = $nbt->getShort('SpawnRange', 8);
+        $this->minSpawnDelay = $nbt->getShort('MinSpawnDelay', 200);
+        $this->maxSpawnDelay = $nbt->getShort('MaxSpawnDelay', 8000);
+        $this->maxNearbyEntities = $nbt->getShort('MaxNearbyEntities', 25);
+        $this->requiredPlayerRange = $nbt->getShort('RequiredPlayerRange', 20);
+    }
 
-        if(!$nbt->hasTag('SpawnRange', ShortTag::class)){
-            $nbt->setShort('SpawnRange', 8);
+    public function hasValidEntityId() : bool{
+        if($this->entityId === 0){
+            return \false;
         }
-
-        if(!$nbt->hasTag('MinSpawnDelay', ShortTag::class)){
-            $nbt->setShort('MinSpawnDelay', 200);
-        }
-
-        if(!$nbt->hasTag('MaxSpawnDelay', ShortTag::class)){
-            $nbt->setShort('MaxSpawnDelay', 8000);
-        }
-
-        if(!$nbt->hasTag('MaxNearbyEntities', ShortTag::class)){
-            $nbt->setShort('MaxNearbyEntities', 25);
-        }
-
-        if(!$nbt->hasTag('RequiredPlayerRange', ShortTag::class)){
-            $nbt->setShort('RequiredPlayerRange', 20);
-        }
-
-        $this->spawnRange = $nbt->getShort('SpawnRange');
-        $this->minSpawnDelay = $nbt->getShort('MinSpawnDelay');
-        $this->maxSpawnDelay = $nbt->getShort('MaxSpawnDelay');
-        $this->maxNearbyEntities = $nbt->getShort('MaxNearbyEntities');
-        $this->requiredPlayerRange = $nbt->getShort('RequiredPlayerRange');
+        return \true;
     }
 
     public function onUpdate() : bool{
+        if(!$this->hasValidEntityId()){
+            $this->close();
+            return \false;
+        }
+
         if($this->closed){
             return \false;
         }
@@ -105,12 +94,12 @@ class Spawner extends Spawnable{
         $tag->setTag(new IntTag('EntityId', $this->entityId));
     }
 
-    public function setSpawnEntityType(int $entityId){
+    public function setSpawnEntityType(int $entityId) : void{
         $this->entityId = $entityId;
         $this->onChanged();
     }
 
-    public function setMinSpawnDelay(int $minDelay){
+    public function setMinSpawnDelay(int $minDelay) : void{
         if($minDelay > $this->maxSpawnDelay){
             return;
         }
@@ -118,7 +107,7 @@ class Spawner extends Spawnable{
         $this->minSpawnDelay = $minDelay;
     }
 
-    public function setMaxSpawnDelay(int $maxDelay){
+    public function setMaxSpawnDelay(int $maxDelay) : void{
         if($this->minSpawnDelay > $maxDelay){
             return;
         }
@@ -126,7 +115,7 @@ class Spawner extends Spawnable{
         $this->maxSpawnDelay = $maxDelay;
     }
 
-    public function setSpawnDelay(int $minDelay, int $maxDelay){
+    public function setSpawnDelay(int $minDelay, int $maxDelay) : void{
         if($minDelay > $maxDelay){
             return;
         }
@@ -135,15 +124,15 @@ class Spawner extends Spawnable{
         $this->maxSpawnDelay = $maxDelay;
     }
 
-    public function setRequiredPlayerRange(int $range){
+    public function setRequiredPlayerRange(int $range) : void{
         $this->requiredPlayerRange = $range;
     }
 
-    public function setMaxNearbyEntities(int $count){
+    public function setMaxNearbyEntities(int $count) : void{
         $this->maxNearbyEntities = $count;
     }
 
-    protected function writeSaveData(CompoundTag $nbt): void{
+    protected function writeSaveData(CompoundTag $nbt) : void{
         $nbt->setShort('EntityId', $this->entityId);
         $nbt->setShort('SpawnRange', $this->spawnRange);
         $nbt->setShort('MinSpawnDelay', $this->minSpawnDelay);

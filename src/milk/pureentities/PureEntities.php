@@ -80,7 +80,10 @@ class PureEntities extends PluginBase implements Listener{
                 $tile->setSpawnEntityType($item->getDamage());
             }else{
                 if($tile !== \null){
-                    /** 어떤 멍청이가 타일을 안지우고 블럭만 교체해놨냐? */
+                    /**
+                     * 타일은 존재하나 스포너가 아닌 경우
+                     * 이게 무슨 바보같은 상황이야?
+                     */
                     $tile->close();
                 }
 
