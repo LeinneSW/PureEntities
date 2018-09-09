@@ -2,6 +2,7 @@
 
 namespace milk\pureentities;
 
+use milk\pureentities\entity\mob\PigZombie;
 use milk\pureentities\entity\mob\Zombie;
 use milk\pureentities\tile\Spawner;
 use pocketmine\entity\Entity;
@@ -28,21 +29,21 @@ class PureEntities extends PluginBase implements Listener{
         Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);*/
 
         //Register Mob
-        /*Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
-        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
-        Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
-        Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
-        Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
-        Entity::registerEntity(IronGolem::class, \false, ['minecraft:irongolem']);
-        Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
-        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
-        Entity::registerEntity(PigZombie::class, \false, ['minecraft:pigzombie']);
-        Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
-        Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
-        Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
-        Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
-        Entity::registerEntity(Spider::class, \false, ['minecraft:spider']);
-        Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);*/
+//        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
+//        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
+//        Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
+//        Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
+//        Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
+//        Entity::registerEntity(IronGolem::class, \false, ['minecraft:irongolem']);
+//        Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
+//        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
+        Entity::registerEntity(PigZombie::class, \false, ['PigZombie', 'minecraft:pigzombie']);
+//        Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
+//        Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
+//        Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
+//        Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
+//        Entity::registerEntity(Spider::class, \false, ['minecraft:spider']);
+//        Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
         Entity::registerEntity(Zombie::class, \false, ['Zombie', 'minecraft:zombie']);
         //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombievillager']);
 

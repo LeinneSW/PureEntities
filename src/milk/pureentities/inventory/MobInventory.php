@@ -32,6 +32,10 @@ class MobInventory extends BaseInventory{
         return 1;
     }
 
+    public function setSize(int $size){
+        throw new \BadMethodCallException("MobInventory can only carry one item at a time");
+    }
+
     /**
      * Returns the currently-held item.
      *
@@ -58,10 +62,17 @@ class MobInventory extends BaseInventory{
     }
 
     /**
+     * @param Player|Player[] $target
+     */
+    public function sendContents($target) : void{
+        $this->sendHeldItem($target);
+    }
+
+    /**
      * Sends the currently-held item to specified targets.
      * @param Player|Player[] $target
      */
-    public function sendHeldItem($target){
+    public function sendHeldItem($target) : void{
         $item = $this->getItemInHand();
 
         $pk = new MobEquipmentPacket();
