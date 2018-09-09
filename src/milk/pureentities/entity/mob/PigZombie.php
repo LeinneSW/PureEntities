@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace milk\pureentities\entity\mob;
 
 use pocketmine\entity\Creature;
+use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 
 class PigZombie extends Monster{
@@ -19,16 +21,29 @@ class PigZombie extends Monster{
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
-    private $angry = 0;
+    /** @var bool */
+    private $angry = \false;
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
         $this->setSpeed(0.9);
-        if($nbt->hasTag('Angry')){
-            $this->angry = $nbt->getInt('Angry');
+        if($nbt->hasTag('Angry', ByteTag::class)){
+            $this->angry = $nbt->getByte('Angry') !== 0 ? \true : \false;
         }
         $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
+    }
+
+    public function isHostility(Creature $target, float $distance) : bool{
+        return parent::isHostility($target, $distance) && $this->isAngry();
+    }
+
+    public function attack(EntityDamageEvent $source) : void{
+        parent::attack($source);
+
+        if(!$source->isCancelled() && $source instanceof EntityDamageByEntityEvent && $source->getDamager() instanceof Human){
+            $this->setAngry();
+        }
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
@@ -60,14 +75,22 @@ class PigZombie extends Monster{
         $calZ = $z / $diff;
 
         if(!$this->interactTarget() && $this->onGround){
-            $this->motion->x += $this->getSpeed() * 0.08 * $calX;
-            $this->motion->z += $this->getSpeed() * 0.08 * $calZ;
+            $this->motion->x += $this->getSpeed() * 0.07 * $calX;
+            $this->motion->z += $this->getSpeed() * 0.07 * $calZ;
         }
 
         $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
         $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
 
         return \true;
+    }
+
+    public function isAngry() : bool{
+        return $this->angry;
+    }
+
+    public function setAngry($angry = \true) : void{
+        $this->angry = $angry;
     }
 
     public function getName() : string{
