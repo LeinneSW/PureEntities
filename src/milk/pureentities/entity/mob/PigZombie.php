@@ -7,21 +7,29 @@ namespace milk\pureentities\entity\mob;
 use pocketmine\entity\Creature;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 
-class Zombie extends Monster{
+class PigZombie extends Monster{
 
-    const NETWORK_ID = 32;
+    const NETWORK_ID = 36;
 
     public $width = 0.5;
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
+    private $angry = 0;
+
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
         $this->setSpeed(0.9);
-        $this->setDamages([0, 3, 4, 6]);
+        if($nbt->hasTag('Angry')){
+            $this->angry = $nbt->getInt('Angry');
+        }
+        $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
+        $this->armorInventory->setHelmet(ItemFactory::get(Item::GOLD_HELMET));
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
@@ -64,7 +72,7 @@ class Zombie extends Monster{
     }
 
     public function getName() : string{
-        return 'Zombie';
+        return 'PigZombie';
     }
 
     public function interactTarget() : bool{

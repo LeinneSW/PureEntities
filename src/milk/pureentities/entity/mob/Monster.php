@@ -7,12 +7,14 @@ namespace milk\pureentities\entity\mob;
 use milk\pureentities\entity\EntityBase;
 use milk\pureentities\inventory\MobInventory;
 use pocketmine\entity\Creature;
+use pocketmine\item\TieredTool;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\Server;
 
 abstract class Monster extends EntityBase {
 
+    /** @var MobInventory */
     protected $inventory;
 
     protected $attackDelay = 0;
@@ -35,7 +37,7 @@ abstract class Monster extends EntityBase {
     }
 
     public function getResultDamage(?int $difficulty = \null) : int{
-        return \mt_rand(...$this->getDamages($difficulty));
+        return \mt_rand(...$this->getDamages($difficulty)) + (($item = $this->inventory->getItemInHand()) instanceof TieredTool ? $item->getAttackPoints() : 0);
     }
 
     public function getMinDamage(?int $difficulty = \null) : int{
@@ -100,6 +102,16 @@ abstract class Monster extends EntityBase {
             }
             return;
         }
+    }
+
+    protected function sendSpawnPacket(Player $player) : void{
+        parent::sendSpawnPacket($player);
+
+        $this->inventory->sendContents($player);
+    }
+
+    public function getInventory() : MobInventory{
+        return $this->inventory;
     }
 
 }
