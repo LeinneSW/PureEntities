@@ -1,192 +1,215 @@
 <?php
 
+declare(strict_types=1);
+
 namespace milk\pureentities\entity;
 
 use pocketmine\entity\Creature;
-use pocketmine\entity\Entity;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\timings\Timings;
 
 abstract class EntityBase extends Creature{
 
-    protected $speed = 1;
+    private $speed = 1.0;
 
-    protected $stayTime = 0;
     protected $moveTime = 0;
 
-    /** @var Vector3|Entity */
+    /** @var Vector3 */
     protected $target = \null;
-
-    /** @var Vector3|Entity */
+    /** @var Creature */
     protected $followTarget = \null;
 
-    private $movement = \true;
-    private $friendly = \false;
-    private $wallcheck = \true;
+    /**
+     * $this 와 $target의 관계가 적대관계인지 확인
+     *
+     * @param Creature $target
+     * @param float $distanceSquare
+     *
+     * @return bool
+     */
+    public abstract function isHostility(Creature $target, float $distanceSquare) : bool;
 
-    public function __destruct(){}
+    /**
+     * 타겟과의 상호작용
+     * ex) Mob & Human, Chicken & Human
+     */
+    public abstract function interactTarget() : bool;
 
-    public abstract function updateMove($tickDiff);
+    protected function initEntity(CompoundTag $nbt) : void{
+        parent::initEntity($nbt);
 
-    public abstract function targetOption(Creature $creature, $distance);
-
-    public function getSaveId(){
-        $class = new \ReflectionClass(\get_class($this));
-        return $class->getShortName();
-    }
-
-    public function isMovement(){
-        return $this->movement;
-    }
-
-    public function isFriendly(){
-        return $this->friendly;
-    }
-
-    public function isWallCheck(){
-        return $this->wallcheck;
-    }
-
-    public function setMovement($value){
-        $this->movement = (bool) $value;
-    }
-
-    public function setFriendly($value){
-        $this->friendly = (bool) $value;
-    }
-
-    public function setWallCheck($value){
-        $this->wallcheck = (bool) $value;
-    }
-
-    public function getSpeed(){
-        return $this->speed;
-    }
-
-    public function getTarget(){
-        return $this->followTarget != null ? $this->followTarget : ($this->target instanceof Entity ? $this->target : null);
-    }
-
-    public function setTarget(Entity $target){
-        $this->followTarget = $target;
-        
-        $this->moveTime = 0;
-        $this->stayTime = 0;
-        $this->target = \null;
-    }
-    
-    public function initEntity(){
-        parent::initEntity();
-
-        if($this->namedtag->hasTag('Movement', ByteTag::class)){
-            $this->setMovement($this->namedtag->getByte('Movement'));
-        }
-        if($this->namedtag->hasTag('Friendly', ByteTag::class)){
-            $this->setFriendly($this->namedtag->getByte('Friendly'));
-        }
-        if($this->namedtag->hasTag('WallCheck', ByteTag::class)){
-            $this->setWallCheck($this->namedtag->getByte('WallCheck'));
-        }
-        $this->setImmobile(\true);
-    }
-
-    public function saveNBT(){
-        parent::saveNBT();
-        $this->namedtag->setByte('Movement', $this->isMovement() ? 1 : 0);
-        $this->namedtag->setByte('Friendly', $this->isFriendly() ? 1 : 0);
-        $this->namedtag->setByte('WallCheck', $this->isWallCheck() ? 1 : 0);
-    }
-
-    public function updateMovement(bool $teleport = \false){
-        if($this->lastX !== $this->x){
-            $this->lastX = $this->x;
-        }
-
-        if($this->lastY !== $this->y){
-            $this->lastY = $this->y;
-        }
-
-        if($this->lastZ !== $this->z){
-            $this->lastZ = $this->z;
-        }
-
-        if($this->lastYaw !== $this->yaw){
-            $this->lastYaw = $this->yaw;
-        }
-
-        if($this->lastPitch !== $this->pitch){
-            $this->lastPitch = $this->pitch;
-        }
-        $this->broadcastMovement();
-    }
-
-    public function attack(EntityDamageEvent $source){
-        if($this->attackTime > 0) return;
-
-        parent::attack($source);
-
-        if($source->isCancelled() || !($source instanceof EntityDamageByEntityEvent)){
-            return;
-        }
-
-        $this->stayTime = 0;
-        $this->moveTime = 0;
-
-        //TODO: FlyingEntity
-        $damager = $source->getDamager();
-        $motion = (new Vector3($this->x - $damager->x, $this->y - $damager->y, $this->z - $damager->z))->normalize();
-        $this->motionX = $motion->x * 0.19;
-        $this->motionY = 0.6;
-        $this->motionZ = $motion->z * 0.19;
-    }
-
-    public function knockBack(Entity $attacker, float $damage, float $x, float $z, float $base = 0.4){
-
+        $this->setImmobile();
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
-        $hasUpdate = Entity::entityBaseTick($tickDiff);
-
-        if($this->isInsideOfSolid()){
-            $hasUpdate = \true;
-            $ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_SUFFOCATION, 1);
-            $this->attack($ev);
+        if($this->closed){
+            return \false;
         }
 
-        if($this->moveTime > 0){
-            $this->moveTime -= $tickDiff;
+        parent::entityBaseTick($tickDiff);
+
+        $target = $this->checkTarget();
+
+        $x = $target->x - $this->x;
+        $y = $target->y - $this->y;
+        $z = $target->z - $this->z;
+
+        $diff = \abs($x) + \abs($z);
+        if($diff === 0){
+            return \true;
         }
-        if($this->attackTime > 0){
-            $this->attackTime -= $tickDiff;
+
+        $calX = $x / $diff;
+        $calZ = $z / $diff;
+
+        if(!$this->interactTarget() && $this->onGround){
+            $this->motion->x += $this->getSpeed() * 0.08 * $calX;
+            $this->motion->z += $this->getSpeed() * 0.08 * $calZ;
         }
-        return $hasUpdate;
+
+        $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
+        $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
+
+        return \true;
+    }
+
+    public function updateMovement(bool $teleport = \false) : void{
+        if(
+            $this->lastLocation->x !== $this->x
+            || $this->lastLocation->y !== $this->y
+            || $this->lastLocation->z !== $this->z
+            || $this->lastLocation->yaw !== $this->yaw
+            || $this->lastLocation->pitch !== $this->pitch
+        ){
+            $this->lastLocation = $this->asLocation();
+        }
+
+        if(
+            $this->lastMotion->x !== $this->motion->x
+            || $this->lastMotion->y !== $this->motion->y
+            || $this->lastMotion->z !== $this->motion->z
+        ){
+            $this->lastMotion = clone $this->motion;
+        }
+        $this->broadcastMovement($teleport);
+    }
+
+    public function getSpeed() : float{
+        return $this->speed;
+    }
+
+    public function setSpeed(float $speed) : void{
+        $this->speed = $speed;
+    }
+
+    public function getTarget() : ?Vector3{
+        return $this->target;
+    }
+
+    public function getFixedTarget() : ?Creature{
+        return $this->followTarget;
+    }
+
+    public function setTarget(?Creature $target = \null) : void{
+        $this->followTarget = $target;
+    }
+
+    public function checkTarget() : Vector3{
+        if($this->followTarget !== null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+            return $this->followTarget;
+        }
+
+        if(!($this->target instanceof Creature) or !($option = $this->isHostility($this->target, $this->distanceSquared($this->target)))){
+            if(isset($option)) $this->target = \null;
+
+            $near = \PHP_INT_MAX;
+            foreach ($this->getLevel()->getEntities() as $target){
+                $distance = $this->distanceSquared($target);
+                if(
+                    $target === $this
+                    || $distance > $near
+                    || !($target instanceof Creature)
+                    || !$this->isHostility($target, $distance)
+                ){
+                    continue;
+                }
+
+                $near = $distance;
+                $this->target = $target;
+            }
+        }
+
+        if($this->target instanceof Creature && $this->target->isAlive()){
+            return $this->target;
+        }
+
+        if(--$this->moveTime <= 0 or $this->target === \null){
+            $x = \mt_rand(20, 100);
+            $z = \mt_rand(20, 100);
+            $this->moveTime = \mt_rand(300, 1200);
+            $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
+        }
+
+        return $this->target;
     }
 
     public function move(float $dx, float $dy, float $dz) : void{
+        $this->blocksAround = \null;
+
+        Timings::$entityMoveTimer->startTiming();
+
         $movX = $dx;
         $movY = $dy;
         $movZ = $dz;
 
-        $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
-        foreach($list as $bb){
-            if($this->isWallCheck()){
+        if($this->keepMovement){
+            $this->boundingBox->offset($dx, $dy, $dz);
+        }else{
+            \assert(\abs($dx) <= 20 and \abs($dy) <= 20 and \abs($dz) <= 20, "Movement distance is excessive: dx=$dx, dy=$dy, dz=$dz");
+
+            $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz), \false);
+
+            foreach($list as $bb){
+                $dy = $bb->calculateYOffset($this->boundingBox, $dy);
+            }
+            $this->boundingBox->offset(0, $dy, 0);
+
+            foreach($list as $bb){
                 $dx = $bb->calculateXOffset($this->boundingBox, $dx);
+            }
+
+            $this->boundingBox->offset($dx, 0, 0);
+
+            foreach($list as $bb){
                 $dz = $bb->calculateZOffset($this->boundingBox, $dz);
             }
-            $dy = $bb->calculateYOffset($this->boundingBox, $dy);
-        }
-        $this->boundingBox->offset($dx, $dy, $dz);
 
-        $this->x += $dx;
-        $this->y += $dy;
-        $this->z += $dz;
+            $this->boundingBox->offset(0, 0, $dz);
+        }
+
+        $this->x = ($this->boundingBox->minX + $this->boundingBox->maxX) / 2;
+        $this->y = $this->boundingBox->minY - $this->ySize;
+        $this->z = ($this->boundingBox->minZ + $this->boundingBox->maxZ) / 2;
 
         $this->checkChunks();
         $this->checkBlockCollision();
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
+
+        if($movX != $dx){
+            $this->motion->x = 0;
+        }
+
+        if($movY != $dy){
+            $this->motion->y = 0;
+        }
+
+        if($movZ != $dz){
+            $this->motion->z = 0;
+        }
+
+        Timings::$entityMoveTimer->stopTiming();
     }
 
 }

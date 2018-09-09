@@ -1,12 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace milk\pureentities\tile;
 
 use pocketmine\entity\Entity;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Spawnable;
 
@@ -25,37 +29,39 @@ class Spawner extends Spawnable{
     public function __construct(Level $level, CompoundTag $nbt){
         parent::__construct($level, $nbt);
 
-        if($this->namedtag->hasTag('EntityId', ShortTag::class)){
-            $this->entityId = $this->namedtag['EntityId'];
-        }
-
-        if(!$this->namedtag->hasTag('SpawnRange', ShortTag::class)){
-            $this->namedtag->setShort('SpawnRange', 8);
-        }
-
-        if(!$this->namedtag->hasTag('MinSpawnDelay', ShortTag::class)){
-            $this->namedtag->setShort('MinSpawnDelay', 200);
-        }
-
-        if(!$this->namedtag->hasTag('MaxSpawnDelay', ShortTag::class)){
-            $this->namedtag->setShort('MaxSpawnDelay', 8000);
-        }
-
-        if(!$this->namedtag->hasTag('MaxNearbyEntities', ShortTag::class)){
-            $this->namedtag->setShort('MaxNearbyEntities', 25);
-        }
-
-        if(!$this->namedtag->hasTag('RequiredPlayerRange', ShortTag::class)){
-            $this->namedtag->setShort('RequiredPlayerRange', 20);
-        }
-
-        $this->spawnRange = $this->namedtag->getShort('SpawnRange');
-        $this->minSpawnDelay = $this->namedtag->getShort('MinSpawnDelay');
-        $this->maxSpawnDelay = $this->namedtag->getShort('MaxSpawnDelay');
-        $this->maxNearbyEntities = $this->namedtag->getShort('MaxNearbyEntities');
-        $this->requiredPlayerRange = $this->namedtag->getShort('RequiredPlayerRange');
-
         $this->scheduleUpdate();
+    }
+
+    protected function readSaveData(CompoundTag $nbt): void{
+        if($nbt->hasTag('EntityId', ShortTag::class)){
+            $this->entityId = $nbt['EntityId'];
+        }
+
+        if(!$nbt->hasTag('SpawnRange', ShortTag::class)){
+            $nbt->setShort('SpawnRange', 8);
+        }
+
+        if(!$nbt->hasTag('MinSpawnDelay', ShortTag::class)){
+            $nbt->setShort('MinSpawnDelay', 200);
+        }
+
+        if(!$nbt->hasTag('MaxSpawnDelay', ShortTag::class)){
+            $nbt->setShort('MaxSpawnDelay', 8000);
+        }
+
+        if(!$nbt->hasTag('MaxNearbyEntities', ShortTag::class)){
+            $nbt->setShort('MaxNearbyEntities', 25);
+        }
+
+        if(!$nbt->hasTag('RequiredPlayerRange', ShortTag::class)){
+            $nbt->setShort('RequiredPlayerRange', 20);
+        }
+
+        $this->spawnRange = $nbt->getShort('SpawnRange');
+        $this->minSpawnDelay = $nbt->getShort('MinSpawnDelay');
+        $this->maxSpawnDelay = $nbt->getShort('MaxSpawnDelay');
+        $this->maxNearbyEntities = $nbt->getShort('MaxNearbyEntities');
+        $this->requiredPlayerRange = $nbt->getShort('RequiredPlayerRange');
     }
 
     public function onUpdate() : bool{
@@ -94,20 +100,9 @@ class Spawner extends Spawnable{
         return \true;
     }
 
-    public function saveNBT() : void{
-        parent::saveNBT();
-
-        $this->namedtag->setShort('EntityId', $this->entityId);
-        $this->namedtag->setShort('SpawnRange', $this->spawnRange);
-        $this->namedtag->setShort('MinSpawnDelay', $this->minSpawnDelay);
-        $this->namedtag->setShort('MaxSpawnDelay', $this->maxSpawnDelay);
-        $this->namedtag->setShort('MaxNearbyEntities', $this->maxNearbyEntities);
-        $this->namedtag->setShort('RequiredPlayerRange', $this->requiredPlayerRange);
-    }
-
     public function addAdditionalSpawnData(CompoundTag $tag) : void{
-        $tag->setString('id', 'MobSpawner');
-        $tag->setint('EntityId', $this->entityId);
+        $tag->setTag(new StringTag('id', 'MobSpawner'));
+        $tag->setTag(new IntTag('EntityId', $this->entityId));
     }
 
     public function setSpawnEntityType(int $entityId){
@@ -148,4 +143,12 @@ class Spawner extends Spawnable{
         $this->maxNearbyEntities = $count;
     }
 
+    protected function writeSaveData(CompoundTag $nbt): void{
+        $nbt->setShort('EntityId', $this->entityId);
+        $nbt->setShort('SpawnRange', $this->spawnRange);
+        $nbt->setShort('MinSpawnDelay', $this->minSpawnDelay);
+        $nbt->setShort('MaxSpawnDelay', $this->maxSpawnDelay);
+        $nbt->setShort('MaxNearbyEntities', $this->maxNearbyEntities);
+        $nbt->setShort('RequiredPlayerRange', $this->requiredPlayerRange);
+    }
 }

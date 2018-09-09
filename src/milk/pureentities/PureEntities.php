@@ -2,27 +2,12 @@
 
 namespace milk\pureentities;
 
-use milk\pureentities\entity\animal\walking\Chicken;
-use milk\pureentities\entity\animal\walking\Cow;
-use milk\pureentities\entity\animal\walking\Mooshroom;
-use milk\pureentities\entity\animal\walking\Pig;
-use milk\pureentities\entity\animal\walking\Rabbit;
-use milk\pureentities\entity\animal\walking\Sheep;
-use milk\pureentities\entity\monster\walking\Blaze;
-use milk\pureentities\entity\monster\walking\IronGolem;
-use milk\pureentities\entity\monster\walking\Skeleton;
-use milk\pureentities\entity\monster\walking\Zombie;
-use milk\pureentities\entity\projectile\LargeFireBall;
-use milk\pureentities\entity\projectile\SmallFireBall;
+use milk\pureentities\entity\mob\Zombie;
 use milk\pureentities\tile\Spawner;
-use pocketmine\block\Air;
 use pocketmine\entity\Entity;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
-use pocketmine\level\Position;
-use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
@@ -33,52 +18,53 @@ use pocketmine\utils\TextFormat;
 class PureEntities extends PluginBase implements Listener{
 
     public function onLoad(){
-        //Register Animal
-        Entity::registerEntity(Chicken::class, \false, ['minecraft:chicken']);
+        /** Register Animal */
+
+        /*Entity::registerEntity(Chicken::class, \false, ['minecraft:chicken']);
         Entity::registerEntity(Cow::class, \false, ['minecraft:cow']);
         Entity::registerEntity(Mooshroom::class, \false, ['minecraft:mooshroom']);
         Entity::registerEntity(Pig::class, \false, ['minecraft:pig']);
         Entity::registerEntity(Rabbit::class, \false, ['minecraft:rabbit']);
-        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);
+        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);*/
 
         //Register Mob
-        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
-        //Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
-        //Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
-        //Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
-        //Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
+        /*Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
+        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
+        Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
+        Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
+        Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
         Entity::registerEntity(IronGolem::class, \false, ['minecraft:irongolem']);
-        //Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
-        //Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
-        //Entity::registerEntity(PigZombie::class, \false, ['minecraft:pigzombie']);
-        //Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
+        Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
+        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
+        Entity::registerEntity(PigZombie::class, \false, ['minecraft:pigzombie']);
+        Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
         Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
-        //Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
-        //Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
-        //Entity::registerEntity(Spider::class, \false, ['minecraft:spider']);
-        //Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
-        Entity::registerEntity(Zombie::class, \false, ['minecraft:zombie']);
+        Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
+        Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
+        Entity::registerEntity(Spider::class, \false, ['minecraft:spider']);
+        Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);*/
+        Entity::registerEntity(Zombie::class, \false, ['Zombie', 'minecraft:zombie']);
         //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombievillager']);
 
         //Register Projectile
-        Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
-        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
+        /*Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
+        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);*/
 
         Tile::registerTile(Spawner::class);
 
-        $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]All entities were registered');
+        $this->getServer()->getLogger()->info(TextFormat::AQUA . '[PureEntities]All entities were registered');
     }
 
-    public function onEnable(){
+    public function onEnable() : void{
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
 
-    public function onDisable(){
+    public function onDisable() : void{
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been disabled');
     }
 
-    public function PlayerInteractEvent(PlayerInteractEvent $ev){
+    public function onInteractEvent(PlayerInteractEvent $ev) : void{
         if($ev->getFace() === 255 || $ev->getAction() !== PlayerInteractEvent::RIGHT_CLICK_BLOCK){
             return;
         }
@@ -89,12 +75,14 @@ class PureEntities extends PluginBase implements Listener{
             $ev->setCancelled();
 
             $tile = $block->level->getTile($block);
-            if($tile !== null && $tile instanceof Spawner){
+            if($tile instanceof Spawner){
                 $tile->setSpawnEntityType($item->getDamage());
             }else{
-                if($tile !== null){
+                if($tile !== \null){
+                    /** 어떤 멍청이가 타일을 안지우고 블럭만 교체해놨냐? */
                     $tile->close();
                 }
+
                 $nbt = new CompoundTag('', [
                     new StringTag('id', Tile::MOB_SPAWNER),
                     new IntTag('EntityId', $item->getId()),
@@ -107,7 +95,8 @@ class PureEntities extends PluginBase implements Listener{
         }
     }
 
-    public function BlockPlaceEvent(BlockPlaceEvent $ev){
+    //TODO: 아이언 골렘 지원한 뒤에 봅시다~~
+    /*public function onBlockPlaceEvent(BlockPlaceEvent $ev) : void{
         if($ev->isCancelled()){
             return;
         }
@@ -122,7 +111,7 @@ class PureEntities extends PluginBase implements Listener{
                     $block->getLevel()->setBlock($block->add(0, -$y, 0), new Air());
                 }
                 $entity = Entity::createEntity('SnowGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
-                if($entity !== null){
+                if($entity !== \null){
                     $entity->spawnToAll();
                 }
                 $ev->setCancelled();
@@ -153,9 +142,9 @@ class PureEntities extends PluginBase implements Listener{
                     }
                 }
 
-                if($second !== null){
+                if($second !== \null){
                     $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
-                    if($entity !== null){
+                    if($entity !== \null){
                         $entity->spawnToAll();
                     }
 
@@ -165,7 +154,7 @@ class PureEntities extends PluginBase implements Listener{
                 }
             }
         }
-    }
+    }*/
 
     //TODO: SilverFish will be soon coming.
     /*public function BlockBreakEvent(BlockBreakEvent $ev){
@@ -183,7 +172,7 @@ class PureEntities extends PluginBase implements Listener{
             ) && ($block->level->getBlockLightAt((int) $block->x, (int) $block->y, (int) $block->z) < 12 and mt_rand(1, 5) < 2)
         ){
             $entity = PureEntities::create('Silverfish', $block);
-            if($entity !== null){
+            if($entity !== \null){
                 $entity->spawnToAll();
             }
         }
