@@ -29,7 +29,6 @@ class PigZombie extends Monster{
             $this->angry = $nbt->getInt('Angry');
         }
         $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
-        $this->armorInventory->setHelmet(ItemFactory::get(Item::GOLD_HELMET));
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
