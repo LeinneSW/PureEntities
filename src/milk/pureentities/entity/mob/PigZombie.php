@@ -17,7 +17,7 @@ class PigZombie extends Monster{
 
     const NETWORK_ID = 36;
 
-    public $width = 0.5;
+    public $width = 0.6;
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
@@ -98,16 +98,16 @@ class PigZombie extends Monster{
     }
 
     public function interactTarget() : bool{
-        if($this->getSpeed() < 2.5 && $this->isAngry() && $this->target instanceof Creature){
+        if($this->getSpeed() < 2.4 && $this->isAngry() && $this->target instanceof Creature){
             $this->setSpeed(2.4);
-        }elseif($this->getSpeed() === 2.5){
+        }elseif($this->getSpeed() === 2.4){
             $this->setSpeed(0.9);
         }
 
         if(
             !($this->target instanceof Creature)
-            || \abs($this->x - $this->target->x) > 0.4
-            || \abs($this->z - $this->target->z) > 0.4
+            || \abs($this->x - $this->target->x) > 0.35
+            || \abs($this->z - $this->target->z) > 0.35
             || \abs($this->y - $this->target->y) > 0.001
         ){
             return \false;

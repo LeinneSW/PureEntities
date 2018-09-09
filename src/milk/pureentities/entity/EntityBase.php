@@ -147,18 +147,16 @@ abstract class EntityBase extends Creature{
             foreach($list as $bb){
                 $dx = $bb->calculateXOffset($this->boundingBox, $dx);
             }
-
             $this->boundingBox->offset($dx, 0, 0);
 
             foreach($list as $bb){
                 $dz = $bb->calculateZOffset($this->boundingBox, $dz);
             }
-
             $this->boundingBox->offset(0, 0, $dz);
         }
 
         $this->x = ($this->boundingBox->minX + $this->boundingBox->maxX) / 2;
-        $this->y = $this->boundingBox->minY - $this->ySize;
+        $this->y = $this->boundingBox->minY;
         $this->z = ($this->boundingBox->minZ + $this->boundingBox->maxZ) / 2;
 
         $this->checkChunks();
