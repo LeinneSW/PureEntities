@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace milk\pureentities\entity;
 
-use milk\pureentities\inventory\MobInventory;
 use pocketmine\entity\Creature;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -17,9 +16,9 @@ abstract class EntityBase extends Creature{
     protected $moveTime = 0;
 
     /** @var Vector3 */
-    protected $target = \null;
+    private $target = \null;
     /** @var Creature */
-    protected $followTarget = \null;
+    private $followTarget = \null;
 
     /**
      * $this 와 $target의 관계가 적대관계인지 확인

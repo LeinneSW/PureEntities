@@ -3,6 +3,7 @@
 namespace milk\pureentities;
 
 use milk\pureentities\entity\mob\PigZombie;
+use milk\pureentities\entity\mob\Skeleton;
 use milk\pureentities\entity\mob\Zombie;
 use milk\pureentities\tile\Spawner;
 use pocketmine\entity\Entity;
@@ -39,7 +40,7 @@ class PureEntities extends PluginBase implements Listener{
 //        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
         Entity::registerEntity(PigZombie::class, \false, ['PigZombie', 'minecraft:pigzombie']);
 //        Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
-//        Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
+        Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
 //        Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
 //        Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
 //        Entity::registerEntity(Spider::class, \false, ['minecraft:spider']);
