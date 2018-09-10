@@ -12,7 +12,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\Server;
 
-abstract class Monster extends EntityBase {
+abstract class Monster extends EntityBase{
 
     /** @var MobInventory */
     protected $inventory;
@@ -29,7 +29,7 @@ abstract class Monster extends EntityBase {
     }
 
     public function isHostility(Creature $target, float $distance) : bool{
-        return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 121;
+        return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 169;
     }
 
     public function getDamages(?int $difficulty = \null) : array{

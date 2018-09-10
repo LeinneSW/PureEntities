@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace milk\pureentities\entity\mob;
 
+use pocketmine\entity\Ageable;
 use pocketmine\entity\Creature;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 
-class Zombie extends Monster{
+class Zombie extends WalkMonster implements Ageable{
 
     const NETWORK_ID = 32;
 
@@ -24,68 +27,62 @@ class Zombie extends Monster{
         $this->setDamages([0, 3, 4, 6]);
     }
 
-    public function entityBaseTick(int $tickDiff = 1) : bool{
-        if($this->server->getDifficulty() < 1){
-            $this->close();
-            return \false;
-        }
-
-        if($this->closed){
-            return \false;
-        }
-
-        ++$this->attackDelay;
-
-        parent::entityBaseTick($tickDiff);
-
-        $target = $this->checkTarget();
-
-        $x = $target->x - $this->x;
-        $y = $target->y - $this->y;
-        $z = $target->z - $this->z;
-
-        $diff = \abs($x) + \abs($z);
-        if($diff === 0){
-            return \true;
-        }
-
-        $calX = $x / $diff;
-        $calZ = $z / $diff;
-
-        if(!$this->interactTarget() && $this->onGround){
-            $this->motion->x += $this->getSpeed() * 0.12 * $calX;
-            $this->motion->z += $this->getSpeed() * 0.12 * $calZ;
-        }
-
-        $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
-        $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
-
-        return \true;
-    }
-
     public function getName() : string{
         return 'Zombie';
     }
 
+    public function isBaby(): bool{
+        return \false;
+    }
+
     public function interactTarget() : bool{
+        ++$this->attackDelay;
+        $target = $this->getTarget();
         if(
-            !($this->target instanceof Creature)
-            || \abs($this->x - $this->target->x) > 0.35
-            || \abs($this->z - $this->target->z) > 0.35
-            || \abs($this->y - $this->target->y) > 0.001
+            !($target instanceof Creature)
+            || \abs($this->x - $target->x) > 0.35
+            || \abs($this->z - $target->z) > 0.35
+            || \abs($this->y - $target->y) > 0.001
         ){
             return \false;
         }
 
         if($this->attackDelay >= 15 && ($damage = $this->getResultDamage()) > 0){
-            $ev = new EntityDamageByEntityEvent($this, $this->target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
-            $this->target->attack($ev);
+            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
+            $target->attack($ev);
 
             if(!$ev->isCancelled()){
                 $this->attackDelay = 0;
             }
         }
         return \true;
+    }
+
+    public function getDrops() : array{
+        $drops = [
+            ItemFactory::get(Item::ROTTEN_FLESH, 0, \mt_rand(0, 2))
+        ];
+
+        if(\mt_rand(0, 199) < 5){
+            switch(\mt_rand(0, 2)){
+                case 0:
+                    $drops[] = ItemFactory::get(Item::IRON_INGOT, 0, 1);
+                    break;
+                case 1:
+                    $drops[] = ItemFactory::get(Item::CARROT, 0, 1);
+                    break;
+                case 2:
+                    $drops[] = ItemFactory::get(Item::POTATO, 0, 1);
+                    break;
+            }
+        }
+
+        return $drops;
+    }
+
+    public function getXpDropAmount() : int{
+        //TODO: 아기일때랑 아닐때랑 다른지 확인중...
+        return 5;//$this->isBaby() ? 5 : 5;
     }
 
 }
