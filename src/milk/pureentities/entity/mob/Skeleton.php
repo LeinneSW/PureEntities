@@ -31,6 +31,10 @@ class Skeleton extends WalkMonster{
         $this->inventory->setItemInHand(ItemFactory::get(Item::BOW));
     }
 
+    public function getName() : string{
+        return 'Skeleton';
+    }
+
     public function interactTarget() : bool{
         $target = $this->getTarget();
         if(!($target instanceof Creature)){
@@ -106,8 +110,8 @@ class Skeleton extends WalkMonster{
         return $this->distanceSquared($target) <= 7.84; //2.5 ** 2
     }
 
-    public function getName() : string{
-        return 'Skeleton';
+    public function getXpDropAmount() : int{
+        return 7;
     }
 
 }

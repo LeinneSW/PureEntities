@@ -23,8 +23,16 @@ abstract class WalkMonster extends Monster{
 
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
-        /*if($this->checkJump()){
-            $this->jump();
+        /*if(!$this->checkJump($tickDiff)){
+            if($this->onGround){
+                $this->motionY = 0;
+            }elseif($this->motion->y > -$this->gravity * 4){
+                if(!($this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.9), Math::floorFloat($this->z))) instanceof Liquid)){
+                    $this->motion->y -= $this->gravity * $tickDiff;
+                }
+            }else{
+                $this->motion->y -= $this->gravity * $tickDiff;
+            }
         }*/
 
         $target = $this->checkTarget();
@@ -35,6 +43,7 @@ abstract class WalkMonster extends Monster{
 
         $diff = \abs($x) + \abs($z);
         if($diff === 0){
+            $this->interactTarget();
             return $hasUpdate;
         }
 
@@ -42,8 +51,8 @@ abstract class WalkMonster extends Monster{
         $calZ = $z / $diff;
 
         if(!$this->interactTarget() && $this->onGround){
-            $this->motion->x += $this->getSpeed() * 0.12 * $calX;
-            $this->motion->z += $this->getSpeed() * 0.12 * $calZ;
+            $this->motion->x += $this->getSpeed() * $calX / 10;
+            $this->motion->z += $this->getSpeed() * $calZ / 10;
         }
 
         $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
@@ -52,7 +61,10 @@ abstract class WalkMonster extends Monster{
         return \true;
     }
 
-    /*protected function checkJump($tickDiff, $dx, $dz){
+    /*protected function checkJump(int $tickDiff) : bool{
+        $dx = $this->motion->x;
+        $dz = $this->motion->z;
+
         if($this->motion->y == $this->gravity * 2){
             return $this->level->getBlock(new Vector3(Math::floorFloat($this->x), (int) ($this->y + 0.3), Math::floorFloat($this->z))) instanceof Liquid;
         }else{
@@ -66,9 +78,9 @@ abstract class WalkMonster extends Monster{
             return \false;
         }
 
-        $xWidth = $dx > 0 ? $this->width / 2 : -($this->width / 2);
-        $zWidth = $dz > 0 ? $this->width / 2 : -($this->width / 2);
-        $block = $this->getLevel()->getBlock(new Vector3(Math::ceilFloat($this->x + $xWidth + $dx * 2), $this->y, Math::ceilFloat($this->z + $zWidth + $dz * 2)));
+        $xWidth = $dx > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX;
+        $zWidth = $dz > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ;
+        $block = $this->getLevel()->getBlock(new Vector3(Math::ceilFloat($xWidth + $dx * 2), $this->y, Math::ceilFloat($zWidth + $dz * 2)));
         if(
             $block->getId() !== Block::AIR && ($aabb = $block->getBoundingBox()) !== \null
             && $aabb->maxY - $aabb->minY <= 1
