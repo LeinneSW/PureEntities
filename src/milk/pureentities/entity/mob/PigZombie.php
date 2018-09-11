@@ -34,6 +34,10 @@ class PigZombie extends WalkMonster{
         $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
     }
 
+    public function getName() : string{
+        return 'PigZombie';
+    }
+
     public function isHostility(Creature $target, float $distance) : bool{
         return $this->isAngry() && parent::isHostility($target, $distance);
     }
@@ -54,10 +58,6 @@ class PigZombie extends WalkMonster{
         $this->angry = $angry;
     }
 
-    public function getName() : string{
-        return 'PigZombie';
-    }
-
     public function interactTarget() : bool{
         ++$this->attackDelay;
         $target = $this->getTarget();
@@ -69,9 +69,10 @@ class PigZombie extends WalkMonster{
 
         if(
             !($target instanceof Creature)
-            || \abs($this->x - $target->x) > 0.35
-            || \abs($this->z - $target->z) > 0.35
-            || \abs($this->y - $target->y) > 0.001
+            || !$target->isOnGround()
+            || \abs($this->x - $target->x) > $this->width / 2
+            || \abs($this->z - $target->z) > $this->width / 2
+            || \abs($this->y - $target->y) > 0.5
         ){
             return \false;
         }
@@ -92,6 +93,10 @@ class PigZombie extends WalkMonster{
         $nbt->setByte("Angry", $this->angry ? 1 : 0);
 
         return $nbt;
+    }
+
+    public function getXpDropAmount() : int{
+        return 7;
     }
 
 }

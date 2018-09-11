@@ -40,14 +40,15 @@ class Zombie extends WalkMonster implements Ageable{
         $target = $this->getTarget();
         if(
             !($target instanceof Creature)
-            || \abs($this->x - $target->x) > 0.35
-            || \abs($this->z - $target->z) > 0.35
-            || \abs($this->y - $target->y) > 0.001
+            || !$target->isOnGround()
+            || \abs($this->x - $target->x) > $this->width / 2
+            || \abs($this->z - $target->z) > $this->width / 2
+            || \abs($this->y - $target->y) > 0.5
         ){
             return \false;
         }
 
-        if($this->attackDelay >= 15 && ($damage = $this->getResultDamage()) > 0){
+        if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);
 
@@ -81,8 +82,7 @@ class Zombie extends WalkMonster implements Ageable{
     }
 
     public function getXpDropAmount() : int{
-        //TODO: 아기일때랑 아닐때랑 다른지 확인중...
-        return 5;//$this->isBaby() ? 5 : 5;
+        return 7;
     }
 
 }
