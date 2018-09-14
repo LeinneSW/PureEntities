@@ -47,15 +47,12 @@ abstract class WalkMonster extends Monster{
             return $hasUpdate;
         }
 
-        $calX = $x / $diff;
-        $calZ = $z / $diff;
-
         if(!$this->interactTarget() && $this->onGround){
-            $this->motion->x += $this->getSpeed() * $calX / 10;
-            $this->motion->z += $this->getSpeed() * $calZ / 10;
+            $this->motion->x += $this->getSpeed() * 0.1 * $x / $diff;
+            $this->motion->z += $this->getSpeed() * 0.1 * $z / $diff;
         }
 
-        $this->yaw = -atan2($calX, $calZ) * 180 / M_PI;
+        $this->yaw = \rad2deg(\atan2($z, $x)) - 90;
         $this->pitch = $y === 0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
 
         return \true;

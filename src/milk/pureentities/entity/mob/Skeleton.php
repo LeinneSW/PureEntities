@@ -6,6 +6,7 @@ namespace milk\pureentities\entity\mob;
 
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
+use pocketmine\entity\EntityIds;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\entity\EntityShootBowEvent;
@@ -18,16 +19,16 @@ use pocketmine\nbt\tag\CompoundTag;
 
 class Skeleton extends WalkMonster{
 
-    const NETWORK_ID = 34;
+    const NETWORK_ID = EntityIds::SKELETON;
 
-    public $width = 0.45;
+    public $width = 0.6;
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setSpeed(1);
+        $this->setSpeed(1.2);
         $this->inventory->setItemInHand(ItemFactory::get(Item::BOW));
     }
 
@@ -45,25 +46,6 @@ class Skeleton extends WalkMonster{
             $p = ($this->attackDelay - 22) / 20;
             $force = \min((($p ** 2) + $p * 2) / 3, 1) * 2;
 
-            //$yaw = \deg2rad($this->yaw);// + \mt_rand(-220, 220) / 10);
-            //$pitch = \deg2rad($this->pitch);// + \mt_rand(-120, 120) / 10);
-
-            /*$nbt = new CompoundTag('', [
-                'Pos' => new ListTag('Pos', [
-                    new DoubleTag('', $this->x + (-\sin($yaw) * \cos($pitch) * 0.5)),
-                    new DoubleTag('', $this->y + $this->eyeHeight),
-                    new DoubleTag('', $this->z +(\cos($yaw) * \cos($pitch) * 0.5))
-                ]),
-                'Motion' => new ListTag('Motion', [
-                    new DoubleTag('', -\sin($yaw) * \cos($pitch) * $force),
-                    new DoubleTag('', -\sin($pitch) * $force),
-                    new DoubleTag('', \cos($yaw) * \cos($pitch) * $force)
-                ]),
-                'Rotation' => new ListTag('Rotation', [
-                    new FloatTag('', ($this->yaw > 180 ? 360 : 0) - $this->yaw),
-                    new FloatTag('', -$this->pitch)
-                ]),
-            ]);*/
             $nbt = Entity::createBaseNBT(
                 $this->add(0, $this->eyeHeight, 0),
                 $this->getDirectionVector(),
@@ -111,7 +93,8 @@ class Skeleton extends WalkMonster{
     }
 
     public function getXpDropAmount() : int{
-        return 7;
+        //TODO: 정확한 수치 모름
+        return 0;
     }
 
 }

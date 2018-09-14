@@ -37,7 +37,7 @@ abstract class Monster extends EntityBase{
     }
 
     public function getResultDamage(?int $difficulty = \null) : int{
-        return \mt_rand(...$this->getDamages($difficulty)) + (($item = $this->inventory->getItemInHand()) instanceof TieredTool ? $item->getAttackPoints() : 0);
+        return \mt_rand(...$this->getDamages($difficulty)) + $this->inventory->getItemInHand()->getAttackPoints();
     }
 
     public function getMinDamage(?int $difficulty = \null) : int{

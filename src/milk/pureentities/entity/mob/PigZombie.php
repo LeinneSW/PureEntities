@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace milk\pureentities\entity\mob;
 
 use pocketmine\entity\Creature;
+use pocketmine\entity\EntityIds;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -15,7 +16,7 @@ use pocketmine\nbt\tag\CompoundTag;
 
 class PigZombie extends WalkMonster{
 
-    const NETWORK_ID = 36;
+    const NETWORK_ID = EntityIds::ZOMBIE_PIGMAN;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -27,15 +28,12 @@ class PigZombie extends WalkMonster{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setSpeed(0.9);
-        if($nbt->hasTag('Angry', ByteTag::class)){
-            $this->angry = $nbt->getByte('Angry') !== 0 ? \true : \false;
-        }
+        $this->setAngry($nbt->getByte('Angry', 0) !== 0);
         $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
     }
 
     public function getName() : string{
-        return 'PigZombie';
+        return 'Zombie Pigman';
     }
 
     public function isHostility(Creature $target, float $distance) : bool{
@@ -61,18 +59,17 @@ class PigZombie extends WalkMonster{
     public function interactTarget() : bool{
         ++$this->attackDelay;
         $target = $this->getTarget();
-        if($this->getSpeed() < 2.4 && $this->isAngry() && $target instanceof Creature){
-            $this->setSpeed(2.4);
-        }elseif($this->getSpeed() === 2.4){
-            $this->setSpeed(0.9);
+        if($this->getSpeed() < 2.8 && $this->isAngry() && $target instanceof Creature){
+            $this->setSpeed(2.8);
+        }elseif($this->getSpeed() === 2.8){
+            $this->setSpeed(1);
         }
 
         if(
             !($target instanceof Creature)
-            || !$target->isOnGround()
-            || \abs($this->x - $target->x) > $this->width / 2
-            || \abs($this->z - $target->z) > $this->width / 2
-            || \abs($this->y - $target->y) > 0.5
+            || \abs($this->x - $target->x) > $this->width
+            || \abs($this->z - $target->z) > $this->width
+            || \abs($this->y - $target->y) > 1
         ){
             return \false;
         }
@@ -96,7 +93,8 @@ class PigZombie extends WalkMonster{
     }
 
     public function getXpDropAmount() : int{
-        return 7;
+        //TODO: 정확한 수치 모름
+        return 0;
     }
 
 }

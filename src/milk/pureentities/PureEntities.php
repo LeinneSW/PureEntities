@@ -5,6 +5,7 @@ namespace milk\pureentities;
 use milk\pureentities\entity\mob\PigZombie;
 use milk\pureentities\entity\mob\Skeleton;
 use milk\pureentities\entity\mob\Zombie;
+use milk\pureentities\task\AutoSpawnTask;
 use milk\pureentities\tile\Spawner;
 use pocketmine\entity\Entity;
 use pocketmine\event\Listener;
@@ -59,6 +60,8 @@ class PureEntities extends PluginBase implements Listener{
 
     public function onEnable() : void{
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), 20);
+
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
 
