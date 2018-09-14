@@ -6,6 +6,7 @@ namespace milk\pureentities\entity\mob;
 
 use pocketmine\entity\Ageable;
 use pocketmine\entity\Creature;
+use pocketmine\entity\EntityIds;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
@@ -14,7 +15,7 @@ use pocketmine\nbt\tag\CompoundTag;
 
 class Zombie extends WalkMonster implements Ageable{
 
-    const NETWORK_ID = 32;
+    const NETWORK_ID = EntityIds::ZOMBIE;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -23,8 +24,7 @@ class Zombie extends WalkMonster implements Ageable{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setSpeed(0.9);
-        $this->setDamages([0, 3, 4, 6]);
+        $this->setDamages([0, 2, 3, 5]);
     }
 
     public function getName() : string{
@@ -40,10 +40,9 @@ class Zombie extends WalkMonster implements Ageable{
         $target = $this->getTarget();
         if(
             !($target instanceof Creature)
-            || !$target->isOnGround()
-            || \abs($this->x - $target->x) > $this->width / 2
-            || \abs($this->z - $target->z) > $this->width / 2
-            || \abs($this->y - $target->y) > 0.5
+            || \abs($this->x - $target->x) > $this->width
+            || \abs($this->z - $target->z) > $this->width
+            || \abs($this->y - $target->y) > 1
         ){
             return \false;
         }
@@ -82,7 +81,8 @@ class Zombie extends WalkMonster implements Ageable{
     }
 
     public function getXpDropAmount() : int{
-        return 7;
+        //TODO: 정확한 수치 모름
+        return 0;
     }
 
 }

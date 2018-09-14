@@ -4,12 +4,32 @@ declare(strict_types=1);
 
 namespace milk\pureentities\task;
 
+use pocketmine\entity\Entity;
 use pocketmine\scheduler\Task;
+use pocketmine\Server;
 
 class AutoSpawnTask extends Task{
 
-    public function onRun(int $currentTick){
-        //TODO: 자연스폰이 되려면 필요한 조건이 무엇인지 파악중
+    public function onRun(int $currentTick) : void{
+        foreach(Server::getInstance()->getOnlinePlayers() as $player){
+            if(\mt_rand(1, 200) !== 1){
+                continue;
+            }
+
+            $radX = \mt_rand(3, 24);
+            $radZ = \mt_rand(3, 24);
+            $pos = $player->getPosition();
+            $pos->y = $player->level->getHighestBlockAt($pos->x += \mt_rand(0, 1) ? $radX : -$radX, $pos->z += \mt_rand(0, 1) ? $radZ : -$radZ) + 2;
+
+            $entityIds = [
+                ["Cow", "Pig", "Sheep", "Chicken", "Slime", "Wolf", "Ocelot", "Mooshroom", "Rabbit", "IronGolem", "SnowGolem"],
+                ["Zombie", "Creeper", "Skeleton", "Spider", "PigZombie", "Enderman", "CaveSpider", "MagmaCube", "ZombieVillager", "Ghast", "Blaze"]
+            ];
+            $entity = Entity::createEntity($entityIds[\mt_rand(0, 1)][\mt_rand(0, 10)], $player->level, Entity::createBaseNBT($pos));
+            if($entity !== \null){
+                $entity->spawnToAll();
+            }
+        }
     }
 
 }

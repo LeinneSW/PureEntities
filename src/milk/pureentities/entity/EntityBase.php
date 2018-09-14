@@ -83,7 +83,7 @@ abstract class EntityBase extends Creature{
         $this->followTarget = $target;
     }
 
-    public function checkTarget() : Vector3{
+    protected function checkTarget() : Vector3{
         if($this->followTarget !== null && !$this->followTarget->closed && $this->followTarget->isAlive()){
             return $this->followTarget;
         }
@@ -134,9 +134,9 @@ abstract class EntityBase extends Creature{
         if($this->keepMovement){
             $this->boundingBox->offset($dx, $dy, $dz);
         }else{
-            \assert(\abs($dx) <= 20 and \abs($dy) <= 20 and \abs($dz) <= 20, "Movement distance is excessive: dx=$dx, dy=$dy, dz=$dz");
+            //\assert(\abs($dx) <= 20 and \abs($dy) <= 20 and \abs($dz) <= 20, "Movement distance is excessive: dx=$dx, dy=$dy, dz=$dz");
 
-            $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz), \false);
+            $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
 
             foreach($list as $bb){
                 $dy = $bb->calculateYOffset($this->boundingBox, $dy);
