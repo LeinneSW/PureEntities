@@ -1,13 +1,13 @@
 <?php
 
-namespace milk\pureentities;
+namespace leinne\pureentities;
 
-use milk\pureentities\entity\mob\PigZombie;
-use milk\pureentities\entity\mob\Skeleton;
-use milk\pureentities\entity\mob\Zombie;
-use milk\pureentities\entity\vehicle\Boat;
-use milk\pureentities\task\AutoSpawnTask;
-use milk\pureentities\tile\Spawner;
+use leinne\pureentities\entity\mob\PigZombie;
+use leinne\pureentities\entity\mob\Skeleton;
+use leinne\pureentities\entity\mob\Zombie;
+use leinne\pureentities\entity\vehicle\Boat;
+use leinne\pureentities\task\AutoSpawnTask;
+use leinne\pureentities\tile\Spawner;
 use pocketmine\entity\Entity;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;

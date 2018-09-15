@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace milk\pureentities\inventory;
+namespace leinne\pureentities\inventory;
 
-use milk\pureentities\entity\mob\Monster;
+use leinne\pureentities\entity\mob\Monster;
 use pocketmine\inventory\BaseInventory;
 use pocketmine\item\Item;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;

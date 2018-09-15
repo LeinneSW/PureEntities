@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace milk\pureentities\entity\mob;
+namespace leinne\pureentities\entity\mob;
 
-use milk\pureentities\entity\EntityBase;
-use milk\pureentities\inventory\MobInventory;
+use leinne\pureentities\entity\EntityBase;
+use leinne\pureentities\inventory\MobInventory;
 use pocketmine\entity\Creature;
 use pocketmine\item\TieredTool;
 use pocketmine\nbt\tag\CompoundTag;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace milk\pureentities\entity;
+namespace leinne\pureentities\entity;
 
 use pocketmine\entity\Creature;
 use pocketmine\math\Vector3;
@@ -79,8 +79,9 @@ abstract class EntityBase extends Creature{
         return $this->followTarget;
     }
 
-    public function setTarget(?Creature $target = \null) : void{
-        $this->followTarget = $target;
+    public function setTarget(Vector3 $target, bool $fixed) : void{
+        $this->fixed = $fixed;
+        $this->target = $target;
     }
 
     protected function checkTarget() : Vector3{
