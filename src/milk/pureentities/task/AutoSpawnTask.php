@@ -12,13 +12,13 @@ class AutoSpawnTask extends Task{
 
     public function onRun(int $currentTick) : void{
         foreach(Server::getInstance()->getOnlinePlayers() as $player){
-            if(\mt_rand(1, 200) !== 1){
+            if(\mt_rand(1, 300) !== 1){
                 continue;
             }
 
             $radX = \mt_rand(3, 24);
             $radZ = \mt_rand(3, 24);
-            $pos = $player->getPosition();
+            $pos = $player->floor();
             $pos->y = $player->level->getHighestBlockAt($pos->x += \mt_rand(0, 1) ? $radX : -$radX, $pos->z += \mt_rand(0, 1) ? $radZ : -$radZ) + 2;
 
             $entityIds = [

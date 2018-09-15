@@ -21,7 +21,7 @@ abstract class WalkMonster extends Monster{
             return \false;
         }
 
-        $hasUpdate = parent::entityBaseTick($tickDiff);
+        parent::entityBaseTick($tickDiff);
 
         /*if(!$this->checkJump($tickDiff)){
             if($this->onGround){
@@ -42,12 +42,7 @@ abstract class WalkMonster extends Monster{
         $z = $target->z - $this->z;
 
         $diff = \abs($x) + \abs($z);
-        if($diff === 0){
-            $this->interactTarget();
-            return $hasUpdate;
-        }
-
-        if(!$this->interactTarget() && $this->onGround){
+        if($diff !== 0.0 && !$this->interactTarget() && $this->onGround){
             $this->motion->x += $this->getSpeed() * 0.1 * $x / $diff;
             $this->motion->z += $this->getSpeed() * 0.1 * $z / $diff;
         }

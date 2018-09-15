@@ -5,6 +5,7 @@ namespace milk\pureentities;
 use milk\pureentities\entity\mob\PigZombie;
 use milk\pureentities\entity\mob\Skeleton;
 use milk\pureentities\entity\mob\Zombie;
+use milk\pureentities\entity\vehicle\Boat;
 use milk\pureentities\task\AutoSpawnTask;
 use milk\pureentities\tile\Spawner;
 use pocketmine\entity\Entity;
@@ -22,15 +23,14 @@ class PureEntities extends PluginBase implements Listener{
 
     public function onLoad(){
         /** Register Animal */
+//        Entity::registerEntity(Chicken::class, \false, ['minecraft:chicken']);
+//        Entity::registerEntity(Cow::class, \false, ['minecraft:cow']);
+//        Entity::registerEntity(Mooshroom::class, \false, ['minecraft:mooshroom']);
+//        Entity::registerEntity(Pig::class, \false, ['minecraft:pig']);
+//        Entity::registerEntity(Rabbit::class, \false, ['minecraft:rabbit']);
+//        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);
 
-        /*Entity::registerEntity(Chicken::class, \false, ['minecraft:chicken']);
-        Entity::registerEntity(Cow::class, \false, ['minecraft:cow']);
-        Entity::registerEntity(Mooshroom::class, \false, ['minecraft:mooshroom']);
-        Entity::registerEntity(Pig::class, \false, ['minecraft:pig']);
-        Entity::registerEntity(Rabbit::class, \false, ['minecraft:rabbit']);
-        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);*/
-
-        //Register Mob
+        /** Register Mob */
 //        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
 //        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
 //        Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
@@ -49,9 +49,9 @@ class PureEntities extends PluginBase implements Listener{
         Entity::registerEntity(Zombie::class, \false, ['Zombie', 'minecraft:zombie']);
         //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombievillager']);
 
-        //Register Projectile
-        /*Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
-        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);*/
+        /** Register Projectile */
+//        Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
+//        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
 
         Tile::registerTile(Spawner::class);
 
@@ -60,7 +60,7 @@ class PureEntities extends PluginBase implements Listener{
 
     public function onEnable() : void{
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), 100);
 
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
