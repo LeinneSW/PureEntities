@@ -62,6 +62,7 @@ abstract class EntityBase extends Creature{
     }
 
     public function updateMovement(bool $teleport = \false) : void{
+        $send = \false;
         if(
             $this->lastLocation->x !== $this->x
             || $this->lastLocation->y !== $this->y
@@ -69,6 +70,7 @@ abstract class EntityBase extends Creature{
             || $this->lastLocation->yaw !== $this->yaw
             || $this->lastLocation->pitch !== $this->pitch
         ){
+            $send = \true;
             $this->lastLocation = $this->asLocation();
         }
 
@@ -79,7 +81,10 @@ abstract class EntityBase extends Creature{
         ){
             $this->lastMotion = clone $this->motion;
         }
-        $this->broadcastMovement($teleport);
+
+        if($send){
+            $this->broadcastMovement($teleport);
+        }
     }
 
     public function getSpeed() : float{
