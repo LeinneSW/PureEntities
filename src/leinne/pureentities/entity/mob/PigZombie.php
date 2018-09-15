@@ -65,12 +65,7 @@ class PigZombie extends WalkMonster{
             $this->setSpeed(1);
         }
 
-        if(
-            !($target instanceof Creature)
-            || \abs($this->x - $target->x) > $this->width
-            || \abs($this->z - $target->z) > $this->width
-            || \abs($this->y - $target->y) > 1
-        ){
+        if(($target = parent::checkInteract()) === \null){
             return \false;
         }
 
