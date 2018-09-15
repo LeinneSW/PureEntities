@@ -36,7 +36,7 @@ class Skeleton extends WalkMonster{
         return 'Skeleton';
     }
 
-    public function interactTarget() : bool{
+    public function interactTarget(bool $force = \false) : bool{
         $target = $this->getTarget();
         if(!($target instanceof Creature)){
             return \false;

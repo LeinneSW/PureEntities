@@ -37,13 +37,7 @@ class Zombie extends WalkMonster implements Ageable{
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
-        $target = $this->getTarget();
-        if(
-            !($target instanceof Creature)
-            || \abs($this->x - $target->x) > $this->width
-            || \abs($this->z - $target->z) > $this->width
-            || \abs($this->y - $target->y) > 1
-        ){
+        if(($target = parent::checkInteract()) === \null){
             return \false;
         }
 

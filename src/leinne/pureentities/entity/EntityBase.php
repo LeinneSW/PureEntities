@@ -17,8 +17,9 @@ abstract class EntityBase extends Creature{
 
     /** @var Vector3 */
     private $target = \null;
-    /** @var Creature */
-    private $followTarget = \null;
+    private $targetFixed = \false;
+
+    private $movable = \true;
 
     /**
      * $this 와 $target의 관계가 적대관계인지 확인
@@ -32,14 +33,32 @@ abstract class EntityBase extends Creature{
 
     /**
      * 타겟과의 상호작용
-     * ex) Mob & Human, Chicken & Human
+     *
+     * @return bool
      */
     public abstract function interactTarget() : bool;
+
+    public function checkInteract() : ?Creature{
+        $target = $this->target;
+        if(
+            $target instanceof Creature
+            && \abs($this->x - $target->x) <= ($width = $this->width / 2 + $target->width / 2 + 0.02)
+            && \abs($this->z - $target->z) <= $width
+            && \abs($this->y - $target->y) <= \min(1, $this->eyeHeight)
+        ){
+            return $target;
+        }
+        return \null;
+    }
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
         $this->setImmobile();
+    }
+
+    public function isMovable() : bool{
+        return $this->movable;
     }
 
     public function updateMovement(bool $teleport = \false) : void{
@@ -75,21 +94,28 @@ abstract class EntityBase extends Creature{
         return $this->target;
     }
 
-    public function getFixedTarget() : ?Creature{
-        return $this->followTarget;
-    }
-
-    public function setTarget(Vector3 $target, bool $fixed) : void{
-        $this->fixed = $fixed;
-        $this->target = $target;
-    }
-
-    protected function checkTarget() : Vector3{
-        if($this->followTarget !== \null && !$this->followTarget->closed && $this->followTarget->isAlive()){
-            return $this->followTarget;
+    public function setTarget(Vector3 $target, bool $fixed = \false) : void{
+        if(!$fixed){
+            $this->moveTime = \mt_rand(450, 1600);
         }
 
-        if(!($this->target instanceof Creature) or !($option = $this->isHostility($this->target, $this->distanceSquared($this->target)))){
+        $this->target = $target;
+        $this->targetFixed = $fixed;
+    }
+
+    public function isTargetFixed() : bool{
+        return $this->targetFixed;
+    }
+
+    public function setTargetFixed(bool $fixed = \false) : void{
+        $this->targetFixed = $fixed;
+    }
+
+    protected final function checkTarget() : Vector3{
+        if(
+            !$this->targetFixed
+            && (!($this->target instanceof Creature) || !($option = $this->isHostility($this->target, $this->distanceSquared($this->target))))
+        ){
             if(isset($option)) $this->target = \null;
 
             $near = \PHP_INT_MAX;
@@ -113,10 +139,10 @@ abstract class EntityBase extends Creature{
             return $this->target;
         }
 
-        if(--$this->moveTime <= 0 or $this->target === \null){
-            $x = \mt_rand(20, 100);
-            $z = \mt_rand(20, 100);
-            $this->moveTime = \mt_rand(300, 1200);
+        if($this->target === \null || (!$this->targetFixed && --$this->moveTime <= 0)){
+            $x = \mt_rand(15, 60);
+            $z = \mt_rand(15, 60);
+            $this->moveTime = \mt_rand(450, 1600);
             $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
         }
 
