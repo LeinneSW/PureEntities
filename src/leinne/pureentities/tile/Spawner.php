@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace milk\pureentities\tile;
+namespace leinne\pureentities\tile;
 
 use pocketmine\entity\Entity;
 use pocketmine\level\Level;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace milk\pureentities\entity\mob;
+namespace leinne\pureentities\entity\mob;
 
 use pocketmine\entity\Creature;
 use pocketmine\entity\EntityIds;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace milk\pureentities\task;
+namespace leinne\pureentities\task;
 
 use pocketmine\entity\Entity;
 use pocketmine\scheduler\Task;
