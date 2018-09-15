@@ -33,7 +33,7 @@ abstract class WalkMonster extends Monster{
         $z = $target->z - $this->z;
 
         $diff = \abs($x) + \abs($z);
-        if($this->isMovable() && $diff !== 0.0 && !$this->interactTarget() && $this->onGround){
+        if(!$this->interactTarget() && $this->isMovable() && $diff !== 0.0 && $this->onGround){
             $this->motion->x += $this->getSpeed() * 0.14 * $x * $tickDiff / $diff;
             $this->motion->z += $this->getSpeed() * 0.14 * $z * $tickDiff / $diff;
         }
