@@ -84,7 +84,7 @@ abstract class EntityBase extends Creature{
     }
 
     protected function checkTarget() : Vector3{
-        if($this->followTarget !== null && !$this->followTarget->closed && $this->followTarget->isAlive()){
+        if($this->followTarget !== \null && !$this->followTarget->closed && $this->followTarget->isAlive()){
             return $this->followTarget;
         }
 
@@ -154,9 +154,9 @@ abstract class EntityBase extends Creature{
             $this->boundingBox->offset(0, 0, $dz);
         }
 
-        $this->x = ($this->boundingBox->minX + $this->boundingBox->maxX) / 2;
-        $this->y = $this->boundingBox->minY;
-        $this->z = ($this->boundingBox->minZ + $this->boundingBox->maxZ) / 2;
+        $this->x += $dx;
+        $this->y += $dy;
+        $this->z += $dz;
 
         $this->checkChunks();
         $this->checkBlockCollision();
