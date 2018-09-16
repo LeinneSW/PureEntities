@@ -18,8 +18,7 @@ This plug-in is in development. Therefore, It is possible to function abnormally
     * `float getSpeed()`
     * `void setSpeed(float $speed)`
     * `?Vector3 getTarget()`
-    * `?Creature getFixedTarget()`
-    * `void setTarget(?Creature $target = \null)`
+    * `void setTarget(Vector $target, bool $fixed = \false)`
   * Monster
     * `int[] getDamages()`
     * `void setDamages(int[] $damages)`

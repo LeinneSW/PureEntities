@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\mob;
 
-use pocketmine\block\Block;
+use pocketmine\math\Facing;
 use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 
@@ -55,8 +55,8 @@ abstract class WalkMonster extends Monster{
         if(
             ($aabb = $block->getBoundingBox()) !== \null
             && $aabb->maxY - $aabb->minY <= 1
-            && $block->getSide(Block::SIDE_UP)->getBoundingBox() === \null
-            && $block->getSide(Block::SIDE_UP, 2)->getBoundingBox() === \null
+            && $block->getSide(Facing::UP)->getBoundingBox() === \null
+            && $block->getSide(Facing::UP, 2)->getBoundingBox() === \null
         ){
             return \true;
         }
