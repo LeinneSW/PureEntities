@@ -12,6 +12,8 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\AnimatePacket;
+use pocketmine\network\mcpe\protocol\EntityEventPacket;
 
 class Zombie extends WalkMonster implements Ageable{
 
@@ -32,7 +34,7 @@ class Zombie extends WalkMonster implements Ageable{
     }
 
     public function isBaby(): bool{
-        return \false;
+        return $this->getGenericFlag(self::DATA_FLAG_BABY);
     }
 
     public function interactTarget() : bool{
@@ -42,6 +44,11 @@ class Zombie extends WalkMonster implements Ageable{
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
+            $pk = new EntityEventPacket();
+            $pk->entityRuntimeId = $this->id;
+            $pk->event = EntityEventPacket::ARM_SWING;
+            $this->server->broadcastPacket($this->hasSpawned, $pk);
+
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);
 
