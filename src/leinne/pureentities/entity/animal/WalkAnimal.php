@@ -10,11 +10,6 @@ use pocketmine\math\Vector3;
 abstract class WalkAnimal extends Animal{
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
-        if($this->server->getDifficulty() < 1){
-            $this->close();
-            return \false;
-        }
-
         if($this->closed){
             return \false;
         }
@@ -28,41 +23,47 @@ abstract class WalkAnimal extends Animal{
         $target = $this->checkTarget();
 
         $x = $target->x - $this->x;
-        $y = $target->y - $this->y;
+        $y = $target->y - $this->y + 0.0;
         $z = $target->z - $this->z;
 
         $diff = \abs($x) + \abs($z);
         $needJump = \false;
-        if(!$this->interactTarget() && $diff !== 0.0 && $this->onGround){
+        if(!$this->interactTarget() && $diff !== 0.0){
             $needJump = \true;
             $hasUpdate = \true;
-            $this->motion->x += $this->getSpeed() * 0.12 * $x * $tickDiff / $diff;
-            $this->motion->z += $this->getSpeed() * 0.12 * $z * $tickDiff / $diff;
+            $ground = $this->onGround ? 0.12 : 0.004;
+            $this->motion->x += $this->getSpeed() * $ground * $x * $tickDiff / $diff;
+            $this->motion->z += $this->getSpeed() * $ground * $z * $tickDiff / $diff;
         }
 
         if($needJump){
-            $hasUpdate = !$hasUpdate && $this->checkJump($tickDiff) ? \true : $hasUpdate;
+            $hasUpdate = $this->checkJump($tickDiff) && !$hasUpdate ? \true : $hasUpdate;
         }
 
-        $this->yaw = \rad2deg(\atan2($z, $x)) - 90;
-        $this->pitch = $y === 0.0 ? 0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
+        $this->yaw = \rad2deg(\atan2($z, $x)) - 90.0;
+        $this->pitch = $y === 0.0 ? $y : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
 
         return $hasUpdate;
     }
 
     protected function checkJump(int $tickDiff) : bool{
-        $xWidth = ($dx = $this->motion->x) > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX;
-        $zWidth = ($dz = $this->motion->z) > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ;
-        $block = $this->getLevel()->getBlock(new Vector3((int) ($xWidth + $dx * $tickDiff * 2), $this->y, (int) ($zWidth + $dz * $tickDiff * 2)));
+        $block = $this->getLevel()->getBlock(new Vector3(
+            (int) $x = ((($dx = $this->motion->x) > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $dx * $tickDiff * 2),
+            $this->y,
+            (int) $z = ((($dz = $this->motion->z) > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $dz * $tickDiff * 2)
+        ));
         if(
             ($aabb = $block->getBoundingBox()) !== \null
             && $block->getSide(Facing::UP)->getBoundingBox() === \null
             && $block->getSide(Facing::UP, 2)->getBoundingBox() === \null
         ){
             if($aabb->maxY - $aabb->minY == 1){
-                $this->motion->y = 0.5 * $tickDiff;
-            }else if((int) $aabb->minY !== $aabb->minY && $aabb->maxY - $aabb->minY == 0.5){
-                $this->motion->y = 0.24 * $tickDiff;
+                $this->motion->y = 0.32 * $tickDiff;
+            }elseif(
+                ($aabb->minY !== 0.5 || $this->y - (int) $this->y === 0.5)
+                && $aabb->maxY - $aabb->minY === 0.5
+            ){
+                $this->motion->y = 0.08 * $tickDiff;
             }
             return \true;
         }

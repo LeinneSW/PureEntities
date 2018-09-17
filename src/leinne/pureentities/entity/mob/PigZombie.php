@@ -67,9 +67,9 @@ class PigZombie extends WalkMonster{
     public function interactTarget() : bool{
         ++$this->attackDelay;
         $target = $this->getTarget();
-        if($this->getSpeed() < 2.8 && $this->isAngry() && $target instanceof Creature){
-            $this->setSpeed(2.8);
-        }elseif($this->getSpeed() === 2.8){
+        if($this->getSpeed() < 3.5 && $this->isAngry() && $target instanceof Creature){
+            $this->setSpeed(3.5);
+        }elseif($this->getSpeed() === 3.5){
             $this->setSpeed(1);
         }
 
