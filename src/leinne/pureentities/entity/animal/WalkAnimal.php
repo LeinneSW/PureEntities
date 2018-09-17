@@ -53,7 +53,7 @@ abstract class WalkAnimal extends Animal{
     protected function checkJump(int $tickDiff) : bool{
         $xWidth = ($dx = $this->motion->x) > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX;
         $zWidth = ($dz = $this->motion->z) > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ;
-        $block = $this->getLevel()->getBlock($vec = new Vector3((int) ($xWidth + $dx * $tickDiff * 2), $this->y, (int) ($zWidth + $dz * $tickDiff * 2)));
+        $block = $this->getLevel()->getBlock(new Vector3((int) ($xWidth + $dx * $tickDiff * 2), $this->y, (int) ($zWidth + $dz * $tickDiff * 2)));
         if(
             ($aabb = $block->getBoundingBox()) !== \null
             && $block->getSide(Facing::UP)->getBoundingBox() === \null
