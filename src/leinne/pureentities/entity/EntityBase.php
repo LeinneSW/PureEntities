@@ -19,8 +19,6 @@ abstract class EntityBase extends Creature{
     private $target = \null;
     private $targetFixed = \false;
 
-    private $movable = \true;
-
     /**
      * $this 와 $target의 관계가 적대관계인지 확인
      *
@@ -58,7 +56,7 @@ abstract class EntityBase extends Creature{
     }
 
     public function isMovable() : bool{
-        return $this->movable;
+        return \true;
     }
 
     public function updateMovement(bool $teleport = \false) : void{
@@ -155,6 +153,10 @@ abstract class EntityBase extends Creature{
     }
 
     public function move(float $dx, float $dy, float $dz) : void{
+        if(!$this->isMovable()){
+            return;
+        }
+
         $this->blocksAround = \null;
 
         Timings::$entityMoveTimer->startTiming();

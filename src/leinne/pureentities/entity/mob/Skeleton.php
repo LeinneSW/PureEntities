@@ -6,7 +6,6 @@ namespace leinne\pureentities\entity\mob;
 
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
-use pocketmine\entity\EntityIds;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\entity\EntityShootBowEvent;
@@ -19,7 +18,7 @@ use pocketmine\nbt\tag\CompoundTag;
 
 class Skeleton extends WalkMonster{
 
-    const NETWORK_ID = EntityIds::SKELETON;
+    const NETWORK_ID = self::SKELETON;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -28,6 +27,14 @@ class Skeleton extends WalkMonster{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
+        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", 20));
+        if($nbt->hasTag("HealF", FloatTag::class)){
+            $health = $nbt->getFloat("HealF");
+        }elseif($nbt->hasTag("Health")){
+            $healthTag = $nbt->getTag("Health");
+            $health = (float) $healthTag->getValue(); //Older versions of PocketMine-MP incorrectly saved this as a short instead of a float
+        }
+        $this->setHealth($health);
         $this->setSpeed(1.2);
         $this->inventory->setItemInHand(ItemFactory::get(Item::BOW));
     }
@@ -90,6 +97,13 @@ class Skeleton extends WalkMonster{
             }
         }
         return $this->distanceSquared($target) <= 7.84; //2.5 ** 2
+    }
+
+    public function saveNBT() : CompoundTag{
+        $nbt = parent::saveNBT();
+        $nbt->setInt("MaxHealth" , $this->getMaxHealth());
+
+        return $nbt;
     }
 
     public function getXpDropAmount() : int{

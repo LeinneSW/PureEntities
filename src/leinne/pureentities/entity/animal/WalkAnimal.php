@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\mob;
+namespace leinne\pureentities\entity\animal;
 
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 
-abstract class WalkMonster extends Monster{
+abstract class WalkAnimal extends Animal{
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
         if($this->server->getDifficulty() < 1){
