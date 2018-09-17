@@ -29,9 +29,9 @@ abstract class WalkAnimal extends Animal{
         $diff = \abs($x) + \abs($z);
         $needJump = \false;
         if(!$this->interactTarget() && $diff !== 0.0){
-            $needJump = \true;
             $hasUpdate = \true;
-            $ground = $this->onGround ? 0.12 : 0.004;
+            $needJump = $this->onGround;
+            $ground = $this->onGround ? 0.12 : 0.008;
             $this->motion->x += $this->getSpeed() * $ground * $x * $tickDiff / $diff;
             $this->motion->z += $this->getSpeed() * $ground * $z * $tickDiff / $diff;
         }
@@ -48,23 +48,22 @@ abstract class WalkAnimal extends Animal{
 
     protected function checkJump(int $tickDiff) : bool{
         $block = $this->getLevel()->getBlock(new Vector3(
-            (int) $x = ((($dx = $this->motion->x) > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $dx * $tickDiff * 2),
+            (int) ((($dx = $this->motion->x) > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $dx * $tickDiff * 2),
             $this->y,
-            (int) $z = ((($dz = $this->motion->z) > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $dz * $tickDiff * 2)
+            (int) ((($dz = $this->motion->z) > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $dz * $tickDiff * 2)
         ));
         if(
             ($aabb = $block->getBoundingBox()) !== \null
-            && $block->getSide(Facing::UP)->getBoundingBox() === \null
+            && $block->getSide(Facing::UP)->getBoundingBox() === \null //밟고있는게 반블럭 그리고 그 위로 반블럭 한개로 1칸블럭, 점프가능(추후 예외설정)
             && $block->getSide(Facing::UP, 2)->getBoundingBox() === \null
         ){
-            if($aabb->maxY - $aabb->minY == 1){
-                $this->motion->y = 0.32 * $tickDiff;
-            }elseif(
-                ($aabb->minY !== 0.5 || $this->y - (int) $this->y === 0.5)
-                && $aabb->maxY - $aabb->minY === 0.5
-            ){
-                $this->motion->y = 0.08 * $tickDiff;
+            if($aabb->maxY - $aabb->minY > 1 || $aabb->maxY === $this->y){ //울타리 or 반블럭 위
+                return \false;
+            }elseif($aabb->maxY - $this->y === 0.5){ //반블럭
+                $this->motion->y = 0.36;
+                return \true;
             }
+            $this->motion->y = 0.52;
             return \true;
         }
         return \false;

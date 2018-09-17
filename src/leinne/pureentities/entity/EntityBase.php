@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity;
 
+use pocketmine\block\Stair;
 use pocketmine\entity\Creature;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -195,6 +196,9 @@ abstract class EntityBase extends Creature{
         $this->checkChunks();
         $this->checkBlockCollision();
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
+        /*if(!$this->onGround && $this->level->getBlock(new Vector3((int) $this->x, (int) ($this->y - 0.5), (int) $this->z)) instanceof Stair){
+            $this->onGround = \true;
+        }*/
         $this->updateFallState($dy, $this->onGround);
 
         if($movX != $dx){
