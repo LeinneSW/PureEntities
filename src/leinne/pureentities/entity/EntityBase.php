@@ -40,7 +40,7 @@ abstract class EntityBase extends Creature{
         $target = $this->target;
         if(
             $target instanceof Creature
-            && \abs($this->x - $target->x) <= ($width = $this->width / 2 + $target->width / 2 + 0.1)
+            && \abs($this->x - $target->x) <= ($width = $this->width / 2 + $target->width / 2 + 0.12)
             && \abs($this->z - $target->z) <= $width
             && \abs($this->y - $target->y) <= \min(1, $this->eyeHeight)
         ){
