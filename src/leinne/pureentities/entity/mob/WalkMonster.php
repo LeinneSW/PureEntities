@@ -59,16 +59,19 @@ abstract class WalkMonster extends Monster{
         ));
         if(
             ($aabb = $block->getBoundingBox()) !== \null
-            && $block->getSide(Facing::UP)->getBoundingBox() === \null //밟고있는게 반블럭 그리고 그 위로 반블럭 한개로 1칸블럭, 점프가능(추후 예외설정)
             && $block->getSide(Facing::UP, 2)->getBoundingBox() === \null
         ){
-            if($aabb->maxY - $aabb->minY > 1 || $aabb->maxY === $this->y){ //울타리 or 반블럭 위
-                return \false;
-            }elseif($aabb->maxY - $this->y === 0.5){ //반블럭
-                $this->motion->y = 0.36;
-                return \true;
+            if(($up = $block->getSide(Facing::UP)->getBoundingBox()) === \null){
+                if($aabb->maxY - $aabb->minY > 1 || $aabb->maxY === $this->y){ //울타리 or 반블럭 위
+                    return \false;
+                }elseif($aabb->maxY - $this->y === 0.5){ //반블럭
+                    $this->motion->y = 0.36;
+                    return \true;
+                }
+                $this->motion->y = 0.52;
+            }elseif($up->maxY - $this->y === 1.0){ //반블럭 위에서 반블럭+한칸블럭 점프
+                $this->motion->y = 0.52;
             }
-            $this->motion->y = 0.52;
             return \true;
         }
         return \false;
