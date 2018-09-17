@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\mob;
 
 use pocketmine\entity\Ageable;
-use pocketmine\entity\Creature;
-use pocketmine\entity\EntityIds;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\AnimatePacket;
+use pocketmine\nbt\tag\FloatTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 
 class Zombie extends WalkMonster implements Ageable{
 
-    const NETWORK_ID = EntityIds::ZOMBIE;
+    const NETWORK_ID = self::ZOMBIE;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -26,6 +24,15 @@ class Zombie extends WalkMonster implements Ageable{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
+        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", 20));
+        if($nbt->hasTag("HealF", FloatTag::class)){
+            $health = $nbt->getFloat("HealF");
+        }elseif($nbt->hasTag("Health")){
+            $healthTag = $nbt->getTag("Health");
+            $health = (float) $healthTag->getValue(); //Older versions of PocketMine-MP incorrectly saved this as a short instead of a float
+        }
+        $this->setHealth($health);
+        $this->setSpeed(0.9);
         $this->setDamages([0, 2, 3, 5]);
     }
 
@@ -79,6 +86,13 @@ class Zombie extends WalkMonster implements Ageable{
         }
 
         return $drops;
+    }
+
+    public function saveNBT() : CompoundTag{
+        $nbt = parent::saveNBT();
+        $nbt->setInt("MaxHealth" , $this->getMaxHealth());
+
+        return $nbt;
     }
 
     public function getXpDropAmount() : int{

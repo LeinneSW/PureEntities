@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\mob;
 
 use pocketmine\entity\Creature;
-use pocketmine\entity\EntityIds;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\network\mcpe\protocol\EntityEventPacket;
 
 class PigZombie extends WalkMonster{
 
-    const NETWORK_ID = EntityIds::ZOMBIE_PIGMAN;
+    const NETWORK_ID = self::ZOMBIE_PIGMAN;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -28,6 +28,14 @@ class PigZombie extends WalkMonster{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
+        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", 20));
+        if($nbt->hasTag("HealF", FloatTag::class)){
+            $health = $nbt->getFloat("HealF");
+        }elseif($nbt->hasTag("Health")){
+            $healthTag = $nbt->getTag("Health");
+            $health = (float) $healthTag->getValue(); //Older versions of PocketMine-MP incorrectly saved this as a short instead of a float
+        }
+        $this->setHealth($health);
         $this->setAngry($nbt->getByte('Angry', 0) !== 0);
         $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
     }
@@ -70,6 +78,11 @@ class PigZombie extends WalkMonster{
         }
 
         if($this->attackDelay >= 15 && ($damage = $this->getResultDamage()) > 0){
+            $pk = new EntityEventPacket();
+            $pk->entityRuntimeId = $this->id;
+            $pk->event = EntityEventPacket::ARM_SWING;
+            $this->server->broadcastPacket($this->hasSpawned, $pk);
+
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);
 
@@ -82,6 +95,7 @@ class PigZombie extends WalkMonster{
 
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
+        $nbt->setInt("MaxHealth", $this->getMaxHealth());
         $nbt->setByte("Angry", $this->angry ? 1 : 0);
 
         return $nbt;
