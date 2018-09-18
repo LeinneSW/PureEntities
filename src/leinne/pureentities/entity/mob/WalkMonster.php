@@ -28,7 +28,7 @@ abstract class WalkMonster extends Monster{
         $target = $this->checkTarget();
 
         $x = $target->x - $this->x;
-        $y = $target->y - $this->y + 0.0;
+        $y = 0.0 + $target->y - $this->y;
         $z = $target->z - $this->z;
 
         $diff = \abs($x) + \abs($z);

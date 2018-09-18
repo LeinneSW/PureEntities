@@ -33,7 +33,7 @@ class PigZombie extends WalkMonster{
             $health = $nbt->getFloat("HealF");
         }elseif($nbt->hasTag("Health")){
             $healthTag = $nbt->getTag("Health");
-            $health = (float) $healthTag->getValue(); //Older versions of PocketMine-MP incorrectly saved this as a short instead of a float
+            $health = (float) $healthTag->getValue();
         }
         $this->setHealth($health);
         $this->setAngry($nbt->getByte('Angry', 0) !== 0);
@@ -95,9 +95,7 @@ class PigZombie extends WalkMonster{
 
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
-        $nbt->setInt("MaxHealth", $this->getMaxHealth());
         $nbt->setByte("Angry", $this->angry ? 1 : 0);
-
         return $nbt;
     }
 

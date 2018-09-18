@@ -14,6 +14,7 @@ class Sheep extends Animal{
 
     const NETWORK_ID = self::SHEEP;
 
+    //TODO: 크기를 몰라 구현 지연중...
     /*public $width = 0.6;
     public $height = 1.8;
     public $eyeHeight = 1.62;*/
@@ -27,7 +28,7 @@ class Sheep extends Animal{
             $health = $nbt->getFloat("HealF");
         }elseif($nbt->hasTag("Health")){
             $healthTag = $nbt->getTag("Health");
-            $health = (float) $healthTag->getValue(); //Older versions of PocketMine-MP incorrectly saved this as a short instead of a float
+            $health = (float) $healthTag->getValue();
         }
         $this->setHealth($health);
     }
@@ -51,12 +52,6 @@ class Sheep extends Animal{
     public function interactTarget() : bool{
         // TODO: Implement interactTarget() method.
         return \false;
-    }
-
-    public function saveNBT() : CompoundTag{
-        $nbt = parent::saveNBT();
-        $nbt->setInt("MaxHealth" , $this->getMaxHealth());
-        return $nbt;
     }
 
 }

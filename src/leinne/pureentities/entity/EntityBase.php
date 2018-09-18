@@ -19,6 +19,7 @@ abstract class EntityBase extends Creature{
     private $target = \null;
     private $targetFixed = \false;
 
+    /** @var float */
     protected $interactDistance = 0.2;
 
     /**
@@ -38,11 +39,16 @@ abstract class EntityBase extends Creature{
      */
     public abstract function interactTarget() : bool;
 
+    /**
+     * 상호작용이 가능한 거리인지 체크
+     *
+     * @return Creature
+     */
     public function checkInteract() : ?Creature{
         $target = $this->target;
         if(
             $target instanceof Creature
-            && \abs($this->x - $target->x) <= ($width = $this->width / 2 + $target->width / 2 + $this->interactDistance)
+            && \abs($this->x - $target->x) <= ($width = $this->interactDistance + $this->width / 2 + $target->width / 2)
             && \abs($this->z - $target->z) <= $width
             && \abs($this->y - $target->y) <= \min(1, $this->eyeHeight)
         ){
@@ -55,6 +61,12 @@ abstract class EntityBase extends Creature{
         parent::initEntity($nbt);
 
         $this->setImmobile();
+    }
+
+    public function saveNBT() : CompoundTag{
+        $nbt = parent::saveNBT();
+        $nbt->setInt("MaxHealth" , $this->getMaxHealth());
+        return $nbt;
     }
 
     public function isMovable() : bool{
