@@ -19,14 +19,16 @@ This plug-in is in development. Therefore, It is possible to function abnormally
     * `void setSpeed(float $speed)`
     * `?Vector3 getTarget()`
     * `void setTarget(Vector $target, bool $fixed = \false)`
+    * `void setTargetFixed(bool $fixed)`
   * Monster
+    * `int getResultDamage()`
     * `int[] getDamages()`
     * `void setDamages(int[] $damages)`
-    * `void setDamage(int $damage, ?int $difficulty = \null)`
-    * `int getMinDamage(?int $difficulty = \null)`
-    * `void setMinDamage(int $damage, ?int $difficulty = \null)`
-    * `int getMaxDamage(?int $difficulty = \null)`
-    * `void setMaxDamage(int $damage, ?int $difficulty = \null)`
+    * `void setDamage(int $damage, int $difficulty = -1)`
+    * `int getMinDamage(int $difficulty = -1)`
+    * `void setMinDamage(int $damage, int $difficulty = -1)`
+    * `int getMaxDamage(int $difficulty = -1)`
+    * `void setMaxDamage(int $damage, int $difficulty = -1)`
 
 ## Example
 ``` php
