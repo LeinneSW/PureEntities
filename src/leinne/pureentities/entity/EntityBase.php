@@ -22,14 +22,14 @@ abstract class EntityBase extends Creature{
     protected $interactDistance = 0.2;
 
     /**
-     * $this 와 $target의 관계가 적대관계인지 확인
+     * $this 와 $target의 관계가 상호작용하는 관계인지 확인
      *
      * @param Creature $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public abstract function isHostility(Creature $target, float $distanceSquare) : bool;
+    public abstract function hasInteraction(Creature $target, float $distanceSquare) : bool;
 
     /**
      * 타겟과의 상호작용
@@ -121,7 +121,7 @@ abstract class EntityBase extends Creature{
 
     protected final function checkTarget() : Vector3{
         $isFixed = $this->isTargetFixed();
-        if(!$isFixed && (!($this->target instanceof Creature) || !($option = $this->isHostility($this->target, $this->distanceSquared($this->target))))){
+        if(!$isFixed && (!($this->target instanceof Creature) || !($option = $this->hasInteraction($this->target, $this->distanceSquared($this->target))))){
             if(isset($option)) $this->target = \null;
 
             $near = \PHP_INT_MAX;
@@ -131,7 +131,7 @@ abstract class EntityBase extends Creature{
                     $target === $this
                     || $distance > $near
                     || !($target instanceof Creature)
-                    || !$this->isHostility($target, $distance)
+                    || !$this->hasInteraction($target, $distance)
                 ){
                     continue;
                 }
