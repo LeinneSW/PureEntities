@@ -57,21 +57,19 @@ abstract class WalkMonster extends Monster{
             $this->y,
             (int) ((($dz = $this->motion->z) > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $dz * $tickDiff * 2)
         ));
-        if(
-            ($aabb = $block->getBoundingBox()) !== \null
-            && $block->getSide(Facing::UP, 2)->getBoundingBox() === \null
-        ){
-            if(($up = $block->getSide(Facing::UP)->getBoundingBox()) === \null){
-                if($aabb->maxY - $aabb->minY > 1 || $aabb->maxY === $this->y){ //울타리 or 반블럭 위
-                    return \false;
-                }elseif($aabb->maxY - $this->y === 0.5){ //반블럭
-                    $this->motion->y = 0.36;
-                    return \true;
-                }
-                $this->motion->y = 0.52;
-            }elseif($up->maxY - $this->y === 1.0){ //반블럭 위에서 반블럭+한칸블럭 점프
-                $this->motion->y = 0.52;
+        if(($aabb = $block->getBoundingBox()) === \null || $block->getSide(Facing::UP, 2)->getBoundingBox() !== \null){
+            return \false;
+        }
+
+        if(($up = $block->getSide(Facing::UP)->getBoundingBox()) === \null){
+            if($aabb->maxY - $aabb->minY > 1 || $aabb->maxY === $this->y){ //울타리 or 반블럭 위
+                return \false;
             }
+
+            $this->motion->y = $aabb->maxY - $this->y === 0.5 ? 0.36 : 0.5;
+            return \true;
+        }elseif($up->maxY - $this->y === 1.0){ //반블럭 위에서 반블럭+한칸블럭 점프
+            $this->motion->y = 0.52;
             return \true;
         }
         return \false;
