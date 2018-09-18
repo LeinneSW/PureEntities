@@ -11,7 +11,7 @@ use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
 use pocketmine\Player;
 
-class MobInventory extends BaseInventory{
+class MonsterInventory extends BaseInventory{
 
     /** @var Monster */
     protected $holder;

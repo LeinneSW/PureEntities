@@ -44,7 +44,7 @@ class Sheep extends Animal{
      *
      * @return bool
      */
-    public function isHostility(Creature $target, float $distanceSquare) : bool{
+    public function hasInteraction(Creature $target, float $distanceSquare) : bool{
         return $target instanceof Player && $target->isAlive() && !$target->closed && $target->getInventory()->getItemInHand()->getId() === Item::SEEDS && $distanceSquare <= 49;
     }
 

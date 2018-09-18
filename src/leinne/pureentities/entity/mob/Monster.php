@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\mob;
 
 use leinne\pureentities\entity\EntityBase;
-use leinne\pureentities\inventory\MobInventory;
+use leinne\pureentities\inventory\MonsterInventory;
 use pocketmine\entity\Creature;
 use pocketmine\item\TieredTool;
 use pocketmine\nbt\tag\CompoundTag;
@@ -14,7 +14,7 @@ use pocketmine\Server;
 
 abstract class Monster extends EntityBase{
 
-    /** @var MobInventory */
+    /** @var MonsterInventory */
     protected $inventory;
 
     protected $attackDelay = 0;
@@ -25,10 +25,10 @@ abstract class Monster extends EntityBase{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->inventory = new MobInventory($this);
+        $this->inventory = new MonsterInventory($this);
     }
 
-    public function isHostility(Creature $target, float $distance) : bool{
+    public function hasInteraction(Creature $target, float $distance) : bool{
         return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 169;
     }
 
@@ -104,7 +104,7 @@ abstract class Monster extends EntityBase{
         $this->inventory->sendContents($player);
     }
 
-    public function getInventory() : MobInventory{
+    public function getInventory() : MonsterInventory{
         return $this->inventory;
     }
 

@@ -44,8 +44,8 @@ class PigZombie extends WalkMonster{
         return 'Zombie Pigman';
     }
 
-    public function isHostility(Creature $target, float $distance) : bool{
-        return $this->isAngry() && parent::isHostility($target, $distance);
+    public function hasInteraction(Creature $target, float $distance) : bool{
+        return $this->isAngry() && parent::hasInteraction($target, $distance);
     }
 
     public function attack(EntityDamageEvent $source) : void{
