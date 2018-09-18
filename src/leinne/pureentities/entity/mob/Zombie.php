@@ -29,7 +29,7 @@ class Zombie extends WalkMonster implements Ageable{
             $health = $nbt->getFloat("HealF");
         }elseif($nbt->hasTag("Health")){
             $healthTag = $nbt->getTag("Health");
-            $health = (float) $healthTag->getValue(); //Older versions of PocketMine-MP incorrectly saved this as a short instead of a float
+            $health = (float) $healthTag->getValue();
         }
         $this->setHealth($health);
         $this->setSpeed(0.9);
@@ -86,13 +86,6 @@ class Zombie extends WalkMonster implements Ageable{
         }
 
         return $drops;
-    }
-
-    public function saveNBT() : CompoundTag{
-        $nbt = parent::saveNBT();
-        $nbt->setInt("MaxHealth" , $this->getMaxHealth());
-
-        return $nbt;
     }
 
     public function getXpDropAmount() : int{

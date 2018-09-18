@@ -33,7 +33,7 @@ class Skeleton extends WalkMonster{
             $health = $nbt->getFloat("HealF");
         }elseif($nbt->hasTag("Health")){
             $healthTag = $nbt->getTag("Health");
-            $health = (float) $healthTag->getValue(); //Older versions of PocketMine-MP incorrectly saved this as a short instead of a float
+            $health = (float) $healthTag->getValue();
         }
         $this->setHealth($health);
         $this->setSpeed(1.2);
@@ -61,6 +61,7 @@ class Skeleton extends WalkMonster{
                 -$this->pitch
             );
             $arrow = new Arrow($this->level, $nbt, $this, $force === 2);
+            $arrow->setBaseDamage($arrow->getBaseDamage() + $this->getResultDamage());
             $arrow->setPickupMode(($item = $this->inventory->getItemInHand())->hasEnchantment(Enchantment::INFINITY) ? Arrow::PICKUP_CREATIVE : Arrow::PICKUP_NONE);
 
             if(($punchLevel = $item->getEnchantmentLevel(Enchantment::PUNCH)) > 0){
@@ -98,13 +99,6 @@ class Skeleton extends WalkMonster{
             }
         }
         return $this->distanceSquared($target) <= 7.84; //2.5 ** 2
-    }
-
-    public function saveNBT() : CompoundTag{
-        $nbt = parent::saveNBT();
-        $nbt->setInt("MaxHealth" , $this->getMaxHealth());
-
-        return $nbt;
     }
 
     public function getXpDropAmount() : int{

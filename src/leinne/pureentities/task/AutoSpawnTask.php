@@ -19,7 +19,7 @@ class AutoSpawnTask extends Task{
             $radX = \mt_rand(3, 24);
             $radZ = \mt_rand(3, 24);
             $pos = $player->floor();
-            $pos->y = $player->level->getHighestBlockAt($pos->x += \mt_rand(0, 1) ? $radX : -$radX, $pos->z += \mt_rand(0, 1) ? $radZ : -$radZ);
+            $pos->y = $player->level->getHighestBlockAt($pos->x += \mt_rand(0, 1) ? $radX : -$radX, $pos->z += \mt_rand(0, 1) ? $radZ : -$radZ) + 1;
 
             $entityIds = [
                 ["Cow", "Pig", "Sheep", "Chicken"],//, "Slime", "Wolf", "Ocelot", "Mooshroom", "Rabbit", "IronGolem", "SnowGolem"],
