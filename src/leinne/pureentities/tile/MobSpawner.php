@@ -9,12 +9,10 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Spawnable;
 
-class Spawner extends Spawnable{
+class MobSpawner extends Spawnable{
 
     protected $entityId = -1;
     protected $spawnRange;
@@ -33,19 +31,16 @@ class Spawner extends Spawnable{
     }
 
     protected function readSaveData(CompoundTag $nbt) : void{
-        $this->entityId = $nbt->getShort('EntityId', 0);
+        $this->entityId = $nbt->getInt('EntityId', -1);
         $this->spawnRange = $nbt->getShort('SpawnRange', 8);
-        $this->minSpawnDelay = $nbt->getShort('MinSpawnDelay', 200);
-        $this->maxSpawnDelay = $nbt->getShort('MaxSpawnDelay', 8000);
+        $this->minSpawnDelay = $nbt->getInt('MinSpawnDelay', 200);
+        $this->maxSpawnDelay = $nbt->getInt('MaxSpawnDelay', 8000);
         $this->maxNearbyEntities = $nbt->getShort('MaxNearbyEntities', 25);
         $this->requiredPlayerRange = $nbt->getShort('RequiredPlayerRange', 20);
     }
 
     public function hasValidEntityId() : bool{
-        if($this->entityId === 0){
-            return \false;
-        }
-        return \true;
+        return $this->entityId > 0;
     }
 
     public function onUpdate() : bool{
@@ -58,7 +53,7 @@ class Spawner extends Spawnable{
             return \false;
         }
 
-        if(++$this->delay >= mt_rand($this->minSpawnDelay, $this->maxSpawnDelay)){
+        if(++$this->delay >= mt_rand($this->getMinSpawnDelay(), $this->getMaxSpawnDelay())){
             $this->delay = 0;
 
             $list = [];
@@ -73,7 +68,7 @@ class Spawner extends Spawnable{
                 }
             }
 
-            if($isValid && count($list) <= $this->maxNearbyEntities){
+            if($isValid && count($list) < $this->maxNearbyEntities){
                 $pos = new Position(
                     $this->x + mt_rand(-$this->spawnRange, $this->spawnRange),
                     $this->y,
@@ -81,7 +76,7 @@ class Spawner extends Spawnable{
                     $this->level
                 );
                 $entity = Entity::createEntity($this->entityId, $pos->level, Entity::createBaseNBT($pos));
-                if($entity !== null){
+                if($entity !== \null){
                     $entity->spawnToAll();
                 }
             }
@@ -89,8 +84,15 @@ class Spawner extends Spawnable{
         return \true;
     }
 
+    public function getMinSpawnDelay() : int{
+        return \min($this->minSpawnDelay, $this->maxSpawnDelay);
+    }
+
+    public function getMaxSpawnDelay() : int{
+        return \max($this->minSpawnDelay, $this->maxSpawnDelay);
+    }
+
     public function addAdditionalSpawnData(CompoundTag $tag) : void{
-        $tag->setTag(new StringTag('id', 'MobSpawner'));
         $tag->setTag(new IntTag('EntityId', $this->entityId));
     }
 
@@ -100,18 +102,10 @@ class Spawner extends Spawnable{
     }
 
     public function setMinSpawnDelay(int $minDelay) : void{
-        if($minDelay > $this->maxSpawnDelay){
-            return;
-        }
-
         $this->minSpawnDelay = $minDelay;
     }
 
     public function setMaxSpawnDelay(int $maxDelay) : void{
-        if($this->minSpawnDelay > $maxDelay){
-            return;
-        }
-
         $this->maxSpawnDelay = $maxDelay;
     }
 
@@ -133,10 +127,10 @@ class Spawner extends Spawnable{
     }
 
     protected function writeSaveData(CompoundTag $nbt) : void{
-        $nbt->setShort('EntityId', $this->entityId);
+        $nbt->setInt('EntityId', $this->entityId);
         $nbt->setShort('SpawnRange', $this->spawnRange);
-        $nbt->setShort('MinSpawnDelay', $this->minSpawnDelay);
-        $nbt->setShort('MaxSpawnDelay', $this->maxSpawnDelay);
+        $nbt->setInt('MinSpawnDelay', $this->minSpawnDelay);
+        $nbt->setInt('MaxSpawnDelay', $this->maxSpawnDelay);
         $nbt->setShort('MaxNearbyEntities', $this->maxNearbyEntities);
         $nbt->setShort('RequiredPlayerRange', $this->requiredPlayerRange);
     }

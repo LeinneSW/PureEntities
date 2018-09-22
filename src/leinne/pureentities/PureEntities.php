@@ -7,13 +7,14 @@ use leinne\pureentities\entity\mob\Skeleton;
 use leinne\pureentities\entity\mob\Zombie;
 use leinne\pureentities\entity\vehicle\Boat;
 use leinne\pureentities\task\AutoSpawnTask;
-use leinne\pureentities\tile\Spawner;
+use leinne\pureentities\tile\MobSpawner;
 use pocketmine\entity\Entity;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Tile;
@@ -53,7 +54,7 @@ class PureEntities extends PluginBase implements Listener{
 //        Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
 //        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
 
-        Tile::registerTile(Spawner::class);
+        Tile::registerTile(MobSpawner::class);
 
         $this->getServer()->getLogger()->info(TextFormat::AQUA . '[PureEntities]All entities were registered');
     }
@@ -80,25 +81,21 @@ class PureEntities extends PluginBase implements Listener{
             $ev->setCancelled();
 
             $tile = $block->level->getTile($block);
-            if($tile instanceof Spawner){
+            if($tile instanceof MobSpawner){
                 $tile->setSpawnEntityType($item->getDamage());
             }else{
                 if($tile !== \null){
-                    /**
-                     * 타일은 존재하나 스포너가 아닌 경우
-                     * 이게 무슨 바보같은 상황이야?
-                     */
                     $tile->close();
                 }
 
                 $nbt = new CompoundTag('', [
                     new StringTag('id', Tile::MOB_SPAWNER),
-                    new IntTag('EntityId', $item->getId()),
+                    new IntTag('EntityId', $item->getDamage()),
                     new IntTag('x', $block->x),
                     new IntTag('y', $block->y),
                     new IntTag('z', $block->z),
                 ]);
-                new Spawner($block->getLevel(), $nbt);
+                new MobSpawner($block->getLevel(), $nbt);
             }
         }
     }
