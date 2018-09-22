@@ -28,6 +28,10 @@ abstract class Monster extends EntityBase{
         $this->inventory = new MonsterInventory($this);
     }
 
+    public function getInventory() : MonsterInventory{
+        return $this->inventory;
+    }
+
     public function hasInteraction(Creature $target, float $distance) : bool{
         return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 169;
     }
@@ -73,10 +77,6 @@ abstract class Monster extends EntityBase{
     }
 
     public function setDamage(int $damage, int $difficulty = -1) : void{
-        if($difficulty === \null || $difficulty > 3 || $difficulty < 0){
-            $difficulty = Server::getInstance()->getDifficulty();
-        }
-
         $this->setMinDamage($damage, $difficulty);
         $this->setMaxDamage($damage, $difficulty);
     }
@@ -102,10 +102,6 @@ abstract class Monster extends EntityBase{
         parent::sendSpawnPacket($player);
 
         $this->inventory->sendContents($player);
-    }
-
-    public function getInventory() : MonsterInventory{
-        return $this->inventory;
     }
 
 }
