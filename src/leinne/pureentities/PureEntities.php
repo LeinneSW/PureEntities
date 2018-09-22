@@ -2,15 +2,20 @@
 
 namespace leinne\pureentities;
 
+use leinne\pureentities\entity\mob\Creeper;
 use leinne\pureentities\entity\mob\PigZombie;
 use leinne\pureentities\entity\mob\Skeleton;
 use leinne\pureentities\entity\mob\Zombie;
 use leinne\pureentities\task\AutoSpawnTask;
 use leinne\pureentities\tile\MobSpawner;
+use pocketmine\block\Air;
 use pocketmine\entity\Entity;
+use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
+use pocketmine\level\Position;
+use pocketmine\math\Facing;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
@@ -98,8 +103,7 @@ class PureEntities extends PluginBase implements Listener{
         }
     }
 
-    //TODO: 아이언 골렘 지원한 뒤에 봅시다~~
-    /*public function onBlockPlaceEvent(BlockPlaceEvent $ev) : void{
+    public function onBlockPlaceEvent(BlockPlaceEvent $ev) : void{
         if($ev->isCancelled()){
             return;
         }
@@ -107,45 +111,37 @@ class PureEntities extends PluginBase implements Listener{
         $block = $ev->getBlock();
         if($block->getId() === Item::JACK_O_LANTERN || $block->getId() === Item::PUMPKIN){
             if(
-                $block->getSide(Vector3::SIDE_DOWN)->getId() === Item::SNOW_BLOCK
-                && $block->getSide(Vector3::SIDE_DOWN, 2)->getId() === Item::SNOW_BLOCK
+                $block->getSide(Facing::DOWN)->getId() === Item::SNOW_BLOCK
+                && $block->getSide(Facing::DOWN, 2)->getId() === Item::SNOW_BLOCK
             ){
+                $ev->setCancelled();
                 for($y = 1; $y < 3; $y++){
-                    $block->getLevel()->setBlock($block->add(0, -$y, 0), new Air());
+                    $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
                 }
                 $entity = Entity::createEntity('SnowGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
                 if($entity !== \null){
                     $entity->spawnToAll();
                 }
-                $ev->setCancelled();
             }elseif(
-                $block->getSide(Vector3::SIDE_DOWN)->getId() === Item::IRON_BLOCK
-                && $block->getSide(Vector3::SIDE_DOWN, 2)->getId() === Item::IRON_BLOCK
+                $block->getSide(Facing::DOWN)->getId() === Item::IRON_BLOCK
+                && $block->getSide(Facing::DOWN, 2)->getId() === Item::IRON_BLOCK
             ){
-                $down = $block->getSide(Vector3::SIDE_DOWN);
-                $first = $down->getSide(Vector3::SIDE_EAST);
-                $second = $down->getSide(Vector3::SIDE_WEST);
-                if(
-                    $first->getId() === Item::IRON_BLOCK
-                    && $second->getId() === Item::IRON_BLOCK
-                ){
-                    $block->getLevel()->setBlock($first, new Air());
-                    $block->getLevel()->setBlock($second, new Air());
-                }else{
-                    $first = $down->getSide(Vector3::SIDE_NORTH);
-                    $second = $down->getSide(Vector3::SIDE_SOUTH);
-                    if(
-                        $first->getId() === Item::IRON_BLOCK
-                        && $second->getId() === Item::IRON_BLOCK
-                    ){
-                        $block->getLevel()->setBlock($first, new Air());
-                        $block->getLevel()->setBlock($second, new Air());
-                    }else{
-                        return;
+                $down = $block->getSide(Facing::DOWN);
+                if(($first = $down->getSide(Facing::EAST))->getId() === Item::IRON_BLOCK){
+                    if(($sec = $down->getSide(Facing::WEST))->getId() === Item::IRON_BLOCK){
+                        $second = $sec;
+                    }
+                }elseif(($first = $first = $down->getSide(Facing::NORTH))){
+                    if(($sec = $down->getSide(Facing::SOUTH))->getId() === Item::IRON_BLOCK){
+                        $second = $sec;
                     }
                 }
 
-                if($second !== \null){
+
+                if(isset($second)){
+                    $block->getLevel()->setBlock($first, new Air());
+                    $block->getLevel()->setBlock($second, new Air());
+
                     $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
                     if($entity !== \null){
                         $entity->spawnToAll();
@@ -157,9 +153,9 @@ class PureEntities extends PluginBase implements Listener{
                 }
             }
         }
-    }*/
+    }
 
-    //TODO: SilverFish will be soon coming.
+    //TODO: SilverFish
     /*public function BlockBreakEvent(BlockBreakEvent $ev){
         if($ev->isCancelled()){
             return;
