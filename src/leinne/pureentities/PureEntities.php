@@ -128,28 +128,24 @@ class PureEntities extends PluginBase implements Listener{
             ){
                 $down = $block->getSide(Facing::DOWN);
                 if(($first = $down->getSide(Facing::EAST))->getId() === Item::IRON_BLOCK){
-                    if(($sec = $down->getSide(Facing::WEST))->getId() === Item::IRON_BLOCK){
-                        $second = $sec;
-                    }
-                }elseif(($first = $first = $down->getSide(Facing::NORTH))){
-                    if(($sec = $down->getSide(Facing::SOUTH))->getId() === Item::IRON_BLOCK){
-                        $second = $sec;
-                    }
+                    $second = $down->getSide(Facing::WEST);
+                }elseif(($first = $down->getSide(Facing::NORTH))->getId() === Item::IRON_BLOCK){
+                    $second = $down->getSide(Facing::SOUTH);
                 }
 
 
-                if(isset($second)){
-                    $block->getLevel()->setBlock($first, new Air());
-                    $block->getLevel()->setBlock($second, new Air());
+                if(isset($second) && $second->getId() === Item::IRON_BLOCK){
+                    $ev->setCancelled();
 
-                    $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
+                    $down->getLevel()->setBlock($first, new Air());
+                    $down->getLevel()->setBlock($second, new Air());
+                    $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
+                    $down->getLevel()->setBlock($pos = $block->add(0.5, -2, 0.5), new Air());
+
+                    $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($pos, $block->level)));
                     if($entity !== \null){
                         $entity->spawnToAll();
                     }
-
-                    $down->getLevel()->setBlock($entity, new Air());
-                    $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
-                    $ev->setCancelled();
                 }
             }
         }
