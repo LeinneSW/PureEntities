@@ -37,7 +37,7 @@ class PureEntities extends PluginBase implements Listener{
         /** Register Mob */
 //        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
 //        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
-//        Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
+        Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
 //        Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
 //        Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
 //        Entity::registerEntity(IronGolem::class, \false, ['minecraft:irongolem']);
