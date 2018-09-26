@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\mob;
 
-use pocketmine\math\Facing;
-use pocketmine\math\Vector3;
+use leinne\pureentities\entity\ai\EntityAI;
 
 abstract class WalkMonster extends Monster{
 
@@ -42,37 +41,26 @@ abstract class WalkMonster extends Monster{
         }
 
         if($needJump){
-            $hasUpdate = $this->checkJump($tickDiff) && !$hasUpdate ? \true : $hasUpdate;
+            switch(EntityAI::checkJumpState(
+                $this,
+                (int) (($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x),
+                (int) (($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z)
+            )){
+                case EntityAI::JUMP_BLOCK:
+                    $hasUpdate = \true;
+                    $this->motion->y += 0.52;
+                    break;
+                case EntityAI::JUMP_SLAB:
+                    $hasUpdate = \true;
+                    $this->motion->y += 0.36;
+                    break;
+            }
         }
 
         $this->yaw = \rad2deg(\atan2($z, $x)) - 90.0;
         $this->pitch = $y === 0.0 ? $y : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
 
         return $hasUpdate;
-    }
-
-    protected function checkJump(int $tickDiff) : bool{
-        $block = $this->getLevel()->getBlock(new Vector3(
-            (int) ((($dx = $this->motion->x) > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $dx * $tickDiff * 2),
-            $this->y,
-            (int) ((($dz = $this->motion->z) > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $dz * $tickDiff * 2)
-        ));
-        if(($aabb = $block->getBoundingBox()) === \null || $block->getSide(Facing::UP, 2)->getBoundingBox() !== \null){
-            return \false;
-        }
-
-        if(($up = $block->getSide(Facing::UP)->getBoundingBox()) === \null){
-            if($aabb->maxY - $aabb->minY > 1 || $aabb->maxY === $this->y){ //울타리 or 반블럭 위
-                return \false;
-            }
-
-            $this->motion->y = $aabb->maxY - $this->y === 0.5 ? 0.36 : 0.5;
-            return \true;
-        }elseif($up->maxY - $this->y === 1.0){ //반블럭 위에서 반블럭+한칸블럭 점프
-            $this->motion->y = 0.52;
-            return \true;
-        }
-        return \false;
     }
 
 }

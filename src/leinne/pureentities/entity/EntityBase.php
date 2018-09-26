@@ -20,7 +20,7 @@ abstract class EntityBase extends Creature{
     private $targetFixed = \false;
 
     /** @var float */
-    protected $interactDistance = 0.4;
+    protected $interactDistance = 0.5;
 
     /**
      * $this 와 $target의 관계가 상호작용하는 관계인지 확인

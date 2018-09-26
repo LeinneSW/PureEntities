@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\mob;
 
 use pocketmine\entity\Explosive;
+use pocketmine\event\entity\ExplosionPrimeEvent;
+use pocketmine\level\Explosion;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 
 class Creeper extends WalkMonster implements Explosive{
+    //TODO: Beta, 매우 실험적
 
     const NETWORK_ID = self::CREEPER;
 
@@ -18,7 +21,7 @@ class Creeper extends WalkMonster implements Explosive{
 
     private $force = 3.0;
 
-    protected $interactDistance = 1.0;
+    protected $interactDistance = 3.6;
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -40,7 +43,7 @@ class Creeper extends WalkMonster implements Explosive{
     }
 
     public function explode() : void{
-        /*$this->server->getPluginManager()->callEvent($ev = new ExplosionPrimeEvent($this, $this->force));
+        $this->server->getPluginManager()->callEvent($ev = new ExplosionPrimeEvent($this, $this->force));
 
         if(!$ev->isCancelled()){
             $explosion = new Explosion($this, $ev->getForce(), $this);
@@ -48,26 +51,30 @@ class Creeper extends WalkMonster implements Explosive{
                 $explosion->explodeA();
             }
             $explosion->explodeB();
-            $this->close();
-        }*/
+        }
     }
 
     public function interactTarget() : bool{
         if(($target = parent::checkInteract()) === \null){
-            --$this->attackDelay;
+            if($this->attackDelay > 0) {
+                --$this->attackDelay;
+            }elseif($this->getSpeed() < 1){
+                $this->setSpeed(1.0);
+            }
             return \false;
         }
 
-        if(++$this->attackDelay >= 40){
-            /*$pk = new EntityEventPacket();
-            $pk->entityRuntimeId = $this->id;
-            $pk->event = EntityEventPacket::ARM_SWING;
-            $this->server->broadcastPacket($this->hasSpawned, $pk);*/
-
-            //TODO: boom!
+        //TODO: boom event
+        /*$pk = new EntityEventPacket();
+        $pk->entityRuntimeId = $this->id;
+        $pk->event = EntityEventPacket::ARM_SWING;
+        $this->server->broadcastPacket($this->hasSpawned, $pk);*/
+        $this->setSpeed(0.4);
+        if(++$this->attackDelay >= 32){
+            $this->flagForDespawn();
             $this->explode();
         }
-        return \true;
+        return \false;
     }
 
     public function getDrops() : array{
