@@ -7,6 +7,7 @@ namespace leinne\pureentities\entity\mob;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\inventory\MonsterInventory;
 use pocketmine\entity\Creature;
+use pocketmine\inventory\EntityInventoryEventProcessor;
 use pocketmine\item\TieredTool;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
@@ -26,6 +27,7 @@ abstract class Monster extends EntityBase{
         parent::initEntity($nbt);
 
         $this->inventory = new MonsterInventory($this);
+        $this->inventory->setEventProcessor(new EntityInventoryEventProcessor($this));
     }
 
     public function getInventory() : MonsterInventory{
@@ -48,7 +50,6 @@ abstract class Monster extends EntityBase{
         if($difficulty > 3 || $difficulty < 0){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-
         return \min($this->minDamage[$difficulty], $this->maxDamage[$difficulty]);
     }
 
@@ -56,7 +57,6 @@ abstract class Monster extends EntityBase{
         if($difficulty > 3 || $difficulty < 0){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-
         return \max($this->minDamage[$difficulty], $this->maxDamage[$difficulty]);
     }
 
@@ -64,7 +64,6 @@ abstract class Monster extends EntityBase{
         if($difficulty > 3 || $difficulty < 0){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-
         $this->minDamage[$difficulty] = $damage;
     }
 
@@ -72,7 +71,6 @@ abstract class Monster extends EntityBase{
         if($difficulty === \null || $difficulty < 1 || $difficulty > 3){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-
         $this->maxDamage[$difficulty] = $damage;
     }
 
