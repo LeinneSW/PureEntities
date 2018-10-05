@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\animal;
 
-use pocketmine\math\Facing;
+use leinne\pureentities\pollyfill\FacingPollyfill as Facing;
 use pocketmine\math\Vector3;
 
 abstract class WalkAnimal extends Animal{

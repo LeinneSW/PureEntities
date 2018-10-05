@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
+use leinne\pureentities\pollyfill\FacingPollyfill as Facing;
 use pocketmine\entity\Entity;
-use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 
 class EntityAI{
