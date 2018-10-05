@@ -1,7 +1,7 @@
 name: PureEntities
 main: leinne\pureentities\PureEntities
 version: 2.0.0
-api: [4.0.0]
+api: [3.2.3, 4.0.0]
 
 load: STARTUP
 author: LeinneSW
