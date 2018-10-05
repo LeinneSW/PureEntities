@@ -23,7 +23,7 @@ abstract class Monster extends EntityBase{
     private $minDamage = [0, 0, 0, 0];
     private $maxDamage = [0, 0, 0, 0];
 
-    protected function initEntity(CompoundTag $nbt) : void{
+    protected function initEntity(CompoundTag $nbt = null) : void{
         parent::initEntity($nbt);
 
         $this->inventory = new MonsterInventory($this);

@@ -57,7 +57,7 @@ abstract class EntityBase extends Creature{
         return \null;
     }
 
-    protected function initEntity(CompoundTag $nbt) : void{
+    protected function initEntity(CompoundTag $nbt = null) : void{
         parent::initEntity($nbt);
 
         $this->setImmobile();

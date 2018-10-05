@@ -19,8 +19,11 @@ class Sheep extends Animal{
     public $height = 1.8;
     public $eyeHeight = 1.62;*/
 
-    protected function initEntity(CompoundTag $nbt): void{
+    protected function initEntity(CompoundTag $nbt = null): void{
         parent::initEntity($nbt);
+		if($nbt === null){
+			$nbt = $this->namedtag;
+		}
 
         $health = $nbt->getInt("MaxHealth", 8);
         $this->setMaxHealth($health);
