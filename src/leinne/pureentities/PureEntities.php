@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace leinne\pureentities;
 
 use leinne\pureentities\entity\mob\Creeper;
@@ -114,12 +116,12 @@ class PureEntities extends PluginBase implements Listener{
                 $block->getSide(Facing::DOWN)->getId() === Item::SNOW_BLOCK
                 && $block->getSide(Facing::DOWN, 2)->getId() === Item::SNOW_BLOCK
             ){
-                $ev->setCancelled();
-                for($y = 1; $y < 3; $y++){
-                    $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
-                }
                 $entity = Entity::createEntity('SnowGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
                 if($entity !== \null){
+                    $ev->setCancelled();
+                    for($y = 1; $y < 3; $y++){
+                        $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
+                    }
                     $entity->spawnToAll();
                 }
             }elseif(
@@ -135,15 +137,15 @@ class PureEntities extends PluginBase implements Listener{
 
 
                 if(isset($second) && $second->getId() === Item::IRON_BLOCK){
-                    $ev->setCancelled();
-
-                    $down->getLevel()->setBlock($first, new Air());
-                    $down->getLevel()->setBlock($second, new Air());
-                    $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
-                    $down->getLevel()->setBlock($pos = $block->add(0.5, -2, 0.5), new Air());
-
-                    $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($pos, $block->level)));
+                    $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($pos = $block->add(0.5, -2, 0.5), $block->level)));
                     if($entity !== \null){
+                        $ev->setCancelled();
+
+                        $down->getLevel()->setBlock($pos, new Air());
+                        $down->getLevel()->setBlock($first, new Air());
+                        $down->getLevel()->setBlock($second, new Air());
+                        $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
+
                         $entity->spawnToAll();
                     }
                 }
