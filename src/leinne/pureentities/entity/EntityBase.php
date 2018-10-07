@@ -11,7 +11,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\timings\Timings;
 
 abstract class EntityBase extends Creature{
-	use PolyfillTrait; //API 3.2.3 호환성 패치
+    use PolyfillTrait; //API 3.2.3 호환성 패치
 
     private $speed = 1.0;
 

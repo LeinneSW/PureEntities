@@ -21,9 +21,9 @@ class Sheep extends Animal{
 
     protected function initEntity(CompoundTag $nbt = null): void{
         parent::initEntity($nbt);
-		if($nbt === null){
-			$nbt = $this->namedtag;
-		}
+        if($nbt === null){
+            $nbt = $this->namedtag;
+        }
 
         $health = $nbt->getInt("MaxHealth", 8);
         $this->setMaxHealth($health);

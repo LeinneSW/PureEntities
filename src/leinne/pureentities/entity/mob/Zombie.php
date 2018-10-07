@@ -24,8 +24,8 @@ class Zombie extends WalkMonster implements Ageable{
     protected function initEntity(CompoundTag $nbt = null) : void{
         parent::initEntity($nbt);
         if($nbt === null){
-        	$nbt = $this->namedtag;
-		}
+            $nbt = $this->namedtag;
+        }
 
         $this->setMaxHealth($health = $nbt->getInt("MaxHealth", 20));
         if($nbt->hasTag("HealF", FloatTag::class)){

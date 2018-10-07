@@ -25,9 +25,9 @@ class Creeper extends WalkMonster implements Explosive{
 
     protected function initEntity(CompoundTag $nbt = null) : void{
         parent::initEntity($nbt);
-		if($nbt === null){
-			$nbt = $this->namedtag;
-		}
+        if($nbt === null){
+            $nbt = $this->namedtag;
+        }
 
         $this->setMaxHealth($health = $nbt->getInt("MaxHealth", 20));
         if($nbt->hasTag("HealF", FloatTag::class)){

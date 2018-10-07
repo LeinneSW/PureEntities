@@ -37,102 +37,102 @@ $returnType = (string) $reflectionMethod->getReturnType();
 
 if($returnType === CompoundTag::class){ //API 4.0.0
 
-	/**
-	 * This trait override most methods in the {@link Entity} abstract class.
-	 */
-	trait PolyfillTrait{
-		/**
-		 * saveNBT() Polyfill
-		 *
-		 * @see Entity::saveNBT()
-		 */
+    /**
+     * This trait override most methods in the {@link Entity} abstract class.
+     */
+    trait PolyfillTrait{
+        /**
+         * saveNBT() Polyfill
+         *
+         * @see Entity::saveNBT()
+         */
 
-		/**
-		 * 부모 클래스의 saveNBT() 호출 후
-		 * saveNBTSafe() 메소드를 호출
-		 */
-		public function saveNBT() : CompoundTag{
-			return $this->saveNBTSafe();
-		}
+        /**
+         * 부모 클래스의 saveNBT() 호출 후
+         * saveNBTSafe() 메소드를 호출
+         */
+        public function saveNBT() : CompoundTag{
+            return $this->saveNBTSafe();
+        }
 
-		public function saveNBTSafe() : CompoundTag{
-			return $this->parentSaveNBT();
-		}
+        public function saveNBTSafe() : CompoundTag{
+            return $this->parentSaveNBT();
+        }
 
-		public function parentSaveNBT() : CompoundTag{
-			return parent::saveNBT();
-		}
-	}
+        public function parentSaveNBT() : CompoundTag{
+            return parent::saveNBT();
+        }
+    }
 }else{ //API 3.2.3
 
-	/**
-	 * This trait override most methods in the {@link Entity} abstract class.
-	 *
-	 * @property Location    $lastLocation
-	 *
-	 * @property  float|null $lastX
-	 * @property  float|null $lastY
-	 * @property  float|null $lastZ
-	 * @property  float      $lastYaw
-	 * @property  float      $lastPitch
-	 *
-	 * @property CompoundTag namedtag
-	 */
-	trait PolyfillTrait{
-		/**
-		 * saveNBT() Polyfill
-		 *
-		 * @see Entity::saveNBT()
-		 */
+    /**
+     * This trait override most methods in the {@link Entity} abstract class.
+     *
+     * @property Location    $lastLocation
+     *
+     * @property  float|null $lastX
+     * @property  float|null $lastY
+     * @property  float|null $lastZ
+     * @property  float      $lastYaw
+     * @property  float      $lastPitch
+     *
+     * @property CompoundTag namedtag
+     */
+    trait PolyfillTrait{
+        /**
+         * saveNBT() Polyfill
+         *
+         * @see Entity::saveNBT()
+         */
 
-		/**
-		 * 부모 클래스의 saveNBT() 호출 후
-		 * saveNBTSafe() 메소드를 호출
-		 */
-		public function saveNBT() : void{
-			$this->namedtag = $this->saveNBTSafe();
-		}
+        /**
+         * 부모 클래스의 saveNBT() 호출 후
+         * saveNBTSafe() 메소드를 호출
+         */
+        public function saveNBT() : void{
+            $this->namedtag = $this->saveNBTSafe();
+        }
 
-		public function saveNBTSafe() : CompoundTag{
-			return $this->parentSaveNBT();
-		}
+        public function saveNBTSafe() : CompoundTag{
+            return $this->parentSaveNBT();
+        }
 
-		public function parentSaveNBT() : CompoundTag{
-			parent::saveNBT();
-			return $this->namedtag;
-		}
+        public function parentSaveNBT() : CompoundTag{
+            parent::saveNBT();
+            return $this->namedtag;
+        }
 
 
-		/**
-		 * $lastLocation Polyfill
-		 *
-		 * @see Entity::$lastLocation
-		 */
+        /**
+         * $lastLocation Polyfill
+         *
+         * @see Entity::$lastLocation
+         */
 
-		/**
-		 * @param string $name
-		 *
-		 * @return Location
-		 */
-		public function __get($name){
-			if($name === "lastLocation"){
-				return new Location($this->lastX, $this->lastY, $this->lastZ, $this->lastYaw, $this->lastPitch, $this->level);
-			}
-			return null;
-		}
+        /**
+         * @param string $name
+         *
+         * @return Location
+         */
+        public function __get($name){
+            if($name === "lastLocation"){
+                return new Location($this->lastX, $this->lastY, $this->lastZ, $this->lastYaw, $this->lastPitch, $this->level);
+            }
+            return null;
+        }
 
-		/**
-		 * @param string   $name
-		 * @param Location $value
-		 */
-		public function __set($name, $value){
-			if($name === "lastLocation"){
-				$this->lastX = $value->x;
-				$this->lastY = $value->y;
-				$this->lastZ = $value->z;
-				$this->lastYaw = $value->yaw;
-				$this->lastPitch = $value->pitch;
-			}
-		}
-	}
+        /**
+         * @param string   $name
+         * @param Location $value
+         */
+        public function __set($name, $value){
+            if($name === "lastLocation"){
+                $this->lastX = $value->x;
+                $this->lastY = $value->y;
+                $this->lastZ = $value->z;
+                $this->lastYaw = $value->yaw;
+                $this->lastPitch = $value->pitch;
+            }
+        }
+    }
 }
