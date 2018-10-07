@@ -68,6 +68,14 @@ if($returnType === CompoundTag::class){ //API 4.0.0
 	/**
 	 * This trait override most methods in the {@link Entity} abstract class.
 	 *
+	 * @property Location    $lastLocation
+	 *
+	 * @property  float|null $lastX
+	 * @property  float|null $lastY
+	 * @property  float|null $lastZ
+	 * @property  float      $lastYaw
+	 * @property  float      $lastPitch
+	 *
 	 * @property CompoundTag namedtag
 	 */
 	trait PolyfillTrait{
@@ -92,6 +100,39 @@ if($returnType === CompoundTag::class){ //API 4.0.0
 		public function parentSaveNBT() : CompoundTag{
 			parent::saveNBT();
 			return $this->namedtag;
+		}
+
+
+		/**
+		 * $lastLocation Polyfill
+		 *
+		 * @see Entity::$lastLocation
+		 */
+
+		/**
+		 * @param string $name
+		 *
+		 * @return Location
+		 */
+		public function __get($name){
+			if($name === "lastLocation"){
+				return new Location($this->lastX, $this->lastY, $this->lastZ, $this->lastYaw, $this->lastPitch, $this->level);
+			}
+			return null;
+		}
+
+		/**
+		 * @param string   $name
+		 * @param Location $value
+		 */
+		public function __set($name, $value){
+			if($name === "lastLocation"){
+				$this->lastX = $value->x;
+				$this->lastY = $value->y;
+				$this->lastZ = $value->z;
+				$this->lastYaw = $value->yaw;
+				$this->lastPitch = $value->pitch;
+			}
 		}
 	}
 }
