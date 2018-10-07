@@ -96,8 +96,8 @@ class PigZombie extends WalkMonster{
         return \true;
     }
 
-    public function saveNBT() : CompoundTag{
-        $nbt = parent::saveNBT();
+	public function saveNBTSafe() : CompoundTag{
+		$nbt = $this->parentSaveNBT();
         $nbt->setByte("Angry", $this->angry ? 1 : 0);
         return $nbt;
     }

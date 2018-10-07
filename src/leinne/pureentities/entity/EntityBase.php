@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity;
 
+use leinne\pureentities\pollyfill\PolyfillTrait;
 use pocketmine\entity\Creature;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\timings\Timings;
 
 abstract class EntityBase extends Creature{
+	use PolyfillTrait; //API 3.2.3 호환성 패치
 
     private $speed = 1.0;
 
@@ -63,8 +65,8 @@ abstract class EntityBase extends Creature{
         $this->setImmobile();
     }
 
-    public function saveNBT() : CompoundTag{
-        $nbt = parent::saveNBT();
+    public function saveNBTSafe() : CompoundTag{
+        $nbt = $this->parentSaveNBT();
         $nbt->setInt("MaxHealth" , $this->getMaxHealth());
         return $nbt;
     }
