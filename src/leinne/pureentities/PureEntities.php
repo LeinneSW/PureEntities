@@ -123,6 +123,7 @@ class PureEntities extends PluginBase implements Listener{
                         $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
                     }
                     $entity->spawnToAll();
+                    $ev->getPlayer()->getInventory()->setItemInHand($ev->getItem()->pop());
                 }
             }elseif(
                 $block->getSide(Facing::DOWN)->getId() === Item::IRON_BLOCK
@@ -147,6 +148,7 @@ class PureEntities extends PluginBase implements Listener{
                         $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
 
                         $entity->spawnToAll();
+                        $ev->getPlayer()->getInventory()->setItemInHand($ev->getItem()->pop());
                     }
                 }
             }
