@@ -58,7 +58,7 @@ class MobSpawner extends Spawnable{
 
             $list = [];
             $isValid = \false;
-            foreach($this->level->getEntities() as $entity){
+            foreach($this->level->getEntities() as $k => $entity){
                 if($entity->distance($this) <= $this->requiredPlayerRange){
                     if($entity instanceof Player){
                         $isValid = \true;

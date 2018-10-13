@@ -137,7 +137,7 @@ abstract class EntityBase extends Creature{
             if(isset($option)) $this->target = \null;
 
             $near = \PHP_INT_MAX;
-            foreach ($this->getLevel()->getEntities() as $target){
+            foreach ($this->getLevel()->getEntities() as $k => $target){
                 $distance = $this->distanceSquared($target);
                 if(
                     $target === $this
@@ -188,17 +188,17 @@ abstract class EntityBase extends Creature{
         }else{
             $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
 
-            foreach($list as $bb){
+            foreach($list as $k => $bb){
                 $dy = $bb->calculateYOffset($this->boundingBox, $dy);
             }
             $this->boundingBox->offset(0, $dy, 0);
 
-            foreach($list as $bb){
+            foreach($list as $k => $bb){
                 $dx = $bb->calculateXOffset($this->boundingBox, $dx);
             }
             $this->boundingBox->offset($dx, 0, 0);
 
-            foreach($list as $bb){
+            foreach($list as $k => $bb){
                 $dz = $bb->calculateZOffset($this->boundingBox, $dz);
             }
             $this->boundingBox->offset(0, 0, $dz);
