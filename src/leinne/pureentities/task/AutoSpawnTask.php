@@ -11,7 +11,7 @@ use pocketmine\Server;
 class AutoSpawnTask extends Task{
 
     public function onRun(int $currentTick) : void{
-        foreach(Server::getInstance()->getOnlinePlayers() as $player){
+        foreach(Server::getInstance()->getOnlinePlayers() as $k => $player){
             if(\mt_rand(1, 300) !== 1){
                 continue;
             }
