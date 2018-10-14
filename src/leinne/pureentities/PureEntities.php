@@ -66,7 +66,7 @@ class PureEntities extends PluginBase implements Listener{
 
     public function onEnable() : void{
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), 100);
+        $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), 80);
 
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }

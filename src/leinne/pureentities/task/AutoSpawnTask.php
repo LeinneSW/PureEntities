@@ -12,7 +12,7 @@ class AutoSpawnTask extends Task{
 
     public function onRun(int $currentTick) : void{
         foreach(Server::getInstance()->getOnlinePlayers() as $k => $player){
-            if(\mt_rand(1, 300) !== 1){
+            if(\mt_rand(1, 200) !== 1){
                 continue;
             }
 
@@ -28,6 +28,7 @@ class AutoSpawnTask extends Task{
             $entity = Entity::createEntity($entityIds[\mt_rand(0, 1)][\mt_rand(0, 4)] ?? 0, $player->level, Entity::createBaseNBT($pos));
             if($entity !== \null){
                 $entity->spawnToAll();
+                break;
             }
         }
     }
