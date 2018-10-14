@@ -76,7 +76,7 @@ class PureEntities extends PluginBase implements Listener{
     }
 
     public function onInteractEvent(PlayerInteractEvent $ev) : void{
-        if($ev->getFace() === 255 || $ev->getAction() !== PlayerInteractEvent::RIGHT_CLICK_BLOCK){
+        if($ev->getAction() !== PlayerInteractEvent::RIGHT_CLICK_BLOCK){
             return;
         }
 
