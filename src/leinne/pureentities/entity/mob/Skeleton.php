@@ -77,7 +77,7 @@ class Skeleton extends WalkMonster{
             }
 
             $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, $force);
-            $this->server->getPluginManager()->callEvent($ev);
+            $ev->call();
 
             $entity = $ev->getProjectile();
             if($ev->isCancelled()){
@@ -85,7 +85,9 @@ class Skeleton extends WalkMonster{
             }else{
                 $entity->setMotion($entity->getMotion()->multiply($ev->getForce()));
                 if($entity instanceof Projectile){
-                    $this->server->getPluginManager()->callEvent($launch = new ProjectileLaunchEvent($entity));
+                    $launch = new ProjectileLaunchEvent($entity);
+                    $launch->call();
+
                     if($launch->isCancelled()){
                         $entity->flagForDespawn();
                     }else{
