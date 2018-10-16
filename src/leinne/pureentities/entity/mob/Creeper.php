@@ -43,7 +43,8 @@ class Creeper extends WalkMonster implements Explosive{
     }
 
     public function explode() : void{
-        $this->server->getPluginManager()->callEvent($ev = new ExplosionPrimeEvent($this, $this->force));
+        $ev = new ExplosionPrimeEvent($this, $this->force);
+        $ev->call();
 
         if(!$ev->isCancelled()){
             $explosion = new Explosion($this, $ev->getForce(), $this);
