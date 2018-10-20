@@ -36,8 +36,8 @@ abstract class WalkMonster extends Monster{
             $hasUpdate = \true;
             $needJump = $this->onGround;
             $ground = $this->onGround ? 0.12 : 0.008;
-            $this->motion->x += $this->getSpeed() * $ground * $x * $tickDiff / $diff;
-            $this->motion->z += $this->getSpeed() * $ground * $z * $tickDiff / $diff;
+            $this->motion->x += $this->getSpeed() * $ground * $x / $diff;
+            $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
 
         if($needJump){
