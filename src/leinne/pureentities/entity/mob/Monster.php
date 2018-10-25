@@ -20,8 +20,10 @@ abstract class Monster extends EntityBase{
 
     protected $attackDelay = 0;
 
-    private $minDamage = [0, 0, 0, 0];
-    private $maxDamage = [0, 0, 0, 0];
+    /** @var float[] */
+    private $minDamage = [0.0, 0.0, 0.0, 0.0];
+    /** @var float[] */
+    private $maxDamage = [0.0, 0.0, 0.0, 0.0];
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -35,64 +37,82 @@ abstract class Monster extends EntityBase{
     }
 
     public function hasInteraction(Creature $target, float $distance) : bool{
-        return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 169;
+        return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
     }
 
+    /**
+     * @param int $difficulty
+     *
+     * @return float[]
+     */
     public function getDamages(int $difficulty = -1) : array{
         return [$this->getMinDamage($difficulty), $this->getMaxDamage($difficulty)];
     }
 
-    public function getResultDamage(int $difficulty = -1) : int{
-        return \mt_rand(...$this->getDamages($difficulty)) + $this->inventory->getItemInHand()->getAttackPoints();
+    public function getResultDamage(int $difficulty = -1) : float{
+        $damages = $this->getDamages($difficulty);
+        return ($damages[0] === $damages[1] ? $damages[0] : $damages[0] + \lcg_value() * ($damages[1] - $damages[0])) + $this->inventory->getItemInHand()->getAttackPoints();
     }
 
-    public function getMinDamage(int $difficulty = -1) : int{
+    public function getMinDamage(int $difficulty = -1) : float{
         if($difficulty > 3 || $difficulty < 0){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-        return \min($this->minDamage[$difficulty], $this->maxDamage[$difficulty]);
+        return $this->minDamage[$difficulty];
     }
 
-    public function getMaxDamage(int $difficulty = -1) : int{
+    public function getMaxDamage(int $difficulty = -1) : float{
         if($difficulty > 3 || $difficulty < 0){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-        return \max($this->minDamage[$difficulty], $this->maxDamage[$difficulty]);
+        return $this->maxDamage[$difficulty];
     }
 
-    public function setMinDamage(int $damage, int $difficulty = -1) : void{
+    public function setMinDamage(float $damage, int $difficulty = -1) : void{
         if($difficulty > 3 || $difficulty < 0){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-        $this->minDamage[$difficulty] = $damage;
+        $this->minDamage[$difficulty] = \min($damage, $this->maxDamage[$difficulty]);
     }
 
-    public function setMaxDamage(int $damage, int $difficulty = -1) : void{
+    public function setMaxDamage(float $damage, int $difficulty = -1) : void{
         if($difficulty === \null || $difficulty < 1 || $difficulty > 3){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-        $this->maxDamage[$difficulty] = $damage;
+        $this->maxDamage[$difficulty] = \max($damage, $this->minDamage[$difficulty]);
     }
 
-    public function setDamage(int $damage, int $difficulty = -1) : void{
-        $this->setMinDamage($damage, $difficulty);
-        $this->setMaxDamage($damage, $difficulty);
+    public function setDamage(float $damage, int $difficulty = -1) : void{
+        if($difficulty === \null || $difficulty < 1 || $difficulty > 3){
+            $difficulty = Server::getInstance()->getDifficulty();
+        }
+        $this->minDamage[$difficulty] = $this->maxDamage[$difficulty] = $damage;
     }
 
+    /**
+     * @param float[] $damages
+     */
     public function setDamages(array $damages) : void{
-        $this->setMinDamages($damages);
-        $this->setMaxDamages($damages);
-    }
-
-    public function setMinDamages(array $damages) : void{
-        if(count($damages) > 3) for ($i = 0; $i < 4; $i++) {
-            $this->setMinDamage((int) $damages[$i], $i);
+        foreach($damages as $i => $damage){
+            $this->minDamage[$i] = $this->maxDamage[$i] = (float) $damage;
         }
     }
 
+    /**
+     * @param float[] $damages
+     */
+    public function setMinDamages(array $damages) : void{
+        foreach($damages as $i => $damage){
+            $this->minDamage[$i] = (float) $damage;
+        }
+    }
+
+    /**
+     * @param float[] $damages
+     */
     public function setMaxDamages(array $damages) : void{
-        if(count($damages) > 3) for ($i = 0; $i < 4; $i++) {
-            $this->setMaxDamage((int) $damages[$i], $i);
+        foreach($damages as $i => $damage){
+            $this->maxDamage[$i] = (float) $damage;
         }
     }
 
