@@ -103,7 +103,7 @@ abstract class Monster extends EntityBase{
      */
     public function setMinDamages(array $damages) : void{
         foreach($damages as $i => $damage){
-            $this->minDamage[$i] = (float) $damage;
+            $this->minDamage[$i] = \min((float) $damage, $this->maxDamage[$i]);
         }
     }
 
@@ -112,7 +112,7 @@ abstract class Monster extends EntityBase{
      */
     public function setMaxDamages(array $damages) : void{
         foreach($damages as $i => $damage){
-            $this->maxDamage[$i] = (float) $damage;
+            $this->maxDamage[$i] = \max((float) $damage, $this->minDamage[$i]);
         }
     }
 
