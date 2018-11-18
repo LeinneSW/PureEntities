@@ -10,6 +10,9 @@ use pocketmine\entity\Creature;
 use pocketmine\inventory\EntityInventoryEventProcessor;
 use pocketmine\item\TieredTool;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -27,6 +30,13 @@ abstract class Monster extends EntityBase{
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
+
+        if($nbt->hasTag("MinDamages")){
+            $this->minDamage = $nbt->getListTag("MinDamages")->getAllValues();
+        }
+        if($nbt->hasTag("MaxDamages")){
+            $this->minDamage = $nbt->getListTag("MaxDamages")->getAllValues();
+        }
 
         $this->inventory = new MonsterInventory($this);
         $this->inventory->setEventProcessor(new EntityInventoryEventProcessor($this));
@@ -120,6 +130,20 @@ abstract class Monster extends EntityBase{
         parent::sendSpawnPacket($player);
 
         $this->inventory->sendContents($player);
+    }
+
+    public function saveNBT() : CompoundTag{
+        $nbt = parent::saveNBT();
+
+        $min = [];
+        $max = [];
+        for($i = 0; $i < 4; ++$i){
+            $min[$i] = new DoubleTag("", $this->minDamage[$i]);
+            $max[$i] = new DoubleTag("", $this->maxDamage[$i]);
+        }
+        $nbt->setTag(new ListTag("MinDamages", $min));
+        $nbt->setTag(new ListTag("MaxDamages", $max));
+        return $nbt;
     }
 
 }
