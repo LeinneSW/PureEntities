@@ -20,15 +20,19 @@ This plug-in is in development. Therefore, It is possible to function abnormally
     * `?Vector3 getTarget()`
     * `void setTarget(Vector $target, bool $fixed = \false)`
     * `void setTargetFixed(bool $fixed)`
+  * Animal
+    * `bool isBaby()`
   * Monster
-    * `int getResultDamage()`
-    * `int[] getDamages()`
-    * `void setDamages(int[] $damages)`
-    * `void setDamage(int $damage, int $difficulty = -1)`
-    * `int getMinDamage(int $difficulty = -1)`
-    * `void setMinDamage(int $damage, int $difficulty = -1)`
-    * `int getMaxDamage(int $difficulty = -1)`
-    * `void setMaxDamage(int $damage, int $difficulty = -1)`
+    * `float getResultDamage()`
+    * `float[] getDamages()`
+    * `void setDamages(float[] $damages)`
+    * `void setMaxDamage(float[] $damages)`
+    * `void setMinDamages(float[] $damages)`
+    * `void setDamage(float $damage, int $difficulty = -1)`
+    * `float getMinDamage(int $difficulty = -1)`
+    * `void setMinDamage(float $damage, int $difficulty = -1)`
+    * `float getMaxDamage(int $difficulty = -1)`
+    * `void setMaxDamage(float $damage, int $difficulty = -1)`
 
 ## Example
 ``` php
