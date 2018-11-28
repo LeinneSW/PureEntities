@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\mob;
 
+use leinne\pureentities\entity\ai\WalkEntityTrait;
 use pocketmine\entity\Explosive;
 use pocketmine\event\entity\ExplosionPrimeEvent;
 use pocketmine\level\Explosion;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
 
-class Creeper extends WalkMonster implements Explosive{
+class Creeper extends Monster implements Explosive{
     //TODO: Beta, 매우 실험적
+
+    use WalkEntityTrait;
 
     const NETWORK_ID = self::CREEPER;
 
@@ -26,16 +28,7 @@ class Creeper extends WalkMonster implements Explosive{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", 20));
-        if($nbt->hasTag("HealF", FloatTag::class)){
-            $health = $nbt->getFloat("HealF");
-        }elseif($nbt->hasTag("Health")){
-            $healthTag = $nbt->getTag("Health");
-            $health = (float) $healthTag->getValue();
-        }
-        $this->setHealth($health);
-        //$this->setSpeed(0.9);
-        //$this->setDamages([0, 2, 3, 5]);
+        $this->setSpeed(0.95);
     }
 
     public function getName() : string{
@@ -60,7 +53,7 @@ class Creeper extends WalkMonster implements Explosive{
             if($this->attackDelay > 0) {
                 --$this->attackDelay;
             }elseif($this->getSpeed() < 1){
-                $this->setSpeed(1.0);
+                $this->setSpeed(0.95);
             }
             return \false;
         }
@@ -70,6 +63,7 @@ class Creeper extends WalkMonster implements Explosive{
         $pk->entityRuntimeId = $this->id;
         $pk->event = EntityEventPacket::ARM_SWING;
         $this->server->broadcastPacket($this->hasSpawned, $pk);*/
+
         $this->setSpeed(0.4);
         if(++$this->attackDelay >= 32){
             $this->flagForDespawn();

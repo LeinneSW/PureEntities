@@ -16,9 +16,6 @@ class MonsterInventory extends BaseInventory{
     /** @var Monster */
     protected $holder;
 
-    /**
-     * @param Monster $mob
-     */
     public function __construct(Monster $mob){
         $this->holder = $mob;
         parent::__construct();
@@ -36,22 +33,10 @@ class MonsterInventory extends BaseInventory{
         throw new \BadMethodCallException("MobInventory can only carry one item at a time");
     }
 
-    /**
-     * Returns the currently-held item.
-     *
-     * @return Item
-     */
     public function getItemInHand() : Item{
         return $this->getItem(0);
     }
 
-    /**
-     * Sets the item in the currently-held slot to the specified item.
-     *
-     * @param Item $item
-     *
-     * @return bool
-     */
     public function setItemInHand(Item $item) : bool{
         if($this->setItem(0, $item)){
             $this->sendHeldItem($this->holder->getViewers());

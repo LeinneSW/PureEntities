@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\mob;
 
+use leinne\pureentities\entity\ai\WalkEntityTrait;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -11,10 +12,11 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 
-class PigZombie extends WalkMonster{
+class PigZombie extends Monster{
+
+    use WalkEntityTrait;
 
     const NETWORK_ID = self::ZOMBIE_PIGMAN;
 
@@ -28,16 +30,12 @@ class PigZombie extends WalkMonster{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", 20));
-        if($nbt->hasTag("HealF", FloatTag::class)){
-            $health = $nbt->getFloat("HealF");
-        }elseif($nbt->hasTag("Health")){
-            $healthTag = $nbt->getTag("Health");
-            $health = (float) $healthTag->getValue();
-        }
-        $this->setHealth($health);
         $this->setAngry($nbt->getByte('Angry', 0) !== 0);
         $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
+    }
+
+    public function getDefaultMaxHealth() : int{
+        return 22;
     }
 
     public function getName() : string{
