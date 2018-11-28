@@ -9,10 +9,9 @@ use leinne\pureentities\inventory\MonsterInventory;
 use pocketmine\entity\Creature;
 use pocketmine\inventory\EntityInventoryEventProcessor;
 use pocketmine\item\Item;
-use pocketmine\item\TieredTool;
+use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -44,12 +43,15 @@ abstract class Monster extends EntityBase{
         if($nbt->hasTag("HeldItem")){
             $item = Item::nbtDeserialize($nbt->getCompoundTag("HeldItem"));
         }
-        $this->inventory->setItemInHand($item);
+
+        if(!$item->isNull()){
+            $this->inventory->setItemInHand($item);
+        }
         $this->inventory->setEventProcessor(new EntityInventoryEventProcessor($this));
     }
 
-    public function getDefaultHeldItem() : ?Item{
-        return \null;
+    public function getDefaultHeldItem() : Item{
+        return ItemFactory::get(Item::AIR);
     }
 
     public function getInventory() : MonsterInventory{
