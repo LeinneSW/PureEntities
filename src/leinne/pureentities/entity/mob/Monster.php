@@ -8,6 +8,7 @@ use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\inventory\MonsterInventory;
 use pocketmine\entity\Creature;
 use pocketmine\inventory\EntityInventoryEventProcessor;
+use pocketmine\item\Item;
 use pocketmine\item\TieredTool;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
@@ -39,7 +40,16 @@ abstract class Monster extends EntityBase{
         }
 
         $this->inventory = new MonsterInventory($this);
+        $item = $this->getDefaultHeldItem();
+        if($nbt->hasTag("HeldItem")){
+            $item = Item::nbtDeserialize($nbt->getCompoundTag("HeldItem"));
+        }
+        $this->inventory->setItemInHand($item);
         $this->inventory->setEventProcessor(new EntityInventoryEventProcessor($this));
+    }
+
+    public function getDefaultHeldItem() : ?Item{
+        return \null;
     }
 
     public function getInventory() : MonsterInventory{
@@ -143,6 +153,7 @@ abstract class Monster extends EntityBase{
         }
         $nbt->setTag(new ListTag("MinDamages", $min));
         $nbt->setTag(new ListTag("MaxDamages", $max));
+        $nbt->setTag($this->inventory->getItemInHand()->nbtSerialize(-1, "HeldItem"));
         return $nbt;
     }
 

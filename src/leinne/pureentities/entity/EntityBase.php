@@ -7,6 +7,7 @@ namespace leinne\pureentities\entity;
 use pocketmine\entity\Creature;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\FloatTag;
 use pocketmine\timings\Timings;
 
 abstract class EntityBase extends Creature{
@@ -18,9 +19,6 @@ abstract class EntityBase extends Creature{
     /** @var Vector3 */
     private $target = \null;
     private $targetFixed = \false;
-
-    /** @var float */
-    protected $interactDistance = 0.5;
 
     /**
      * $this 와 $target의 관계가 상호작용하는 관계인지 확인
@@ -40,6 +38,15 @@ abstract class EntityBase extends Creature{
     public abstract function interactTarget() : bool;
 
     /**
+     * 상호작용을 위한 최소 거리
+     *
+     * @return float
+     */
+    public function getInteractDistance() : float{
+        return 0.5;
+    }
+
+    /**
      * 상호작용이 가능한 거리인지 체크
      *
      * @return Creature
@@ -48,7 +55,7 @@ abstract class EntityBase extends Creature{
         $target = $this->target;
         if(
             $target instanceof Creature
-            && \abs($this->x - $target->x) <= ($width = $this->interactDistance + $this->width / 2 + $target->width / 2)
+            && \abs($this->x - $target->x) <= ($width = $this->getInteractDistance() + $this->width / 2 + $target->width / 2)
             && \abs($this->z - $target->z) <= $width
             && \abs($this->y - $target->y) <= \min(1, $this->eyeHeight)
         ){
@@ -60,7 +67,19 @@ abstract class EntityBase extends Creature{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
+        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", $this->getDefaultMaxHealth()));
+        if($nbt->hasTag("HealF", FloatTag::class)){
+            $health = $nbt->getFloat("HealF");
+        }elseif($nbt->hasTag("Health")){
+            $healthTag = $nbt->getTag("Health");
+            $health = (float) $healthTag->getValue();
+        }
+        $this->setHealth($health);
         $this->setImmobile();
+    }
+
+    public function getDefaultMaxHealth() : int{
+        return 20;
     }
 
     public function saveNBT() : CompoundTag{
@@ -134,7 +153,9 @@ abstract class EntityBase extends Creature{
     protected final function checkTarget() : Vector3{
         $isFixed = $this->isTargetFixed();
         if(!$isFixed && (!($this->target instanceof Creature) || !($option = $this->hasInteraction($this->target, $this->distanceSquared($this->target))))){
-            if(isset($option)) $this->target = \null;
+            if(isset($option)){
+                $this->target = \null;
+            }
 
             $near = \PHP_INT_MAX;
             foreach ($this->getLevel()->getEntities() as $k => $target){

@@ -10,13 +10,13 @@ use pocketmine\entity\Creature;
 use pocketmine\item\Item;
 use pocketmine\Player;
 
-class Sheep extends Animal{
+class Chicken extends Animal{
 
     use WalkEntityTrait;
 
     const NETWORK_ID = self::CHICKEN;
 
-    //TODO: Sheep's Size
+    //TODO: Chicken's Size
     /*public $width = 0.6;
     public $height = 1.8;
     public $eyeHeight = 1.62;*/
@@ -26,7 +26,7 @@ class Sheep extends Animal{
     }
 
     public function getName() : string{
-        return 'Sheep';
+        return 'Chicken';
     }
 
     /**
