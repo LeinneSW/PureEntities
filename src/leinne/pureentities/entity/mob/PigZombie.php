@@ -31,7 +31,11 @@ class PigZombie extends Monster{
         parent::initEntity($nbt);
 
         $this->setAngry($nbt->getByte('Angry', 0) !== 0);
-        $this->inventory->setItemInHand(ItemFactory::get(Item::GOLD_SWORD));
+        //TODO: 올바른 대미지값 체크
+    }
+
+    public function getDefaultHeldItem() : Item{
+        return ItemFactory::get(Item::GOLD_SWORD);
     }
 
     public function getDefaultMaxHealth() : int{
