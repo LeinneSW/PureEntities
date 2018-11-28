@@ -61,6 +61,7 @@ trait WalkEntityTrait{
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
 
+        $this->needSlabJump = \false;
         if($needJump){
             /** @var Entity $this */
             switch(EntityAI::checkJumpState(
@@ -75,8 +76,6 @@ trait WalkEntityTrait{
                 case EntityAI::JUMP_SLAB:
                 case EntityAI::JUMP_STAIR:
                     $this->needSlabJump = \true;
-                    break;
-                default:
                     break;
             }
         }
@@ -124,13 +123,20 @@ trait WalkEntityTrait{
             }
             $this->boundingBox->offset($dx, 0, $dz);
 
-            if($this->needSlabJump && ($movX !== $dx || $movZ !== $dz)){
-                $this->needSlabJump = \false;
-                $this->boundingBox->offset(-$dx, 0.5, -$dz);
+            if(
+                $this->needSlabJump
+                && ($movX !== $dx || $movZ !== $dz)
+            ){
+                $this->boundingBox->offset(-$dx, -$dy, -$dz);
 
                 $dx = $movX;
                 $dy = 0.5;
                 $dz = $movZ;
+                foreach($list as $k => $bb){
+                    $dy = $bb->calculateYOffset($this->boundingBox, $dy);
+                }
+                $this->boundingBox->offset(0, $dy, 0);
+
                 foreach($list as $k => $bb){
                     $dx = $bb->calculateXOffset($this->boundingBox, $dx);
                     $dz = $bb->calculateZOffset($this->boundingBox, $dz);
