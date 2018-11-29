@@ -16,6 +16,7 @@ class Spider extends Monster{
 
     const NETWORK_ID = self::SPIDER;
 
+    //TODO: Spider's Size
     public $width = 0.6;
     public $height = 1.8;
     public $eyeHeight = 1.62;

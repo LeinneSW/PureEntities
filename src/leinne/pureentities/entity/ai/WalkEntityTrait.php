@@ -157,16 +157,18 @@ trait WalkEntityTrait{
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
 
-        if($movX !== $dx){
+        if($movX != $dx){
             $this->motion->x = 0;
+            $this->moveTime -= 20;
         }
 
-        if($movY !== $dy){
+        if($movY != $dy){
             $this->motion->y = 0;
         }
 
-        if($movZ !== $dz){
+        if($movZ != $dz){
             $this->motion->z = 0;
+            $this->moveTime -= 20;
         }
 
         Timings::$entityMoveTimer->stopTiming();
