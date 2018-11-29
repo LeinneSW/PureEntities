@@ -23,6 +23,13 @@ trait WalkEntityTrait{
     private $needSlabJump = \false;
 
     /**
+     * 타겟과의 상호작용
+     *
+     * @return bool
+     */
+    public abstract function interactTarget() : bool;
+
+    /**
      * @see Entity::entityBaseTick()
      *
      * @param int $tickDiff
@@ -64,11 +71,7 @@ trait WalkEntityTrait{
         $this->needSlabJump = \false;
         if($needJump){
             /** @var Entity $this */
-            switch(EntityAI::checkJumpState(
-                $this,
-                (int) (($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x),
-                (int) (($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z)
-            )){
+            switch(EntityAI::checkJumpState($this)){
                 case EntityAI::JUMP_BLOCK:
                     $hasUpdate = \true;
                     $this->motion->y += 0.52;

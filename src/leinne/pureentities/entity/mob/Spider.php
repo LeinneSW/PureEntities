@@ -23,12 +23,11 @@ class Spider extends Monster{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        //TODO: 올바른 대미지값 체크
-        $this->setDamages([0, 2, 3, 5]);
+        $this->setDamages([0, 2, 2, 3]);
     }
 
-    public function getInteractDistance() : float{
-        return 0.75;
+    public function getDefaultMaxHealth() : int{
+        return 16;
     }
 
     public function getName() : string{
@@ -37,7 +36,7 @@ class Spider extends Monster{
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
-        if(($target = parent::checkInteract()) === \null){
+        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
             return \false;
         }
 
@@ -62,8 +61,7 @@ class Spider extends Monster{
     }
 
     public function getXpDropAmount() : int{
-        //TODO: 정확한 수치 모름
-        return 0;
+        return 5;
     }
 
 }

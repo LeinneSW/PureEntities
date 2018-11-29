@@ -28,12 +28,7 @@ class Zombie extends Monster implements Ageable{
         parent::initEntity($nbt);
 
         $this->setSpeed(0.9);
-        //TODO: 올바른 대미지값 체크
-        $this->setDamages([0, 2, 3, 5]);
-    }
-
-    public function getInteractDistance() : float{
-        return 0.75;
+        $this->setDamages([0, 2, 3, 4]);
     }
 
     public function getName() : string{
@@ -46,7 +41,7 @@ class Zombie extends Monster implements Ageable{
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
-        if(($target = parent::checkInteract()) === \null){
+        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
             return \false;
         }
 
@@ -89,8 +84,10 @@ class Zombie extends Monster implements Ageable{
     }
 
     public function getXpDropAmount() : int{
-        //TODO: 정확한 수치 모름
-        return 0;
+        if($this->isBaby()){
+            return 12;
+        }
+        return 5;
     }
 
 }

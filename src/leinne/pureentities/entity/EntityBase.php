@@ -31,19 +31,12 @@ abstract class EntityBase extends Creature{
     public abstract function hasInteraction(Creature $target, float $distanceSquare) : bool;
 
     /**
-     * 타겟과의 상호작용
-     *
-     * @return bool
-     */
-    public abstract function interactTarget() : bool;
-
-    /**
      * 상호작용을 위한 최소 거리
      *
      * @return float
      */
     public function getInteractDistance() : float{
-        return 0.5;
+        return 0.75;
     }
 
     /**
