@@ -50,7 +50,7 @@ class Chicken extends Animal{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_CHICKEN : Item::RAW_CHICKEN, 0, \mt_rand(1, 3)),
+            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_CHICKEN : Item::RAW_CHICKEN, 0, 1),
         ];
     }
 

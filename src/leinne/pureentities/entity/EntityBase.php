@@ -12,8 +12,18 @@ use pocketmine\timings\Timings;
 
 abstract class EntityBase extends Creature{
 
+    /** @var float */
+    public $eyeHeight = 0.8;
+
+    /** @var float */
+    public $width = 1.0;
+    /** @var float */
+    public $height = 1.0;
+
+    /** @var float */
     private $speed = 1.0;
 
+    /** @var int */
     protected $moveTime = 0;
 
     /** @var Vector3 */
@@ -48,7 +58,7 @@ abstract class EntityBase extends Creature{
         $target = $this->target;
         if(
             $target instanceof Creature
-            && \abs($this->x - $target->x) <= ($width = $this->getInteractDistance() + $this->width / 2 + $target->width / 2)
+            && \abs($this->x - $target->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
             && \abs($this->z - $target->z) <= $width
             && \abs($this->y - $target->y) <= \min(1, $this->eyeHeight)
         ){
@@ -173,11 +183,11 @@ abstract class EntityBase extends Creature{
 
         if(
             $this->target === \null
-            || (!$isFixed && (--$this->moveTime <= 0 || $this->distanceSquared($this->target) <= 0.008))
+            || (!$isFixed && (--$this->moveTime <= 0 || $this->distanceSquared($this->target) <= 0.00025))
         ){
-            $x = \mt_rand(32, 120);
-            $z = \mt_rand(32, 120);
-            $this->moveTime = \mt_rand(300, 2000);
+            $x = \mt_rand(25, 200);
+            $z = \mt_rand(25, 200);
+            $this->moveTime = \mt_rand(400, 2000);
             $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
         }
 
@@ -229,6 +239,7 @@ abstract class EntityBase extends Creature{
 
         if($movX != $dx){
             $this->motion->x = 0;
+            $this->moveTime -= 20;
         }
 
         if($movY != $dy){
@@ -237,6 +248,7 @@ abstract class EntityBase extends Creature{
 
         if($movZ != $dz){
             $this->motion->z = 0;
+            $this->moveTime -= 20;
         }
 
         Timings::$entityMoveTimer->stopTiming();

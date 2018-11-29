@@ -14,16 +14,14 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 
 class Sheep extends Animal{
-    //TODO: Sheep's Color
 
     use WalkEntityTrait;
 
     const NETWORK_ID = self::SHEEP;
 
-    //TODO: Sheep's Size
-    /*public $width = 0.6;
-    public $height = 1.8;
-    public $eyeHeight = 1.62;*/
+    public $width = 0.9;
+    public $height = 1.3;
+    public $eyeHeight = 1.2;
 
     private $color = 0;
 
@@ -75,8 +73,8 @@ class Sheep extends Animal{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(Item::WOOL, 0, 1),
-            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_MUTTON : Item::RAW_MUTTON, 0, \mt_rand(1, 3))
+            ItemFactory::get(Item::WOOL, $this->color, 1),
+            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_MUTTON : Item::RAW_MUTTON, 0, \mt_rand(1, 2))
         ];
     }
 

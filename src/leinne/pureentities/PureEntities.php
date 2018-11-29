@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
+use leinne\pureentities\entity\animal\Sheep;
 use leinne\pureentities\entity\mob\Creeper;
 use leinne\pureentities\entity\mob\PigZombie;
 use leinne\pureentities\entity\mob\Skeleton;
@@ -12,10 +13,13 @@ use leinne\pureentities\task\AutoSpawnTask;
 use leinne\pureentities\tile\MobSpawner;
 use pocketmine\block\Air;
 use pocketmine\entity\Entity;
+use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\SpawnEgg;
 use pocketmine\level\Position;
 use pocketmine\math\Facing;
 use pocketmine\nbt\tag\CompoundTag;
@@ -34,7 +38,7 @@ class PureEntities extends PluginBase implements Listener{
 //        Entity::registerEntity(Mooshroom::class, \false, ['minecraft:mooshroom']);
 //        Entity::registerEntity(Pig::class, \false, ['minecraft:pig']);
 //        Entity::registerEntity(Rabbit::class, \false, ['minecraft:rabbit']);
-//        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);
+        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);
 
         /** Register Mob */
 //        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
@@ -60,6 +64,13 @@ class PureEntities extends PluginBase implements Listener{
 //        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
 
         Tile::registerTile(MobSpawner::class);
+
+        foreach(Entity::getKnownEntityTypes() as $k => $className){
+            /** @var Living $className */
+            if(\is_a($className, Living::class, \true) && $className::NETWORK_ID !== -1){
+                ItemFactory::registerItem(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, "Spawn Egg"));
+            }
+        }
 
         $this->getServer()->getLogger()->info(TextFormat::AQUA . '[PureEntities]All entities were registered');
     }
