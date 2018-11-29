@@ -24,7 +24,11 @@ abstract class Monster extends EntityBase{
     /** @var int */
     protected $attackDelay = 0;
     
-    /** @var bool */
+    /**
+     * 유저 커스텀 전용
+     *
+     * @var bool
+     */
     protected $allowWeaponDamage = \false;
 
     /** @var float[] */
@@ -118,14 +122,14 @@ abstract class Monster extends EntityBase{
     }
 
     public function setMaxDamage(float $damage, int $difficulty = -1) : void{
-        if($difficulty === \null || $difficulty < 1 || $difficulty > 3){
+        if($difficulty < 1 || $difficulty > 3){
             $difficulty = Server::getInstance()->getDifficulty();
         }
         $this->maxDamage[$difficulty] = \max($damage, $this->minDamage[$difficulty]);
     }
 
     public function setDamage(float $damage, int $difficulty = -1) : void{
-        if($difficulty === \null || $difficulty < 1 || $difficulty > 3){
+        if($difficulty < 1 || $difficulty > 3){
             $difficulty = Server::getInstance()->getDifficulty();
         }
         $this->minDamage[$difficulty] = $this->maxDamage[$difficulty] = $damage;
