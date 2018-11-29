@@ -7,6 +7,8 @@ namespace leinne\pureentities\entity\mob;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 use pocketmine\entity\Explosive;
 use pocketmine\event\entity\ExplosionPrimeEvent;
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\level\Explosion;
 use pocketmine\nbt\tag\CompoundTag;
 
@@ -36,6 +38,7 @@ class Creeper extends Monster implements Explosive{
     }
 
     public function explode() : void{
+        //TODO: 폭발 공격력 ~25(쉬움) ~49(보통) ~73(어려움)
         $ev = new ExplosionPrimeEvent($this, $this->force);
         $ev->call();
 
@@ -49,7 +52,7 @@ class Creeper extends Monster implements Explosive{
     }
 
     public function interactTarget() : bool{
-        if(($target = parent::checkInteract()) === \null){
+        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
             if($this->attackDelay > 0) {
                 --$this->attackDelay;
             }elseif($this->getSpeed() < 1){
@@ -73,16 +76,14 @@ class Creeper extends Monster implements Explosive{
     }
 
     public function getDrops() : array{
-        $drops = [
-            //TODO
+        //TODO: 드롭 아이템 개수
+        return [
+            ItemFactory::get(Item::GUNPOWDER, 0, 0)
         ];
-
-        return $drops;
     }
 
     public function getXpDropAmount() : int{
-        //TODO: 정확한 수치 모름
-        return 0;
+        return 5;
     }
 
 }

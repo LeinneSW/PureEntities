@@ -8,6 +8,7 @@ use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Creature;
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\Player;
 
 class Chicken extends Animal{
@@ -22,7 +23,7 @@ class Chicken extends Animal{
     public $eyeHeight = 1.62;*/
 
     public function getDefaultMaxHealth() : int{
-        return 8;
+        return 4;
     }
 
     public function getName() : string{
@@ -45,6 +46,16 @@ class Chicken extends Animal{
     public function interactTarget() : bool{
         // TODO: Implement interactTarget() method.
         return \false;
+    }
+
+    public function getDrops() : array{
+        return [
+            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_CHICKEN : Item::RAW_CHICKEN, 0, \mt_rand(1, 3)),
+        ];
+    }
+
+    public function getXpDropAmount() : int{
+        return \mt_rand(1, 3);
     }
 
 }

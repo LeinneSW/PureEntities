@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\mob;
 
 use leinne\pureentities\entity\ai\WalkEntityTrait;
+use pocketmine\entity\Ageable;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -14,7 +15,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 
-class PigZombie extends Monster{
+class PigZombie extends Monster implements Ageable{
 
     use WalkEntityTrait;
 
@@ -31,19 +32,19 @@ class PigZombie extends Monster{
         parent::initEntity($nbt);
 
         $this->setAngry($nbt->getByte('Angry', 0) !== 0);
-        //TODO: 올바른 대미지값 체크
+        $this->setDamages([0, 5, 9, 13]);
     }
 
     public function getDefaultHeldItem() : Item{
         return ItemFactory::get(Item::GOLD_SWORD);
     }
 
-    public function getDefaultMaxHealth() : int{
-        return 22;
-    }
-
     public function getName() : string{
         return 'Zombie Pigman';
+    }
+
+    public function isBaby() : bool{
+        return $this->getGenericFlag(self::DATA_FLAG_BABY);
     }
 
     public function hasInteraction(Creature $target, float $distance) : bool{
@@ -75,7 +76,7 @@ class PigZombie extends Monster{
             $this->setSpeed(1);
         }
 
-        if(($target = parent::checkInteract()) === \null){
+        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
             return \false;
         }
 
@@ -102,8 +103,10 @@ class PigZombie extends Monster{
     }
 
     public function getXpDropAmount() : int{
-        //TODO: 정확한 수치 모름
-        return 0;
+        if($this->isBaby()){
+            return 12;
+        }
+        return 5;
     }
 
 }

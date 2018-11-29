@@ -21,7 +21,11 @@ abstract class Monster extends EntityBase{
     /** @var MonsterInventory */
     protected $inventory;
 
+    /** @var int */
     protected $attackDelay = 0;
+    
+    /** @var bool */
+    protected $allowWeaponDamage = \false;
 
     /** @var float[] */
     private $minDamage = [0.0, 0.0, 0.0, 0.0];
@@ -62,6 +66,18 @@ abstract class Monster extends EntityBase{
         return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
     }
 
+    public function canAttackTarget() : bool{
+        return $this->getMaxDamage() > 0 || ($this->allowWeaponDamage && $this->inventory->getItemInHand()->getAttackPoints() > 0);
+    }
+
+    public function setAllowWeaponDamage(bool $value) : void{
+        $this->allowWeaponDamage = $value;
+    }
+    
+    public function isAllowWeaponDamage() : bool{
+        return $this->allowWeaponDamage;
+    }
+    
     /**
      * @param int $difficulty
      *
@@ -73,7 +89,11 @@ abstract class Monster extends EntityBase{
 
     public function getResultDamage(int $difficulty = -1) : float{
         $damages = $this->getDamages($difficulty);
-        return ($damages[0] === $damages[1] ? $damages[0] : $damages[0] + \lcg_value() * ($damages[1] - $damages[0])) + $this->inventory->getItemInHand()->getAttackPoints();
+        $damage = $damages[0] === $damages[1] ? $damages[0] : $damages[0] + \lcg_value() * ($damages[1] - $damages[0]);
+        if($this->allowWeaponDamage){
+            $damage += $this->inventory->getItemInHand()->getAttackPoints();
+        }
+        return $damage;
     }
 
     public function getMinDamage(int $difficulty = -1) : float{
