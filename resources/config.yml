@@ -1,0 +1,3 @@
+autospawn:
+  enable: true
+  spawn-tick: 80
