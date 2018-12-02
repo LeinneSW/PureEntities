@@ -39,6 +39,8 @@ use pocketmine\utils\TextFormat;
 
 class PureEntities extends PluginBase implements Listener{
 
+    private $data = [];
+
     public function onLoad(){
         /** Register hostile */
 //        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
@@ -94,8 +96,12 @@ class PureEntities extends PluginBase implements Listener{
 
     public function onEnable() : void{
         $this->saveDefaultConfig();
+        $this->data = $this->getConfig()->getAll();
+
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), 80);
+        if(($this->data["autospawn"]["enable"] ?? "true") === "true"){
+            $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), (int) ($this->data["autospawn"]["tick"] ?? 80));
+        }
 
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
