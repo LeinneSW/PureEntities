@@ -40,6 +40,20 @@ abstract class EntityBase extends Creature{
      */
     public abstract function hasInteraction(Creature $target, float $distanceSquare) : bool;
 
+    protected function initEntity(CompoundTag $nbt) : void{
+        parent::initEntity($nbt);
+
+        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", $this->getDefaultMaxHealth()));
+        if($nbt->hasTag("HealF", FloatTag::class)){
+            $health = $nbt->getFloat("HealF");
+        }elseif($nbt->hasTag("Health")){
+            $healthTag = $nbt->getTag("Health");
+            $health = (float) $healthTag->getValue();
+        }
+        $this->setHealth($health);
+        $this->setImmobile();
+    }
+
     /**
      * 상호작용을 위한 최소 거리
      *
@@ -65,20 +79,6 @@ abstract class EntityBase extends Creature{
             return $target;
         }
         return \null;
-    }
-
-    protected function initEntity(CompoundTag $nbt) : void{
-        parent::initEntity($nbt);
-
-        $this->setMaxHealth($health = $nbt->getInt("MaxHealth", $this->getDefaultMaxHealth()));
-        if($nbt->hasTag("HealF", FloatTag::class)){
-            $health = $nbt->getFloat("HealF");
-        }elseif($nbt->hasTag("Health")){
-            $healthTag = $nbt->getTag("Health");
-            $health = (float) $healthTag->getValue();
-        }
-        $this->setHealth($health);
-        $this->setImmobile();
     }
 
     public function getDefaultMaxHealth() : int{
@@ -161,7 +161,7 @@ abstract class EntityBase extends Creature{
             }
 
             $near = \PHP_INT_MAX;
-            foreach ($this->getLevel()->getEntities() as $k => $target){
+            foreach($this->level->getEntities() as $k => $target){
                 $distance = $this->distanceSquared($target);
                 if(
                     $target === $this

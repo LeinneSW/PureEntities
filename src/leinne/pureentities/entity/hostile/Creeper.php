@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\mob;
+namespace leinne\pureentities\entity\hostile;
 
+use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
+
 use pocketmine\entity\Explosive;
 use pocketmine\event\entity\ExplosionPrimeEvent;
 use pocketmine\item\Item;

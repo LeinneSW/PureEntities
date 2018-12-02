@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\animal;
+namespace leinne\pureentities\entity\passive;
 
+use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\block\utils\Color;

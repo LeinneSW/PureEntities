@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\animal;
+namespace leinne\pureentities\entity\passive;
 
 class Mooshroom extends Cow{
 

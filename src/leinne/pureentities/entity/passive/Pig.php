@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\animal;
+namespace leinne\pureentities\entity\passive;
 
+use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Creature;
@@ -11,23 +12,22 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\Player;
 
-class Cow extends Animal{
+class Pig extends Animal{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::COW;
+    const NETWORK_ID = self::PIG;
 
-    //TODO: Cow's Size
-    /*public $width = 0.6;
-    public $height = 1.8;
-    public $eyeHeight = 1.62;*/
+    public $width = 1.5;
+    public $height = 1.0;
+    public $eyeHeight = 1.62;
 
     public function getDefaultMaxHealth() : int{
         return 10;
     }
 
     public function getName() : string{
-        return 'Cow';
+        return 'Pig';
     }
 
     /**
@@ -50,8 +50,7 @@ class Cow extends Animal{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(Item::LEATHER, 0, \mt_rand(0, 2)),
-            ItemFactory::get($this->fireTicks > 0 ? Item::STEAK : Item::RAW_BEEF, 0, \mt_rand(1, 3)),
+            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_PORKCHOP : Item::RAW_PORKCHOP, 0, \mt_rand(1, 3))
         ];
     }
 

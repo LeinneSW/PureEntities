@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\mob;
+namespace leinne\pureentities\entity\neutral;
 
+use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
+
 use pocketmine\entity\Ageable;
 use pocketmine\entity\Creature;
 use pocketmine\entity\Human;
@@ -15,7 +17,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 
-class PigZombie extends Monster implements Ageable{
+class ZombiePigman extends Monster implements Ageable{
 
     use WalkEntityTrait;
 
@@ -25,13 +27,21 @@ class PigZombie extends Monster implements Ageable{
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
-    /** @var bool */
-    private $angry = \false;
+    /** @var int */
+    private $angry = 0;
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setAngry($nbt->getByte('Angry', 0) !== 0);
+        $this->setAngry($nbt->getInt('Angry', 0));
+        $this->setGenericFlag(self::DATA_FLAG_BABY, $nbt->getByte("IsBaby", 0) !== 0);
+
+        if($this->isBaby()){
+            $this->width = 0.3;
+            $this->height = 0.975;
+            $this->eyeHeight = 0.775;
+        }
+
         $this->setDamages([0, 5, 9, 13]);
     }
 
@@ -60,20 +70,28 @@ class PigZombie extends Monster implements Ageable{
     }
 
     public function isAngry() : bool{
-        return $this->angry;
+        return $this->angry > 0;
     }
 
-    public function setAngry(bool $angry = \true) : void{
-        $this->angry = $angry;
+    public function setAngry(?int $second = \null) : void{
+        $this->angry = ($second ?? \mt_rand(20, 40)) * 20;
+    }
+
+    public function entityBaseTick(int $tickDiff = 1) : bool{
+        if($this->isAlive() && $this->angry > 0){
+            --$this->angry;
+        }
+
+        return parent::entityBaseTick($tickDiff);
     }
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
         $target = $this->getTarget();
-        if($this->getSpeed() < 3.5 && $this->isAngry() && $target instanceof Creature){
-            $this->setSpeed(3.5);
+        if($this->getSpeed() < 3.8 && $this->isAngry() && $target instanceof Creature){
+            $this->setSpeed(3.8);
         }elseif($this->getSpeed() === 3.5){
-            $this->setSpeed(1);
+            $this->setSpeed(1.0);
         }
 
         if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
@@ -98,8 +116,13 @@ class PigZombie extends Monster implements Ageable{
 
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
-        $nbt->setByte("Angry", $this->angry ? 1 : 0);
+        $nbt->setInt("Angry", $this->angry);
+        $nbt->setByte("IsBaby", $this->isBaby() ? 1 : 0);
         return $nbt;
+    }
+
+    public function getDrops() : array{
+        return [];
     }
 
     public function getXpDropAmount() : int{

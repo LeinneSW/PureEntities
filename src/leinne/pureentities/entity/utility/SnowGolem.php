@@ -2,35 +2,36 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\animal;
+namespace leinne\pureentities\entity\utility;
 
 use leinne\pureentities\entity\ai\WalkEntityTrait;
+use leinne\pureentities\entity\Monster;
 
 use pocketmine\entity\Creature;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\Player;
 
-class Pig extends Animal{
+class SnowGolem extends Monster{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::PIG;
+    const NETWORK_ID = self::SNOW_GOLEM;
 
-    //TODO: Pig's Size
-    /*public $width = 0.6;
-    public $height = 1.8;
-    public $eyeHeight = 1.62;*/
+    public $width = 0.7;
+    public $height = 1.9;
+    public $eyeHeight = 2.5;
 
     public function getDefaultMaxHealth() : int{
         return 10;
     }
 
     public function getName() : string{
-        return 'Pig';
+        return 'SnowGolem';
     }
 
     /**
+     * TODO: 적대감 변경
+     *
      * $this 와 $target의 관계가 적대관계인지 확인
      *
      * @param Creature $target
@@ -39,8 +40,7 @@ class Pig extends Animal{
      * @return bool
      */
     public function hasInteraction(Creature $target, float $distanceSquare) : bool{
-        return $target instanceof Player && $target->isAlive() && !$target->closed && $distanceSquare <= 64
-            && $target->getInventory()->getItemInHand()->getId() === Item::SEEDS; //TODO: 아이템 유인 구현
+        return $target instanceof Monster && $target->isAlive() && !$target->closed && $distanceSquare <= 196;
     }
 
     public function interactTarget() : bool{
@@ -50,12 +50,11 @@ class Pig extends Animal{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_PORKCHOP : Item::RAW_PORKCHOP, 0, \mt_rand(1, 3))
+            ItemFactory::get(Item::SNOWBALL, 0, \mt_rand(0, 15)),
         ];
     }
 
     public function getXpDropAmount() : int{
-        return \mt_rand(1, 3);
+        return 0;
     }
-
 }

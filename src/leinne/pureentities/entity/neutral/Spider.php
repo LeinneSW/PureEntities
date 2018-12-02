@@ -2,41 +2,42 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\mob;
+namespace leinne\pureentities\entity\neutral;
 
+use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
-use pocketmine\entity\Ageable;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\Player;
 
-class Zombie extends Monster implements Ageable{
+class Spider extends Monster{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::ZOMBIE;
+    const NETWORK_ID = self::SPIDER;
 
-    public $width = 0.6;
-    public $height = 1.8;
-    public $eyeHeight = 1.62;
+    //TODO: Spider's Size
+    public $width = 1.4;
+    public $height = 0.9;
+    public $eyeHeight = 0.7;
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setSpeed(0.9);
-        $this->setDamages([0, 2, 3, 4]);
+        $this->setDamages([0, 2, 2, 3]);
+    }
+
+    public function getDefaultMaxHealth() : int{
+        return 16;
     }
 
     public function getName() : string{
-        return 'Zombie';
-    }
-
-    public function isBaby(): bool{
-        return $this->getGenericFlag(self::DATA_FLAG_BABY);
+        return 'Spider';
     }
 
     public function interactTarget() : bool{
@@ -63,30 +64,20 @@ class Zombie extends Monster implements Ageable{
 
     public function getDrops() : array{
         $drops = [
-            ItemFactory::get(Item::ROTTEN_FLESH, 0, \mt_rand(0, 2))
+            ItemFactory::get(Item::STRING, 0, \mt_rand(0, 2))
         ];
 
-        if(\mt_rand(0, 199) < 5){
-            switch(\mt_rand(0, 2)){
-                case 0:
-                    $drops[] = ItemFactory::get(Item::IRON_INGOT, 0, 1);
-                    break;
-                case 1:
-                    $drops[] = ItemFactory::get(Item::CARROT, 0, 1);
-                    break;
-                case 2:
-                    $drops[] = ItemFactory::get(Item::POTATO, 0, 1);
-                    break;
-            }
+        if(
+            $this->lastDamageCause instanceof EntityDamageByEntityEvent
+            && $this->lastDamageCause->getDamager() instanceof Player
+            && \mt_rand(1, 3) === 1
+        ){
+            $drops[] = ItemFactory::get(Item::SPIDER_EYE, 0, 1);
         }
-
         return $drops;
     }
 
     public function getXpDropAmount() : int{
-        if($this->isBaby()){
-            return 12;
-        }
         return 5;
     }
 

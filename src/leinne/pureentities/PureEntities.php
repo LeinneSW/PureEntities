@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
-use leinne\pureentities\entity\animal\Sheep;
-use leinne\pureentities\entity\mob\Creeper;
-use leinne\pureentities\entity\mob\PigZombie;
-use leinne\pureentities\entity\mob\Skeleton;
-use leinne\pureentities\entity\mob\Zombie;
+use leinne\pureentities\entity\neutral\ZombiePigman;
+use leinne\pureentities\entity\neutral\Spider;
+use leinne\pureentities\entity\passive\Chicken;
+use leinne\pureentities\entity\passive\Cow;
+use leinne\pureentities\entity\passive\Mooshroom;
+use leinne\pureentities\entity\passive\Pig;
+use leinne\pureentities\entity\passive\Sheep;
+use leinne\pureentities\entity\hostile\Creeper;
+use leinne\pureentities\entity\hostile\Skeleton;
+use leinne\pureentities\entity\hostile\Zombie;
+use leinne\pureentities\entity\utility\IronGolem;
 use leinne\pureentities\task\AutoSpawnTask;
 use leinne\pureentities\tile\MobSpawner;
 use pocketmine\block\Air;
+use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -26,38 +33,44 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginBase;
+use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
 
 class PureEntities extends PluginBase implements Listener{
 
     public function onLoad(){
-        /** Register Animal */
-//        Entity::registerEntity(Chicken::class, \false, ['minecraft:chicken']);
-//        Entity::registerEntity(Cow::class, \false, ['minecraft:cow']);
-//        Entity::registerEntity(Mooshroom::class, \false, ['minecraft:mooshroom']);
-//        Entity::registerEntity(Pig::class, \false, ['minecraft:pig']);
-//        Entity::registerEntity(Rabbit::class, \false, ['minecraft:rabbit']);
-        Entity::registerEntity(Sheep::class, \false, ['minecraft:sheep']);
-
-        /** Register Mob */
+        /** Register hostile */
 //        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
 //        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
         Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
 //        Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
 //        Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
-//        Entity::registerEntity(IronGolem::class, \false, ['minecraft:irongolem']);
 //        Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
 //        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
-        Entity::registerEntity(PigZombie::class, \false, ['PigZombie', 'minecraft:pigzombie']);
 //        Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
         Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
 //        Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
 //        Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
-//        Entity::registerEntity(Spider::class, \false, ['minecraft:spider']);
 //        Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
         Entity::registerEntity(Zombie::class, \false, ['Zombie', 'minecraft:zombie']);
-        //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombievillager']);
+        //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombie_villager']);
+
+        /** Register neutral */
+        Entity::registerEntity(ZombiePigman::class, \false, ['ZombiePigman', 'minecraft:zombie_pigman']);
+        Entity::registerEntity(Spider::class, \false, ['Spider', 'minecraft:spider']);
+
+        /** Register passive */
+        Entity::registerEntity(Chicken::class, \false, ['Chicken', 'minecraft:chicken']);
+        Entity::registerEntity(Cow::class, \false, ['Cow', 'minecraft:cow']);
+        Entity::registerEntity(Mooshroom::class, \false, ['Mooshroom', 'minecraft:mooshroom']);
+        Entity::registerEntity(Pig::class, \false, ['Pig', 'minecraft:pig']);
+//        Entity::registerEntity(Rabbit::class, \false, ['Rabbit', 'minecraft:rabbit']);
+        Entity::registerEntity(Sheep::class, \false, ['Sheep', 'minecraft:sheep']);
+
+        /** Register utility */
+        Entity::registerEntity(IronGolem::class, \false, ['IronGolem', 'minecraft:iron_golem']);
+//        Entity::registerEntity(SnowGolem::class, \false, ['SnowGolem', 'minecraft:snow_golem']);
 
         /** Register Projectile */
 //        Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
@@ -67,7 +80,11 @@ class PureEntities extends PluginBase implements Listener{
 
         foreach(Entity::getKnownEntityTypes() as $k => $className){
             /** @var Living $className */
-            if(\is_a($className, Living::class, \true) && $className::NETWORK_ID !== -1){
+            if(
+                \is_a($className, Living::class, \true)
+                && $className::NETWORK_ID !== -1
+                && !ItemFactory::isRegistered(Item::SPAWN_EGG, $className::NETWORK_ID)
+            ){
                 ItemFactory::registerItem(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, "Spawn Egg"));
             }
         }
@@ -76,6 +93,7 @@ class PureEntities extends PluginBase implements Listener{
     }
 
     public function onEnable() : void{
+        $this->saveDefaultConfig();
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), 80);
 
@@ -104,14 +122,16 @@ class PureEntities extends PluginBase implements Listener{
                     $tile->close();
                 }
 
-                $nbt = new CompoundTag('', [
+                $tile = Tile::createTile("MobSpawner", $block->level, new CompoundTag('', [
                     new StringTag('id', Tile::MOB_SPAWNER),
                     new IntTag('EntityId', $item->getDamage()),
                     new IntTag('x', $block->x),
                     new IntTag('y', $block->y),
                     new IntTag('z', $block->z),
-                ]);
-                new MobSpawner($block->getLevel(), $nbt);
+                ]));
+                if($tile instanceof Spawnable){
+                    $tile->spawnToAll();
+                }
             }
         }
     }
@@ -122,10 +142,10 @@ class PureEntities extends PluginBase implements Listener{
         }
 
         $block = $ev->getBlock();
-        if($block->getId() === Item::JACK_O_LANTERN || $block->getId() === Item::PUMPKIN){
+        if($block->getId() === Block::JACK_O_LANTERN || $block->getId() === Block::PUMPKIN){
             if(
-                $block->getSide(Facing::DOWN)->getId() === Item::SNOW_BLOCK
-                && $block->getSide(Facing::DOWN, 2)->getId() === Item::SNOW_BLOCK
+                $block->getSide(Facing::DOWN)->getId() === Block::SNOW_BLOCK
+                && $block->getSide(Facing::DOWN, 2)->getId() === Block::SNOW_BLOCK
             ){
                 $entity = Entity::createEntity('SnowGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
                 if($entity !== \null){
@@ -137,18 +157,18 @@ class PureEntities extends PluginBase implements Listener{
                     $ev->getPlayer()->getInventory()->setItemInHand($ev->getItem()->pop());
                 }
             }elseif(
-                $block->getSide(Facing::DOWN)->getId() === Item::IRON_BLOCK
-                && $block->getSide(Facing::DOWN, 2)->getId() === Item::IRON_BLOCK
+                $block->getSide(Facing::DOWN)->getId() === Block::IRON_BLOCK
+                && $block->getSide(Facing::DOWN, 2)->getId() === Block::IRON_BLOCK
             ){
                 $down = $block->getSide(Facing::DOWN);
-                if(($first = $down->getSide(Facing::EAST))->getId() === Item::IRON_BLOCK){
+                if(($first = $down->getSide(Facing::EAST))->getId() === Block::IRON_BLOCK){
                     $second = $down->getSide(Facing::WEST);
-                }elseif(($first = $down->getSide(Facing::NORTH))->getId() === Item::IRON_BLOCK){
+                }elseif(($first = $down->getSide(Facing::NORTH))->getId() === Block::IRON_BLOCK){
                     $second = $down->getSide(Facing::SOUTH);
                 }
 
 
-                if(isset($second) && $second->getId() === Item::IRON_BLOCK){
+                if(isset($second) && $second->getId() === Block::IRON_BLOCK){
                     $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($pos = $block->add(0.5, -2, 0.5), $block->level)));
                     if($entity !== \null){
                         $ev->setCancelled();

@@ -7,6 +7,7 @@ namespace leinne\pureentities\tile;
 use pocketmine\entity\Entity;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
@@ -24,8 +25,8 @@ class MobSpawner extends Spawnable{
     protected $minSpawnDelay;
     protected $maxSpawnDelay;
 
-    public function __construct(Level $level, CompoundTag $nbt){
-        parent::__construct($level, $nbt);
+    public function __construct(Level $level, Vector3 $pos){
+        parent::__construct($level, $pos);
 
         $this->scheduleUpdate();
     }
