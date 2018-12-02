@@ -37,11 +37,6 @@ trait WalkEntityTrait{
      * @return bool
      */
     public function entityBaseTick(int $tickDiff = 1) : bool{
-        if($this->server->getDifficulty() < 1){
-            $this->close();
-            return \false;
-        }
-
         if($this->closed){
             return \false;
         }
@@ -63,7 +58,7 @@ trait WalkEntityTrait{
         if(!$this->interactTarget() && $diff !== 0.0){
             $hasUpdate = \true;
             $needJump = $this->onGround;
-            $ground = $this->onGround ? 0.12 : 0.002;
+            $ground = $this->onGround ? 0.125 : 0.0025;
             $this->motion->x += $this->getSpeed() * $ground * $x / $diff;
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }

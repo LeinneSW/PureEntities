@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\animal;
+namespace leinne\pureentities\entity\passive;
 
+use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Creature;
@@ -17,10 +18,9 @@ class Chicken extends Animal{
 
     const NETWORK_ID = self::CHICKEN;
 
-    //TODO: Chicken's Size
-    /*public $width = 0.6;
-    public $height = 1.8;
-    public $eyeHeight = 1.62;*/
+    public $width = 1;
+    public $height = 0.8;
+    public $eyeHeight = 0.6;
 
     public function getDefaultMaxHealth() : int{
         return 4;
