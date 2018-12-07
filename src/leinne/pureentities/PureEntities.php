@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
+use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\neutral\ZombiePigman;
 use leinne\pureentities\entity\neutral\Spider;
 use leinne\pureentities\entity\passive\Chicken;
@@ -17,10 +18,10 @@ use leinne\pureentities\entity\hostile\Zombie;
 use leinne\pureentities\entity\utility\IronGolem;
 use leinne\pureentities\task\AutoSpawnTask;
 use leinne\pureentities\tile\MobSpawner;
+
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -44,21 +45,18 @@ class PureEntities extends PluginBase implements Listener{
     public function onLoad(){
         /** Register hostile */
 //        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
-//        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
         Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
 //        Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
 //        Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
 //        Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
-//        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
 //        Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
         Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
 //        Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
-//        Entity::registerEntity(SnowGolem::class, \false, ['minecraft:snowgolem']);
-//        Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
         Entity::registerEntity(Zombie::class, \false, ['Zombie', 'minecraft:zombie']);
         //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombie_villager']);
 
         /** Register neutral */
+//        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
         Entity::registerEntity(ZombiePigman::class, \false, ['ZombiePigman', 'minecraft:zombie_pigman']);
         Entity::registerEntity(Spider::class, \false, ['Spider', 'minecraft:spider']);
 
@@ -69,6 +67,10 @@ class PureEntities extends PluginBase implements Listener{
         Entity::registerEntity(Pig::class, \false, ['Pig', 'minecraft:pig']);
 //        Entity::registerEntity(Rabbit::class, \false, ['Rabbit', 'minecraft:rabbit']);
         Entity::registerEntity(Sheep::class, \false, ['Sheep', 'minecraft:sheep']);
+
+        /** Register tameable */
+//        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
+//        Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
 
         /** Register utility */
         Entity::registerEntity(IronGolem::class, \false, ['IronGolem', 'minecraft:iron_golem']);
@@ -81,9 +83,9 @@ class PureEntities extends PluginBase implements Listener{
         Tile::registerTile(MobSpawner::class);
 
         foreach(Entity::getKnownEntityTypes() as $k => $className){
-            /** @var Living $className */
+            /** @var EntityBase $className */
             if(
-                \is_a($className, Living::class, \true)
+                \is_a($className, EntityBase::class, \true)
                 && $className::NETWORK_ID !== -1
                 && !ItemFactory::isRegistered(Item::SPAWN_EGG, $className::NETWORK_ID)
             ){
