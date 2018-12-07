@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\utility;
 
+use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
@@ -12,7 +13,6 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\Player;
@@ -29,14 +29,10 @@ class IronGolem extends Monster{
 
     private $neutral = \true;
 
-    public function __construct(Level $level, CompoundTag $nbt, bool $isCreated = \false){
-        parent::__construct($level, $nbt);
-
-        $this->neutral = !$isCreated;
-    }
-
     public function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
+
+        $this->neutral = $nbt->getByte("Neutral", 0) !== 0;
 
         $this->setSpeed(1.3);
         $this->setMaxDamages([0, 11, 21, 31]);
@@ -68,7 +64,7 @@ class IronGolem extends Monster{
      * @return bool
      */
     public function hasInteraction(Creature $target, float $distanceSquare) : bool{
-        return ($this->isNeutral() || !($target instanceof Player)) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
+        return (($this->isNeutral() && !($target instanceof Animal)) || !($target instanceof Player)) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
     }
 
     public function interactTarget() : bool{
@@ -92,6 +88,12 @@ class IronGolem extends Monster{
             }
         }
         return \true;
+    }
+
+    public function saveNBT() : CompoundTag{
+        $nbt = parent::saveNBT();
+        $nbt->setByte("Neutral", $this->neutral ? 1 : 0);
+        return $nbt;
     }
 
     public function getDrops() : array{
