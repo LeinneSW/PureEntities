@@ -151,6 +151,7 @@ class PureEntities extends PluginBase implements Listener{
 
         $item = $ev->getItem();
         $block = $ev->getBlock();
+        $player = $ev->getPlayer();
         if($block->getId() === Block::JACK_O_LANTERN || $block->getId() === Block::PUMPKIN){
             if(
                 $block->getSide(Facing::DOWN)->getId() === Block::SNOW_BLOCK
@@ -162,9 +163,12 @@ class PureEntities extends PluginBase implements Listener{
                     for($y = 1; $y < 3; $y++){
                         $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
                     }
-                    $item->pop();
                     $entity->spawnToAll();
-                    $ev->getPlayer()->getInventory()->setItemInHand($item);
+
+                    if($player->isSurvival()){
+                        $item->pop();
+                        $player->getInventory()->setItemInHand($item);
+                    }
                 }
             }elseif(
                 $block->getSide(Facing::DOWN)->getId() === Block::IRON_BLOCK
@@ -188,9 +192,12 @@ class PureEntities extends PluginBase implements Listener{
                         $down->getLevel()->setBlock($second, new Air());
                         $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
 
-                        $item->pop();
                         $entity->spawnToAll();
-                        $ev->getPlayer()->getInventory()->setItemInHand($item);
+
+                        if($player->isSurvival()){
+                            $item->pop();
+                            $player->getInventory()->setItemInHand($item);
+                        }
                     }
                 }
             }

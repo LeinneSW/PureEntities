@@ -14,6 +14,7 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\Player;
 
 class IronGolem extends Monster{
 
@@ -46,7 +47,7 @@ class IronGolem extends Monster{
     }
 
     public function isFriendly() : bool{
-        return $this->friendly < -15;
+        return $this->friendly >= -15;
     }
 
     public function setFriendly(int $value) : void{
@@ -62,6 +63,9 @@ class IronGolem extends Monster{
      * @return bool
      */
     public function hasInteraction(Creature $target, float $distanceSquare) : bool{
+        if($target instanceof Player && $target->isCreative()){
+            return \false;
+        }
         return ($target instanceof Monster || !$this->isFriendly()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
     }
 
