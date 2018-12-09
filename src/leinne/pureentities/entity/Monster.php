@@ -7,7 +7,9 @@ namespace leinne\pureentities\entity;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\inventory\MonsterInventory;
 use pocketmine\entity\Creature;
+use pocketmine\event\entity\EntityInventoryChangeEvent;
 use pocketmine\inventory\EntityInventoryEventProcessor;
+use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
@@ -55,7 +57,15 @@ abstract class Monster extends EntityBase{
         if(!$item->isNull()){
             $this->inventory->setItemInHand($item);
         }
-        $this->inventory->setEventProcessor(new EntityInventoryEventProcessor($this));
+        $this->inventory->setSlotChangeListener(function(Inventory $inventory, int $slot, Item $oldItem, Item $newItem) : ?Item{
+            $ev = new EntityInventoryChangeEvent($this, $oldItem, $newItem, $slot);
+            $ev->call();
+            if($ev->isCancelled()){
+                return \null;
+            }
+
+            return $ev->getNewItem();
+        });
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
