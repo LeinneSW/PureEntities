@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\utility;
 
-use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
@@ -15,7 +14,6 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
-use pocketmine\Player;
 
 class IronGolem extends Monster{
 
@@ -27,12 +25,12 @@ class IronGolem extends Monster{
     public $height = 2.7;
     public $eyeHeight = 2.5;
 
-    private $neutral = \true;
+    private $friendly = 0;
 
     public function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->neutral = $nbt->getByte("Neutral", 0) !== 0;
+        $this->friendly = $nbt->getInt("Friendly", 0);
 
         $this->setSpeed(1.3);
         $this->setMaxDamages([0, 11, 21, 31]);
@@ -47,12 +45,12 @@ class IronGolem extends Monster{
         return 'IronGolem';
     }
 
-    public function isNeutral() : bool{
-        return $this->neutral;
+    public function isFriendly() : bool{
+        return $this->friendly < -15;
     }
 
-    public function setNeutral(bool $value) : void{
-        $this->neutral = $value;
+    public function setFriendly(int $value) : void{
+        $this->friendly = $value;
     }
 
     /**
@@ -64,7 +62,7 @@ class IronGolem extends Monster{
      * @return bool
      */
     public function hasInteraction(Creature $target, float $distanceSquare) : bool{
-        return (($this->isNeutral() && !($target instanceof Animal)) || !($target instanceof Player)) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
+        return ($target instanceof Monster || !$this->isFriendly()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
     }
 
     public function interactTarget() : bool{
@@ -92,7 +90,7 @@ class IronGolem extends Monster{
 
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
-        $nbt->setByte("Neutral", $this->neutral ? 1 : 0);
+        $nbt->setInt("Friendly", $this->friendly);
         return $nbt;
     }
 
