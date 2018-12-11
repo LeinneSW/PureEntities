@@ -28,9 +28,12 @@ class IronGolem extends Monster{
 
     private $friendly = 0;
 
+    private $owner = "";
+
     public function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
+        $this->owner = $nbt->getString("Owner", "");
         $this->friendly = $nbt->getInt("Friendly", 0);
 
         $this->setSpeed(1.3);
@@ -54,6 +57,10 @@ class IronGolem extends Monster{
         $this->friendly = $value;
     }
 
+    public function getOwnerName() : string{
+        return $this->owner;
+    }
+
     /**
      * $this 와 $target의 관계가 적대관계인지 확인
      *
@@ -63,7 +70,9 @@ class IronGolem extends Monster{
      * @return bool
      */
     public function hasInteraction(Creature $target, float $distanceSquare) : bool{
-        if($target instanceof Player && $target->isCreative()){
+        if($target instanceof Player && (!empty($this->owner) || !$target->isSurvival())){
+            return \false;
+        }elseif($target instanceof IronGolem){
             return \false;
         }
         return ($target instanceof Monster || !$this->isFriendly()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
@@ -75,18 +84,25 @@ class IronGolem extends Monster{
             return \false;
         }
 
-        if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
-            $pk = new EntityEventPacket();
-            $pk->entityRuntimeId = $this->id;
-            $pk->event = EntityEventPacket::ARM_SWING;
-            $this->server->broadcastPacket($this->hasSpawned, $pk);
+        if($this->attackDelay >= 20){
+            if($target instanceof Player){
+                $damage = $this->getResultDamage();
+            }else{
+                $damage = $this->getResultDamage(2);
+            }
 
-            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
-            $target->attack($ev);
-            $target->setMotion($target->getMotion()->add(0, 0.5, 0));
+            if($damage >= 0){
+                $pk = new EntityEventPacket();
+                $pk->entityRuntimeId = $this->id;
+                $pk->event = EntityEventPacket::ARM_SWING;
+                $this->server->broadcastPacket($this->hasSpawned, $pk);
 
-            if(!$ev->isCancelled()){
-                $this->attackDelay = 0;
+                $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
+                $target->attack($ev);
+                if(!$ev->isCancelled()){
+                    $this->attackDelay = 0;
+                    $target->setMotion($target->getMotion()->add(0, 0.45, 0));
+                }
             }
         }
         return \true;
@@ -94,6 +110,7 @@ class IronGolem extends Monster{
 
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
+        $nbt->setString("Owner", $this->owner);
         $nbt->setInt("Friendly", $this->friendly);
         return $nbt;
     }

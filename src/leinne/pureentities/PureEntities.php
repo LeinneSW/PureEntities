@@ -176,28 +176,32 @@ class PureEntities extends PluginBase implements Listener{
             ){
                 $down = $block->getSide(Facing::DOWN);
                 if(($first = $down->getSide(Facing::EAST))->getId() === Block::IRON_BLOCK){
-                    $second = $down->getSide(Facing::WEST);
+                    if(($second = $down->getSide(Facing::WEST))->getId() !== Block::IRON_BLOCK){
+                        return;
+                    }
                 }elseif(($first = $down->getSide(Facing::NORTH))->getId() === Block::IRON_BLOCK){
-                    $second = $down->getSide(Facing::SOUTH);
+                    if(($second = $down->getSide(Facing::SOUTH))->getId() !== Block::IRON_BLOCK){
+                        return;
+                    }
+                }else{
+                    return;
                 }
 
+                $nbt = Entity::createBaseNBT(Position::fromObject($pos = $block->add(0.5, -2, 0.5), $block->level));
+                $nbt->setString("Owner", $player->getName());
+                $entity = Entity::createEntity('IronGolem', $block->level, $nbt);
+                if($entity !== \null){
+                    $ev->setCancelled();
+                    $entity->spawnToAll();
 
-                if(isset($second) && $second->getId() === Block::IRON_BLOCK){
-                    $entity = Entity::createEntity('IronGolem', $block->level, Entity::createBaseNBT(Position::fromObject($pos = $block->add(0.5, -2, 0.5), $block->level)));
-                    if($entity !== \null){
-                        $ev->setCancelled();
+                    $down->getLevel()->setBlock($pos, new Air());
+                    $down->getLevel()->setBlock($first, new Air());
+                    $down->getLevel()->setBlock($second, new Air());
+                    $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
 
-                        $down->getLevel()->setBlock($pos, new Air());
-                        $down->getLevel()->setBlock($first, new Air());
-                        $down->getLevel()->setBlock($second, new Air());
-                        $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
-
-                        $entity->spawnToAll();
-
-                        if($player->isSurvival()){
-                            $item->pop();
-                            $player->getInventory()->setItemInHand($item);
-                        }
+                    if($player->isSurvival()){
+                        $item->pop();
+                        $player->getInventory()->setItemInHand($item);
                     }
                 }
             }
