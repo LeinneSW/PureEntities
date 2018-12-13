@@ -80,7 +80,7 @@ class PureEntities extends PluginBase implements Listener{
 //        Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
 //        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
 
-        Tile::registerTile(MobSpawner::class);
+        Tile::registerTile(MobSpawner::class, [Tile::MOB_SPAWNER, 'minecraft:mob_spawner']);
 
         foreach(Entity::getKnownEntityTypes() as $k => $className){
             /** @var EntityBase $className */
@@ -130,7 +130,7 @@ class PureEntities extends PluginBase implements Listener{
                     $tile->close();
                 }
 
-                $tile = Tile::createTile("MobSpawner", $block->level, new CompoundTag('', [
+                $tile = Tile::createFromData($block->level, new CompoundTag('', [
                     new StringTag('id', Tile::MOB_SPAWNER),
                     new IntTag('EntityId', $item->getDamage()),
                     new IntTag('x', $block->x),
@@ -176,14 +176,14 @@ class PureEntities extends PluginBase implements Listener{
             ){
                 $down = $block->getSide(Facing::DOWN);
                 if(($first = $down->getSide(Facing::EAST))->getId() === Block::IRON_BLOCK){
-                    if(($second = $down->getSide(Facing::WEST))->getId() !== Block::IRON_BLOCK){
-                        return;
-                    }
-                }elseif(($first = $down->getSide(Facing::NORTH))->getId() === Block::IRON_BLOCK){
-                    if(($second = $down->getSide(Facing::SOUTH))->getId() !== Block::IRON_BLOCK){
-                        return;
-                    }
-                }else{
+                    $second = $down->getSide(Facing::WEST);
+                }
+
+                if(!isset($second) && ($first = $down->getSide(Facing::NORTH))->getId() === Block::IRON_BLOCK){
+                    $second = $down->getSide(Facing::SOUTH);
+                }
+
+                if(!isset($second) || $second->getId() !== Block::IRON_BLOCK){
                     return;
                 }
 
