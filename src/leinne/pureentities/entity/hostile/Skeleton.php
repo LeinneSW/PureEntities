@@ -97,7 +97,7 @@ class Skeleton extends Monster{
                     }else{
                         $this->attackDelay = 0;
                         $entity->spawnToAll();
-                        $this->level->addSound(new LaunchSound($this), $this->getViewers());
+                        $this->level->addSound($this, new LaunchSound(), $this->getViewers());
                     }
                 }else{
                     $entity->spawnToAll();
