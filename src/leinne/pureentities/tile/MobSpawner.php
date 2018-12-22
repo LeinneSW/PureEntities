@@ -54,7 +54,7 @@ class MobSpawner extends Spawnable{
             return \false;
         }
 
-        if(++$this->delay >= mt_rand($this->getMinSpawnDelay(), $this->getMaxSpawnDelay())){
+        if(++$this->delay >= \mt_rand($this->getMinSpawnDelay(), $this->getMaxSpawnDelay())){
             $this->delay = 0;
 
             $list = [];
@@ -71,9 +71,9 @@ class MobSpawner extends Spawnable{
 
             if($isValid && count($list) < $this->maxNearbyEntities){
                 $pos = new Position(
-                    $this->x + mt_rand(-$this->spawnRange, $this->spawnRange),
+                    $this->x + \mt_rand(-$this->spawnRange, $this->spawnRange),
                     $this->y,
-                    $this->z + mt_rand(-$this->spawnRange, $this->spawnRange),
+                    $this->z + \mt_rand(-$this->spawnRange, $this->spawnRange),
                     $this->level
                 );
                 $entity = Entity::createEntity($this->entityId, $pos->level, Entity::createBaseNBT($pos));
