@@ -34,7 +34,6 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginBase;
-use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
 
@@ -80,7 +79,7 @@ class PureEntities extends PluginBase implements Listener{
 //        Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
 //        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
 
-        Tile::registerTile(MobSpawner::class, [Tile::MOB_SPAWNER, 'minecraft:mob_spawner']);
+        Tile::register(MobSpawner::class, ["MobSpanwer", 'minecraft:mob_spawner']);
 
         foreach(Entity::getKnownEntityTypes() as $k => $className){
             /** @var EntityBase $className */
@@ -131,14 +130,14 @@ class PureEntities extends PluginBase implements Listener{
                 }
 
                 $tile = Tile::createFromData($block->level, new CompoundTag('', [
-                    new StringTag('id', Tile::MOB_SPAWNER),
-                    new IntTag('EntityId', $item->getDamage()),
+                    new StringTag('id', "MobSpawner"),
                     new IntTag('x', $block->x),
                     new IntTag('y', $block->y),
                     new IntTag('z', $block->z),
+                    new IntTag('EntityId', $item->getDamage()),
                 ]));
-                if($tile instanceof Spawnable){
-                    $tile->spawnToAll();
+                if($tile !== \null){
+                    $tile->level->addTile($tile);
                 }
             }
         }
