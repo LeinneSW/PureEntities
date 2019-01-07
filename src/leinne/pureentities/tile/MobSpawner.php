@@ -31,7 +31,7 @@ class MobSpawner extends Spawnable{
         $this->scheduleUpdate();
     }
 
-    protected function readSaveData(CompoundTag $nbt) : void{
+    public function readSaveData(CompoundTag $nbt) : void{
         $this->entityId = $nbt->getInt('EntityId', -1);
         $this->spawnRange = $nbt->getShort('SpawnRange', 8);
         $this->minSpawnDelay = $nbt->getInt('MinSpawnDelay', 200);
