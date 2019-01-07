@@ -21,7 +21,7 @@ use leinne\pureentities\tile\MobSpawner;
 
 use pocketmine\block\Air;
 use pocketmine\block\Block;
-use pocketmine\entity\Entity;
+use pocketmine\entity\EntityFactory;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -32,9 +32,8 @@ use pocketmine\level\Position;
 use pocketmine\math\Facing;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginBase;
-use pocketmine\tile\Tile;
+use pocketmine\tile\TileFactory;
 use pocketmine\utils\TextFormat;
 
 class PureEntities extends PluginBase implements Listener{
@@ -43,45 +42,45 @@ class PureEntities extends PluginBase implements Listener{
 
     public function onLoad(){
         /** Register hostile */
-//        Entity::registerEntity(Blaze::class, \false, ['minecraft:blaze']);
-        Entity::registerEntity(Creeper::class, \false, ['minecraft:creeper']);
-//        Entity::registerEntity(Enderman::class, \false, ['minecraft:enderman']);
-//        Entity::registerEntity(Ghast::class, \false, ['minecraft:ghast']);
-//        Entity::registerEntity(MagmaCube::class, \false, ['minecraft:magmacube']);
-//        Entity::registerEntity(Silverfish::class, \false, ['minecraft:silverfish']);
-        Entity::registerEntity(Skeleton::class, \false, ['minecraft:skeleton']);
-//        Entity::registerEntity(Slime::class, \false, ['minecraft:slime']);
-        Entity::registerEntity(Zombie::class, \false, ['Zombie', 'minecraft:zombie']);
-        //Entity::registerEntity(ZombieVillager::class, \false, ['minecraft:zombie_villager']);
+//        EntityFactory::register(Blaze::class, \false, ['minecraft:blaze']);
+        EntityFactory::register(Creeper::class, \false, ['minecraft:creeper']);
+//        EntityFactory::register(Enderman::class, \false, ['minecraft:enderman']);
+//        EntityFactory::register(Ghast::class, \false, ['minecraft:ghast']);
+//        EntityFactory::register(MagmaCube::class, \false, ['minecraft:magmacube']);
+//        EntityFactory::register(Silverfish::class, \false, ['minecraft:silverfish']);
+        EntityFactory::register(Skeleton::class, \false, ['minecraft:skeleton']);
+//        EntityFactory::register(Slime::class, \false, ['minecraft:slime']);
+        EntityFactory::register(Zombie::class, \false, ['Zombie', 'minecraft:zombie']);
+        //EntityFactory::register(ZombieVillager::class, \false, ['minecraft:zombie_villager']);
 
         /** Register neutral */
-//        Entity::registerEntity(CaveSpider::class, \false, ['minecraft:cavespider']);
-        Entity::registerEntity(ZombiePigman::class, \false, ['ZombiePigman', 'minecraft:zombie_pigman']);
-        Entity::registerEntity(Spider::class, \false, ['Spider', 'minecraft:spider']);
+//        EntityFactory::register(CaveSpider::class, \false, ['minecraft:cavespider']);
+        EntityFactory::register(ZombiePigman::class, \false, ['ZombiePigman', 'minecraft:zombie_pigman']);
+        EntityFactory::register(Spider::class, \false, ['Spider', 'minecraft:spider']);
 
         /** Register passive */
-        Entity::registerEntity(Chicken::class, \false, ['Chicken', 'minecraft:chicken']);
-        Entity::registerEntity(Cow::class, \false, ['Cow', 'minecraft:cow']);
-        Entity::registerEntity(Mooshroom::class, \false, ['Mooshroom', 'minecraft:mooshroom']);
-        Entity::registerEntity(Pig::class, \false, ['Pig', 'minecraft:pig']);
-//        Entity::registerEntity(Rabbit::class, \false, ['Rabbit', 'minecraft:rabbit']);
-        Entity::registerEntity(Sheep::class, \false, ['Sheep', 'minecraft:sheep']);
+        EntityFactory::register(Chicken::class, \false, ['Chicken', 'minecraft:chicken']);
+        EntityFactory::register(Cow::class, \false, ['Cow', 'minecraft:cow']);
+        EntityFactory::register(Mooshroom::class, \false, ['Mooshroom', 'minecraft:mooshroom']);
+        EntityFactory::register(Pig::class, \false, ['Pig', 'minecraft:pig']);
+//        EntityFactory::register(Rabbit::class, \false, ['Rabbit', 'minecraft:rabbit']);
+        EntityFactory::register(Sheep::class, \false, ['Sheep', 'minecraft:sheep']);
 
         /** Register tameable */
-//        Entity::registerEntity(Ocelot::class, \false, ['minecraft:ocelot']);
-//        Entity::registerEntity(Wolf::class, \false, ['minecraft:wolf']);
+//        EntityFactory::register(Ocelot::class, \false, ['minecraft:ocelot']);
+//        EntityFactory::register(Wolf::class, \false, ['minecraft:wolf']);
 
         /** Register utility */
-        Entity::registerEntity(IronGolem::class, \false, ['IronGolem', 'minecraft:iron_golem']);
-//        Entity::registerEntity(SnowGolem::class, \false, ['SnowGolem', 'minecraft:snow_golem']);
+        EntityFactory::register(IronGolem::class, \false, ['IronGolem', 'minecraft:iron_golem']);
+//        EntityFactory::register(SnowGolem::class, \false, ['SnowGolem', 'minecraft:snow_golem']);
 
         /** Register Projectile */
-//        Entity::registerEntity(SmallFireBall::class, \false, ['minecraft:smallfireball']);
-//        Entity::registerEntity(LargeFireBall::class, \false, ['minecraft:largefireball']);
+//        EntityFactory::register(SmallFireBall::class, \false, ['minecraft:smallfireball']);
+//        EntityFactory::register(LargeFireBall::class, \false, ['minecraft:largefireball']);
 
-        Tile::register(MobSpawner::class, ["MobSpanwer", 'minecraft:mob_spawner']);
+        TileFactory::register(MobSpawner::class, ["MobSpanwer", 'minecraft:mob_spawner']);
 
-        foreach(Entity::getKnownEntityTypes() as $k => $className){
+        foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var EntityBase $className */
             if(
                 \is_a($className, EntityBase::class, \true)
@@ -129,16 +128,11 @@ class PureEntities extends PluginBase implements Listener{
                     $tile->close();
                 }
 
-                $tile = Tile::createFromData($block->level, new CompoundTag('', [
-                    new StringTag('id', "MobSpawner"),
-                    new IntTag('x', $block->x),
-                    new IntTag('y', $block->y),
-                    new IntTag('z', $block->z),
+                $tile = TileFactory::create("MobSpawner", $block->level, $block);
+                $tile->readSaveData(new CompoundTag('', [
                     new IntTag('EntityId', $item->getDamage()),
                 ]));
-                if($tile !== \null){
-                    $tile->level->addTile($tile);
-                }
+                $tile->level->addTile($tile);
             }
         }
     }
@@ -156,18 +150,21 @@ class PureEntities extends PluginBase implements Listener{
                 $block->getSide(Facing::DOWN)->getId() === Block::SNOW_BLOCK
                 && $block->getSide(Facing::DOWN, 2)->getId() === Block::SNOW_BLOCK
             ){
-                $entity = Entity::createEntity('SnowGolem', $block->level, Entity::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
-                if($entity !== \null){
-                    $ev->setCancelled();
-                    for($y = 1; $y < 3; $y++){
-                        $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
-                    }
-                    $entity->spawnToAll();
+                try{
+                    $entity = EntityFactory::create('SnowGolem', $block->level, EntityFactory::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
+                }catch(\Exception $e){
+                    $player->sendMessage(TextFormat::RED . 'Error');
+                    return;
+                }
+                $ev->setCancelled();
+                for($y = 1; $y < 3; $y++){
+                    $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
+                }
+                $entity->spawnToAll();
 
-                    if($player->isSurvival()){
-                        $item->pop();
-                        $player->getInventory()->setItemInHand($item);
-                    }
+                if($player->isSurvival()){
+                    $item->pop();
+                    $player->getInventory()->setItemInHand($item);
                 }
             }elseif(
                 $block->getSide(Facing::DOWN)->getId() === Block::IRON_BLOCK
@@ -186,22 +183,25 @@ class PureEntities extends PluginBase implements Listener{
                     return;
                 }
 
-                $nbt = Entity::createBaseNBT(Position::fromObject($pos = $block->add(0.5, -2, 0.5), $block->level));
+                $nbt = EntityFactory::createBaseNBT(Position::fromObject($pos = $block->add(0.5, -2, 0.5), $block->level));
                 $nbt->setString("Owner", $player->getName());
-                $entity = Entity::createEntity('IronGolem', $block->level, $nbt);
-                if($entity !== \null){
-                    $ev->setCancelled();
-                    $entity->spawnToAll();
+                try{
+                    $entity = EntityFactory::create('IronGolem', $block->level, $nbt);
+                }catch(\Exception $e){
+                    $player->sendMessage(TextFormat::RED . 'Error');
+                    return;
+                }
+                $ev->setCancelled();
+                $entity->spawnToAll();
 
-                    $down->getLevel()->setBlock($pos, new Air());
-                    $down->getLevel()->setBlock($first, new Air());
-                    $down->getLevel()->setBlock($second, new Air());
-                    $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
+                $down->getLevel()->setBlock($pos, new Air());
+                $down->getLevel()->setBlock($first, new Air());
+                $down->getLevel()->setBlock($second, new Air());
+                $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
 
-                    if($player->isSurvival()){
-                        $item->pop();
-                        $player->getInventory()->setItemInHand($item);
-                    }
+                if($player->isSurvival()){
+                    $item->pop();
+                    $player->getInventory()->setItemInHand($item);
                 }
             }
         }
