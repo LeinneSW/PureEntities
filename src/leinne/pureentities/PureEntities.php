@@ -22,6 +22,7 @@ use leinne\pureentities\tile\MobSpawner;
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\entity\EntityFactory;
+use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -81,13 +82,13 @@ class PureEntities extends PluginBase implements Listener{
         TileFactory::register(MobSpawner::class, ["MobSpanwer", 'minecraft:mob_spawner']);
 
         foreach(EntityFactory::getKnownTypes() as $k => $className){
-            /** @var EntityBase $className */
+            /** @var Living|string $className */
             if(
                 \is_a($className, EntityBase::class, \true)
                 && $className::NETWORK_ID !== -1
                 && !ItemFactory::isRegistered(Item::SPAWN_EGG, $className::NETWORK_ID)
             ){
-                ItemFactory::registerItem(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, "Spawn Egg"));
+                ItemFactory::registerItem(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, $className, "Spawn Egg"));
             }
         }
 
