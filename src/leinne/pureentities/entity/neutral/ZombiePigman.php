@@ -19,7 +19,9 @@ use pocketmine\network\mcpe\protocol\EntityEventPacket;
 
 class ZombiePigman extends Monster implements Ageable{
 
-    use WalkEntityTrait;
+    use WalkEntityTrait{
+        entityBaseTick as baseTick;
+    }
 
     const NETWORK_ID = self::ZOMBIE_PIGMAN;
 
@@ -82,7 +84,7 @@ class ZombiePigman extends Monster implements Ageable{
             --$this->angry;
         }
 
-        return parent::entityBaseTick($tickDiff);
+        return $this->baseTick($tickDiff);
     }
 
     public function interactTarget() : bool{
