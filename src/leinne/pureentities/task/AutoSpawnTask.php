@@ -4,7 +4,18 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\task;
 
-use pocketmine\entity\Entity;
+use leinne\pureentities\entity\hostile\Creeper;
+use leinne\pureentities\entity\hostile\Skeleton;
+use leinne\pureentities\entity\hostile\Zombie;
+use leinne\pureentities\entity\neutral\Spider;
+use leinne\pureentities\entity\neutral\ZombiePigman;
+use leinne\pureentities\entity\passive\Chicken;
+use leinne\pureentities\entity\passive\Cow;
+use leinne\pureentities\entity\passive\Mooshroom;
+use leinne\pureentities\entity\passive\Pig;
+
+use leinne\pureentities\entity\passive\Sheep;
+use pocketmine\entity\EntityFactory;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 
@@ -22,14 +33,11 @@ class AutoSpawnTask extends Task{
             $pos->y = $player->level->getHighestBlockAt($pos->x += \mt_rand(0, 1) ? $radX : -$radX, $pos->z += \mt_rand(0, 1) ? $radZ : -$radZ) + 1;
 
             $entityIds = [
-                ["Cow", "Pig", "Sheep", "Chicken"],//, "Slime", "Wolf", "Ocelot", "Mooshroom", "Rabbit", "IronGolem", "SnowGolem"],
-                ["Zombie", "Creeper", "Skeleton", "Spider", "PigZombie"]//, "Enderman", "CaveSpider", "MagmaCube", "ZombieVillager", "Ghast", "Blaze"]
+                [Cow::class, Pig::class, Sheep::class, Chicken::class, Mooshroom::class],//, "Slime", "Wolf", "Ocelot", "Mooshroom", "Rabbit", "IronGolem", "SnowGolem"],
+                [Zombie::class, Creeper::class, Skeleton::class, Spider::class, ZombiePigman::class]//, "Enderman", "CaveSpider", "MagmaCube", "ZombieVillager", "Ghast", "Blaze"]
             ];
-            $entity = Entity::createEntity($entityIds[\mt_rand(0, 1)][\mt_rand(0, 4)] ?? 0, $player->level, Entity::createBaseNBT($pos));
-            if($entity !== \null){
-                $entity->spawnToAll();
-                break;
-            }
+            $entity = EntityFactory::create($entityIds[\mt_rand(0, 1)][\mt_rand(0, 4)], $player->level, EntityFactory::createBaseNBT($pos));
+            $entity->spawnToAll();
         }
     }
 
