@@ -16,6 +16,7 @@ use leinne\pureentities\entity\hostile\Creeper;
 use leinne\pureentities\entity\hostile\Skeleton;
 use leinne\pureentities\entity\hostile\Zombie;
 use leinne\pureentities\entity\utility\IronGolem;
+use leinne\pureentities\entity\utility\SnowGolem;
 use leinne\pureentities\task\AutoSpawnTask;
 use leinne\pureentities\tile\MobSpawner;
 
@@ -83,12 +84,8 @@ class PureEntities extends PluginBase implements Listener{
 
         foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var Living|string $className */
-            if(
-                \is_a($className, EntityBase::class, \true)
-                && $className::NETWORK_ID !== -1
-                && !ItemFactory::isRegistered(Item::SPAWN_EGG, $className::NETWORK_ID)
-            ){
-                ItemFactory::registerItem(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, $className, "Spawn Egg"));
+            if(\is_a($className, EntityBase::class, \true) && $className::NETWORK_ID !== -1){
+                ItemFactory::registerItem(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, $className, "Spawn " . (new \ReflectionClass($className))->getShortName()), \true);
             }
         }
 
@@ -152,7 +149,7 @@ class PureEntities extends PluginBase implements Listener{
                 && $block->getSide(Facing::DOWN, 2)->getId() === Block::SNOW_BLOCK
             ){
                 try{
-                    $entity = EntityFactory::create('SnowGolem', $block->level, EntityFactory::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
+                    $entity = EntityFactory::create(SnowGolem::class, $block->level, EntityFactory::createBaseNBT(Position::fromObject($block->add(0.5, -2, 0.5), $block->level)));
                 }catch(\Exception $e){
                     $player->sendMessage(TextFormat::RED . 'Error');
                     return;
@@ -187,7 +184,7 @@ class PureEntities extends PluginBase implements Listener{
                 $nbt = EntityFactory::createBaseNBT(Position::fromObject($pos = $block->add(0.5, -2, 0.5), $block->level));
                 $nbt->setString("Owner", $player->getName());
                 try{
-                    $entity = EntityFactory::create('IronGolem', $block->level, $nbt);
+                    $entity = EntityFactory::create(IronGolem::class, $block->level, $nbt);
                 }catch(\Exception $e){
                     $player->sendMessage(TextFormat::RED . 'Error');
                     return;
