@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\tile;
 
 use pocketmine\entity\Entity;
+use pocketmine\entity\EntityFactory;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
@@ -70,13 +71,14 @@ class MobSpawner extends Spawnable{
             }
 
             if($isValid && count($list) < $this->maxNearbyEntities){
-                $pos = new Position(
+                $nbt = EntityFactory::createBaseNBT($pos = new Position(
                     $this->x + \mt_rand(-$this->spawnRange, $this->spawnRange),
                     $this->y,
                     $this->z + \mt_rand(-$this->spawnRange, $this->spawnRange),
                     $this->level
-                );
-                $entity = Entity::createEntity($this->entityId, $pos->level, Entity::createBaseNBT($pos));
+                ));
+                $nbt->setInt("id", $this->entityId);
+                $entity = EntityFactory::createFromData($this->level, $nbt);
                 if($entity !== \null){
                     $entity->spawnToAll();
                 }
