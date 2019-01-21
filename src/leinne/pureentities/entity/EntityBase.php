@@ -194,7 +194,7 @@ abstract class EntityBase extends Creature{
         return $this->target;
     }
 
-    public function move(float $dx, float $dy, float $dz) : void{
+    protected function move(float $dx, float $dy, float $dz) : void{
         if(!$this->isMovable()){
             return;
         }
@@ -210,7 +210,7 @@ abstract class EntityBase extends Creature{
         if($this->keepMovement){
             $this->boundingBox->offset($dx, $dy, $dz);
         }else{
-            $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
+            $list = $this->level->getCollisionBoxes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
 
             foreach($list as $k => $bb){
                 $dy = $bb->calculateYOffset($this->boundingBox, $dy);

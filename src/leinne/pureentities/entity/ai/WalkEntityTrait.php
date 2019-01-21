@@ -91,7 +91,7 @@ trait WalkEntityTrait{
      * @param float $dy
      * @param float $dz
      */
-    public function move(float $dx, float $dy, float $dz) : void{
+    protected function move(float $dx, float $dy, float $dz) : void{
         if(!$this->isMovable()){
             return;
         }
@@ -108,7 +108,7 @@ trait WalkEntityTrait{
             $this->boundingBox->offset($dx, $dy, $dz);
         }else{
             /** @var Entity $this */
-            $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
+            $list = $this->level->getCollisionBoxes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
 
             foreach($list as $k => $bb){
                 $dy = $bb->calculateYOffset($this->boundingBox, $dy);
