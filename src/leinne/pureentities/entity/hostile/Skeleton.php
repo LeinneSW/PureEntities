@@ -9,6 +9,7 @@ use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
+use pocketmine\entity\EntityFactory;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -53,17 +54,17 @@ class Skeleton extends Monster{
             return \false;
         }
 
-        if(++$this->attackDelay >= 35 && \mt_rand(1, 25) === 1){
-            $p = ($this->attackDelay - 22) / 20;
-            $force = \min((($p ** 2) + $p * 2) / 3, 1.5) * 2;
+        if(++$this->attackDelay >= 32 && \mt_rand(1, 30) === 1){
+            $p = ($this->attackDelay - 20) / 20;
+            $baseForce = \min((($p ** 2) + $p * 2) / 3, 1);
 
-            $nbt = Entity::createBaseNBT(
+            $nbt = EntityFactory::createBaseNBT(
                 $this->add(0, $this->eyeHeight, 0),
                 $this->getDirectionVector(),
                 ($this->yaw > 180 ? 360 : 0) - $this->yaw,
                 -$this->pitch
             );
-            $arrow = new Arrow($this->level, $nbt, $this, $force === 3.0);
+            $arrow = new Arrow($this->level, $nbt, $this, $baseForce >= 1);
             //TODO: 올바른 화살 대미지[1~4(쉬움, 보통), 1~5(어려움)]
             //$arrow->setBaseDamage($arrow->getBaseDamage() + $this->getResultDamage());
             $arrow->setPickupMode(($item = $this->inventory->getItemInHand())->hasEnchantment(Enchantment::INFINITY) ? Arrow::PICKUP_CREATIVE : Arrow::PICKUP_NONE);
@@ -80,7 +81,7 @@ class Skeleton extends Monster{
                 $arrow->setOnFire($arrow->getFireTicks() * 20 + 100);
             }
 
-            $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, $force);
+            $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, $baseForce * 3);
             $ev->call();
 
             $entity = $ev->getProjectile();
