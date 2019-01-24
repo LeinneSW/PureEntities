@@ -110,7 +110,7 @@ class Skeleton extends Monster{
 
     public function interactTarget() : bool{
         if($this->inventory->getItemInHand() instanceof Bow){
-            return $this->interactTarget();
+            return $this->interactTargetBow();
         }
 
         ++$this->attackDelay;
