@@ -35,7 +35,7 @@ class EntityAI{
                 }
                 return $aabb->maxY - $entity->y === 0.5 ? EntityAI::JUMP_SLAB : EntityAI::JUMP_BLOCK;
             }
-        }elseif($up->maxY - $entity->y === 1.0){ /** 반블럭 위에서 반블럭*3 점프 */
+        }elseif($up->maxY - $entity->y === 1.0){ /** 반블럭 위에서 반블럭 * 3 점프 */
             return EntityAI::JUMP_BLOCK;
         }
         return EntityAI::JUMP_CANT;

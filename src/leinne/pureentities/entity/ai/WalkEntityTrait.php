@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
+use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
@@ -36,7 +37,7 @@ trait WalkEntityTrait{
      *
      * @return bool
      */
-    public function entityBaseTick(int $tickDiff = 1) : bool{
+    protected function entityBaseTick(int $tickDiff = 1) : bool{
         if($this->closed){
             return \false;
         }
@@ -79,7 +80,7 @@ trait WalkEntityTrait{
         }
 
         $this->yaw = \rad2deg(\atan2($z, $x)) - 90.0;
-        $this->pitch = $y === 0.0 ? $y : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
+        $this->pitch = (!$target instanceof Creature || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
 
         return $hasUpdate;
     }
@@ -152,9 +153,12 @@ trait WalkEntityTrait{
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
 
+        if($movX != $dx || $movZ != $dz){
+            $this->moveTime -= 100;
+        }
+
         if($movX != $dx){
             $this->motion->x = 0;
-            $this->moveTime -= 20;
         }
 
         if($movY != $dy){
@@ -163,7 +167,6 @@ trait WalkEntityTrait{
 
         if($movZ != $dz){
             $this->motion->z = 0;
-            $this->moveTime -= 20;
         }
 
         Timings::$entityMoveTimer->stopTiming();

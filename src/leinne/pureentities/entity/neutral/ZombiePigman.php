@@ -79,7 +79,7 @@ class ZombiePigman extends Monster implements Ageable{
         $this->angry = ($second ?? \mt_rand(20, 40)) * 20;
     }
 
-    public function entityBaseTick(int $tickDiff = 1) : bool{
+    protected function entityBaseTick(int $tickDiff = 1) : bool{
         if($this->isAlive() && $this->angry > 0){
             --$this->angry;
         }
