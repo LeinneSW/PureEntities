@@ -68,7 +68,7 @@ abstract class Monster extends EntityBase{
         });
     }
 
-    public function entityBaseTick(int $tickDiff = 1) : bool{
+    protected function entityBaseTick(int $tickDiff = 1) : bool{
         if(!$this->canSpawnPeaceful() && $this->server->getDifficulty() === 0){
             $this->close();
             return \false;

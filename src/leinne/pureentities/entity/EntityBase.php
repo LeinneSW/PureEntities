@@ -154,8 +154,11 @@ abstract class EntityBase extends Creature{
     }
 
     protected final function checkTarget() : Vector3{
-        $isFixed = $this->isTargetFixed();
-        if(!$isFixed && (!($this->target instanceof Creature) || !($option = $this->hasInteraction($this->target, $this->distanceSquared($this->target))))){
+        if($this->isTargetFixed()){
+            return $this->target;
+        }
+
+        if(!($this->target instanceof Creature) || !($option = $this->hasInteraction($this->target, $this->distanceSquared($this->target)))){
             if(isset($option)){
                 $this->target = \null;
             }
@@ -183,11 +186,11 @@ abstract class EntityBase extends Creature{
 
         if(
             $this->target === \null
-            || (!$isFixed && (--$this->moveTime <= 0 || $this->distanceSquared($this->target) <= 0.00025))
+            || (--$this->moveTime <= 0 || $this->distanceSquared($this->target) <= 0.00025)
         ){
-            $x = \mt_rand(25, 200);
-            $z = \mt_rand(25, 200);
-            $this->moveTime = \mt_rand(400, 2000);
+            $x = \mt_rand(7, 80);
+            $z = \mt_rand(7, 80);
+            $this->moveTime = \mt_rand(300, 2400);
             $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
         }
 
