@@ -85,7 +85,7 @@ class PureEntities extends PluginBase implements Listener{
         foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var Living|string $className */
             if(\is_a($className, EntityBase::class, \true) && $className::NETWORK_ID !== -1){
-                ItemFactory::registerItem(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, $className, "Spawn " . (new \ReflectionClass($className))->getShortName()), \true);
+                ItemFactory::register(new SpawnEgg(Item::SPAWN_EGG, $className::NETWORK_ID, $className, "Spawn " . (new \ReflectionClass($className))->getShortName()), \true);
             }
         }
 
