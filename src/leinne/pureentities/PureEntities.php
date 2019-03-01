@@ -20,8 +20,9 @@ use leinne\pureentities\entity\utility\SnowGolem;
 use leinne\pureentities\task\AutoSpawnTask;
 use leinne\pureentities\tile\MobSpawner;
 
-use pocketmine\block\Air;
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
+use pocketmine\block\BlockIds;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -120,7 +121,7 @@ class PureEntities extends PluginBase implements Listener{
 
             $tile = $block->level->getTile($block);
             if($tile instanceof MobSpawner){
-                $tile->setSpawnEntityType($item->getDamage());
+                $tile->setSpawnEntityType($item->getMeta());
             }else{
                 if($tile !== \null){
                     $tile->close();
@@ -128,7 +129,7 @@ class PureEntities extends PluginBase implements Listener{
 
                 $tile = TileFactory::create("MobSpawner", $block->level, $block);
                 $tile->readSaveData(new CompoundTag('', [
-                    new IntTag('EntityId', $item->getDamage()),
+                    new IntTag('EntityId', $item->getMeta()),
                 ]));
                 $tile->level->addTile($tile);
             }
@@ -156,7 +157,7 @@ class PureEntities extends PluginBase implements Listener{
                 }
                 $ev->setCancelled();
                 for($y = 1; $y < 3; $y++){
-                    $block->getLevel()->setBlock($block->subtract(0, $y, 0), new Air());
+                    $block->getLevel()->setBlock($block->subtract(0, $y, 0), BlockFactory::get(BlockIds::AIR));
                 }
                 $entity->spawnToAll();
 
@@ -192,10 +193,10 @@ class PureEntities extends PluginBase implements Listener{
                 $ev->setCancelled();
                 $entity->spawnToAll();
 
-                $down->getLevel()->setBlock($pos, new Air());
-                $down->getLevel()->setBlock($first, new Air());
-                $down->getLevel()->setBlock($second, new Air());
-                $down->getLevel()->setBlock($block->add(0, -1, 0), new Air());
+                $down->getLevel()->setBlock($pos, BlockFactory::get(BlockIds::AIR));
+                $down->getLevel()->setBlock($first, BlockFactory::get(BlockIds::AIR));
+                $down->getLevel()->setBlock($second, BlockFactory::get(BlockIds::AIR));
+                $down->getLevel()->setBlock($block->add(0, -1, 0), BlockFactory::get(BlockIds::AIR));
 
                 if($player->isSurvival()){
                     $item->pop();
