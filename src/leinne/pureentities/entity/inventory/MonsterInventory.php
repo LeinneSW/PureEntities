@@ -29,7 +29,7 @@ class MonsterInventory extends BaseInventory{
         return 1;
     }
 
-    public function setSize(int $size){
+    public function setSize(int $size): void{
         throw new \BadMethodCallException("MobInventory can only carry one item at a time");
     }
 
