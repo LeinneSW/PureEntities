@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity;
 
-use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\inventory\MonsterInventory;
 use pocketmine\entity\Creature;
 use pocketmine\event\entity\EntityInventoryChangeEvent;
-use pocketmine\inventory\EntityInventoryEventProcessor;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
