@@ -7,7 +7,7 @@ namespace leinne\pureentities\entity\passive;
 use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
-use pocketmine\block\utils\Color;
+use pocketmine\block\utils\DyeColor;
 use pocketmine\entity\Creature;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -33,7 +33,7 @@ class Sheep extends Animal{
             $this->color = $nbt->getByte("Color");
         }else{
             //TODO: 양 색상 랜덤
-            $this->color = Color::WHITE;
+            $this->color = DyeColor::WHITE();
         }
     }
 
