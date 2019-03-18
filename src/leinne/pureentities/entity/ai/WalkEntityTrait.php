@@ -109,7 +109,7 @@ trait WalkEntityTrait{
             $this->boundingBox->offset($dx, $dy, $dz);
         }else{
             /** @var Entity $this */
-            $list = $this->level->getCollisionBoxes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
+            $list = $this->level->getCollisionBoxes($this, $this->level->getTickRateTime() > 50 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
 
             foreach($list as $k => $bb){
                 $dy = $bb->calculateYOffset($this->boundingBox, $dy);
