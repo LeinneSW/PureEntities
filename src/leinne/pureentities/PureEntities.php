@@ -22,7 +22,7 @@ use leinne\pureentities\tile\MobSpawner;
 
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIds;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -128,9 +128,7 @@ class PureEntities extends PluginBase implements Listener{
                 }
 
                 $tile = TileFactory::create("MobSpawner", $block->level, $block);
-                $tile->readSaveData(new CompoundTag('', [
-                    new IntTag('EntityId', $item->getMeta()),
-                ]));
+                $tile->readSaveData(CompoundTag::create()->setInt('EntityId', $item->getMeta()));
                 $tile->level->addTile($tile);
             }
         }
@@ -157,11 +155,11 @@ class PureEntities extends PluginBase implements Listener{
                 }
                 $ev->setCancelled();
                 for($y = 1; $y < 3; $y++){
-                    $block->getLevel()->setBlock($block->subtract(0, $y, 0), BlockFactory::get(BlockIds::AIR));
+                    $block->getLevel()->setBlock($block->subtract(0, $y, 0), BlockFactory::get(BlockLegacyIds::AIR));
                 }
                 $entity->spawnToAll();
 
-                if($player->isSurvival()){
+                if($player->hasFiniteResources()){
                     $item->pop();
                     $player->getInventory()->setItemInHand($item);
                 }
@@ -193,12 +191,12 @@ class PureEntities extends PluginBase implements Listener{
                 $ev->setCancelled();
                 $entity->spawnToAll();
 
-                $down->getLevel()->setBlock($pos, BlockFactory::get(BlockIds::AIR));
-                $down->getLevel()->setBlock($first, BlockFactory::get(BlockIds::AIR));
-                $down->getLevel()->setBlock($second, BlockFactory::get(BlockIds::AIR));
-                $down->getLevel()->setBlock($block->add(0, -1, 0), BlockFactory::get(BlockIds::AIR));
+                $down->getLevel()->setBlock($pos, BlockFactory::get(BlockLegacyIds::AIR));
+                $down->getLevel()->setBlock($first, BlockFactory::get(BlockLegacyIds::AIR));
+                $down->getLevel()->setBlock($second, BlockFactory::get(BlockLegacyIds::AIR));
+                $down->getLevel()->setBlock($block->add(0, -1, 0), BlockFactory::get(BlockLegacyIds::AIR));
 
-                if($player->isSurvival()){
+                if($player->hasFiniteResources()){
                     $item->pop();
                     $player->getInventory()->setItemInHand($item);
                 }
