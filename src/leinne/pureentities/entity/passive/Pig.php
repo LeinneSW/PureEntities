@@ -7,16 +7,18 @@ namespace leinne\pureentities\entity\passive;
 use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\Player;
+use pocketmine\item\ItemIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\player\Player;
 
 class Pig extends Animal{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::PIG;
+    const NETWORK_ID = EntityLegacyIds::PIG;
 
     public $width = 1.5;
     public $height = 1.0;
@@ -33,14 +35,14 @@ class Pig extends Animal{
     /**
      * $this 와 $target의 관계가 적대관계인지 확인
      *
-     * @param Creature $target
+     * @param Living $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public function hasInteraction(Creature $target, float $distanceSquare) : bool{
+    public function hasInteraction(Living $target, float $distanceSquare) : bool{
         return $target instanceof Player && $target->isAlive() && !$target->closed && $distanceSquare <= 64
-            && $target->getInventory()->getItemInHand()->getId() === Item::SEEDS; //TODO: 아이템 유인 구현
+            && $target->getInventory()->getItemInHand()->getId() === ItemIds::SEEDS; //TODO: 아이템 유인 구현
     }
 
     public function interactTarget() : bool{
@@ -50,7 +52,7 @@ class Pig extends Animal{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get($this->fireTicks > 0 ? Item::COOKED_PORKCHOP : Item::RAW_PORKCHOP, 0, \mt_rand(1, 3))
+            ItemFactory::get($this->fireTicks > 0 ? ItemIds::COOKED_PORKCHOP : ItemIds::RAW_PORKCHOP, 0, \mt_rand(1, 3))
         ];
     }
 

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity;
 
 use leinne\pureentities\entity\inventory\MonsterInventory;
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityInventoryChangeEvent;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\ListTag;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 
 abstract class Monster extends EntityBase{
@@ -80,14 +81,14 @@ abstract class Monster extends EntityBase{
     }
 
     public function getDefaultHeldItem() : Item{
-        return ItemFactory::get(Item::AIR);
+        return ItemFactory::get(ItemIds::AIR);
     }
 
     public function getInventory() : MonsterInventory{
         return $this->inventory;
     }
 
-    public function hasInteraction(Creature $target, float $distance) : bool{
+    public function hasInteraction(Living $target, float $distance) : bool{
         return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
     }
 
@@ -195,12 +196,12 @@ abstract class Monster extends EntityBase{
         $min = [];
         $max = [];
         for($i = 0; $i < 4; ++$i){
-            $min[$i] = new DoubleTag("", $this->minDamage[$i]);
-            $max[$i] = new DoubleTag("", $this->maxDamage[$i]);
+            $min[$i] = new DoubleTag($this->minDamage[$i]);
+            $max[$i] = new DoubleTag($this->maxDamage[$i]);
         }
-        $nbt->setTag(new ListTag("MinDamages", $min));
-        $nbt->setTag(new ListTag("MaxDamages", $max));
-        $nbt->setTag($this->inventory->getItemInHand()->nbtSerialize(-1, "HeldItem"));
+        $nbt->setTag("MinDamages", new ListTag($min));
+        $nbt->setTag("MaxDamages", new ListTag($max));
+        $nbt->setTag("HeldItem", $this->inventory->getItemInHand()->nbtSerialize(-1));
         return $nbt;
     }
 

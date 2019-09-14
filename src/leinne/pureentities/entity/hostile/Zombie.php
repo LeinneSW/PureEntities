@@ -12,23 +12,30 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 
 class Zombie extends Monster implements Ageable{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::ZOMBIE;
+    const NETWORK_ID = EntityLegacyIds::ZOMBIE;
 
     public $width = 0.6;
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
+    /** @var bool */
+    protected $baby = false;
+
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setGenericFlag(self::DATA_FLAG_BABY, $nbt->getByte("IsBaby", 0) !== 0);
+        $this->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::BABY, $this->baby = ($nbt->getByte("IsBaby", 0) !== 0));
 
         if($this->isBaby()){
             $this->width = 0.3;
@@ -45,7 +52,7 @@ class Zombie extends Monster implements Ageable{
     }
 
     public function isBaby(): bool{
-        return $this->getGenericFlag(self::DATA_FLAG_BABY);
+        return $this->baby;
     }
 
     public function interactTarget() : bool{
@@ -55,10 +62,10 @@ class Zombie extends Monster implements Ageable{
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
-            $pk = new EntityEventPacket();
+            $pk = new ActorEventPacket();
             $pk->entityRuntimeId = $this->id;
-            $pk->event = EntityEventPacket::ARM_SWING;
-            $this->server->broadcastPacket($this->hasSpawned, $pk);
+            $pk->event = ActorEventPacket::ARM_SWING;
+            $this->server->broadcastPackets($this->hasSpawned, [$pk]);
 
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);
@@ -78,19 +85,19 @@ class Zombie extends Monster implements Ageable{
 
     public function getDrops() : array{
         $drops = [
-            ItemFactory::get(Item::ROTTEN_FLESH, 0, \mt_rand(0, 2))
+            ItemFactory::get(ItemIds::ROTTEN_FLESH, 0, \mt_rand(0, 2))
         ];
 
         if(\mt_rand(0, 199) < 5){
             switch(\mt_rand(0, 2)){
                 case 0:
-                    $drops[] = ItemFactory::get(Item::IRON_INGOT, 0, 1);
+                    $drops[] = ItemFactory::get(ItemIds::IRON_INGOT, 0, 1);
                     break;
                 case 1:
-                    $drops[] = ItemFactory::get(Item::CARROT, 0, 1);
+                    $drops[] = ItemFactory::get(ItemIds::CARROT, 0, 1);
                     break;
                 case 2:
-                    $drops[] = ItemFactory::get(Item::POTATO, 0, 1);
+                    $drops[] = ItemFactory::get(ItemIds::POTATO, 0, 1);
                     break;
             }
         }
