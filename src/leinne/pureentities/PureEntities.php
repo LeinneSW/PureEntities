@@ -22,7 +22,10 @@ use leinne\pureentities\tile\MobSpawner;
 
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\block\BlockIdentifier as BID;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\BlockLegacyIds as Ids;
+use pocketmine\block\tile\MonsterSpawner as TileMonsterSpawner;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -83,6 +86,7 @@ class PureEntities extends PluginBase implements Listener{
 //        EntityFactory::register(LargeFireBall::class, ['minecraft:largefireball']);
 
         TileFactory::register(MobSpawner::class, ["MobSpanwer", 'minecraft:mob_spawner']);
+        BlockFactory::register(new \leinne\pureentities\block\MobSpawner(new BID(Ids::MOB_SPAWNER, 0, null, TileMonsterSpawner::class), "Monster Spawner"), true);
 
         foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var Living|string $className */
