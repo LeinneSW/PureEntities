@@ -22,10 +22,11 @@ class EntityAI{
         $z = (int) (($motion->z > 0 ? $entity->boundingBox->maxZ : $entity->boundingBox->minZ) + $motion->z);
 
         $block = $entity->getWorld()->getBlock(new Vector3($x, $entity->getLocation()->getY(), $z));
-        if(($aabb = $block->getCollisionBoxes()[0]) === \null || $block->getSide(Facing::UP, 2)->getCollisionBoxes()[0] !== \null){
+        if(!isset($block->getCollisionBoxes()[0]) || !isset($block->getSide(Facing::UP, 2)->getCollisionBoxes()[0])){
             return EntityAI::JUMP_CANT;
         }
 
+        $aabb = $block->getCollisionBoxes()[0];
         if(($up = $block->getSide(Facing::UP)->getCollisionBoxes()[0]) === \null){ /** 위에 아무 블럭이 없을 때 */
             if($aabb->maxY - $aabb->minY > 1 || $aabb->maxY === $entity->getLocation()->getY()){ /** 울타리 or 반블럭 위 */
                 return EntityAI::JUMP_CANT;
