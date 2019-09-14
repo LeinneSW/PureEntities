@@ -8,14 +8,18 @@ use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Ageable;
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 
 class ZombiePigman extends Monster implements Ageable{
 
@@ -23,7 +27,7 @@ class ZombiePigman extends Monster implements Ageable{
         entityBaseTick as baseTick;
     }
 
-    const NETWORK_ID = self::ZOMBIE_PIGMAN;
+    const NETWORK_ID = EntityLegacyIds::ZOMBIE_PIGMAN;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -32,11 +36,14 @@ class ZombiePigman extends Monster implements Ageable{
     /** @var int */
     private $angry = 0;
 
+    /** @var bool */
+    protected $baby = false;
+
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
         $this->setAngry($nbt->getInt('Angry', 0));
-        $this->setGenericFlag(self::DATA_FLAG_BABY, $nbt->getByte("IsBaby", 0) !== 0);
+        $this->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::BABY, $this->baby = $nbt->getByte("IsBaby", 0) !== 0);
 
         if($this->isBaby()){
             $this->width = 0.3;
@@ -48,7 +55,7 @@ class ZombiePigman extends Monster implements Ageable{
     }
 
     public function getDefaultHeldItem() : Item{
-        return ItemFactory::get(Item::GOLD_SWORD);
+        return ItemFactory::get(ItemIds::GOLD_SWORD);
     }
 
     public function getName() : string{
@@ -56,10 +63,10 @@ class ZombiePigman extends Monster implements Ageable{
     }
 
     public function isBaby() : bool{
-        return $this->getGenericFlag(self::DATA_FLAG_BABY);
+        return $this->baby;
     }
 
-    public function hasInteraction(Creature $target, float $distance) : bool{
+    public function hasInteraction(Living $target, float $distance) : bool{
         return $this->isAngry() && parent::hasInteraction($target, $distance);
     }
 
@@ -90,7 +97,7 @@ class ZombiePigman extends Monster implements Ageable{
     public function interactTarget() : bool{
         ++$this->attackDelay;
         $target = $this->getTarget();
-        if($this->getSpeed() < 3.8 && $this->isAngry() && $target instanceof Creature){
+        if($this->getSpeed() < 3.8 && $this->isAngry() && $target instanceof Living){
             $this->setSpeed(3.8);
         }elseif($this->getSpeed() === 3.5){
             $this->setSpeed(1.0);
@@ -101,10 +108,10 @@ class ZombiePigman extends Monster implements Ageable{
         }
 
         if($this->attackDelay >= 15 && ($damage = $this->getResultDamage()) > 0){
-            $pk = new EntityEventPacket();
+            $pk = new ActorEventPacket();
             $pk->entityRuntimeId = $this->id;
-            $pk->event = EntityEventPacket::ARM_SWING;
-            $this->server->broadcastPacket($this->hasSpawned, $pk);
+            $pk->event = ActorEventPacket::ARM_SWING;
+            $this->server->broadcastPackets($this->hasSpawned, [$pk]);
 
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);

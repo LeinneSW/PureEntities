@@ -7,20 +7,23 @@ namespace leinne\pureentities\entity\utility;
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
-use pocketmine\Player;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\player\Player;
 
 class IronGolem extends Monster{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::IRON_GOLEM;
+    const NETWORK_ID = EntityLegacyIds::IRON_GOLEM;
 
     public $width = 1.4;
     public $height = 2.7;
@@ -64,12 +67,12 @@ class IronGolem extends Monster{
     /**
      * $this 와 $target의 관계가 적대관계인지 확인
      *
-     * @param Creature $target
+     * @param Living $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public function hasInteraction(Creature $target, float $distanceSquare) : bool{
+    public function hasInteraction(Living $target, float $distanceSquare) : bool{
         if($target instanceof Player && (!empty($this->owner) || !$target->isSurvival())){
             return \false;
         }elseif($target instanceof IronGolem){
@@ -92,10 +95,10 @@ class IronGolem extends Monster{
             }
 
             if($damage >= 0){
-                $pk = new EntityEventPacket();
+                $pk = new ActorEventPacket();
                 $pk->entityRuntimeId = $this->id;
-                $pk->event = EntityEventPacket::ARM_SWING;
-                $this->server->broadcastPacket($this->hasSpawned, $pk);
+                $pk->event = ActorEventPacket::ARM_SWING;
+                $this->server->broadcastPackets($this->hasSpawned, [$pk]);
 
                 $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
                 $target->attack($ev);
@@ -117,8 +120,8 @@ class IronGolem extends Monster{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(Item::IRON_INGOT, 0, \mt_rand(3, 5)),
-            ItemFactory::get(Item::POPPY, 0, \mt_rand(0, 2)),
+            ItemFactory::get(ItemIds::IRON_INGOT, 0, \mt_rand(3, 5)),
+            ItemFactory::get(ItemIds::POPPY, 0, \mt_rand(0, 2)),
         ];
     }
 

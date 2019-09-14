@@ -11,15 +11,18 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
-use pocketmine\Player;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\player\Player;
 
 class Spider extends Monster{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::SPIDER;
+    const NETWORK_ID = EntityLegacyIds::SPIDER;
 
     //TODO: Spider's Size
     public $width = 1.4;
@@ -47,10 +50,10 @@ class Spider extends Monster{
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
-            $pk = new EntityEventPacket();
+            $pk = new ActorEventPacket();
             $pk->entityRuntimeId = $this->id;
-            $pk->event = EntityEventPacket::ARM_SWING;
-            $this->server->broadcastPacket($this->hasSpawned, $pk);
+            $pk->event = ActorEventPacket::ARM_SWING;
+            $this->server->broadcastPackets($this->hasSpawned, [$pk]);
 
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);
@@ -64,7 +67,7 @@ class Spider extends Monster{
 
     public function getDrops() : array{
         $drops = [
-            ItemFactory::get(Item::STRING, 0, \mt_rand(0, 2))
+            ItemFactory::get(ItemIds::STRING, 0, \mt_rand(0, 2))
         ];
 
         if(
@@ -72,7 +75,7 @@ class Spider extends Monster{
             && $this->lastDamageCause->getDamager() instanceof Player
             && \mt_rand(1, 3) === 1
         ){
-            $drops[] = ItemFactory::get(Item::SPIDER_EYE, 0, 1);
+            $drops[] = ItemFactory::get(ItemIds::SPIDER_EYE, 0, 1);
         }
         return $drops;
     }

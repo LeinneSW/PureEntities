@@ -7,15 +7,17 @@ namespace leinne\pureentities\entity\utility;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 use leinne\pureentities\entity\Monster;
 
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\item\ItemIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
 
 class SnowGolem extends Monster{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::SNOW_GOLEM;
+    const NETWORK_ID = EntityLegacyIds::SNOW_GOLEM;
 
     public $width = 0.7;
     public $height = 1.9;
@@ -34,12 +36,12 @@ class SnowGolem extends Monster{
      *
      * $this 와 $target의 관계가 적대관계인지 확인
      *
-     * @param Creature $target
+     * @param Living $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public function hasInteraction(Creature $target, float $distanceSquare) : bool{
+    public function hasInteraction(Living $target, float $distanceSquare) : bool{
         return $target instanceof Monster && $target->isAlive() && !$target->closed && $distanceSquare <= 196;
     }
 
@@ -50,7 +52,7 @@ class SnowGolem extends Monster{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(Item::SNOWBALL, 0, \mt_rand(0, 15)),
+            ItemFactory::get(ItemIds::SNOWBALL, 0, \mt_rand(0, 15)),
         ];
     }
 
