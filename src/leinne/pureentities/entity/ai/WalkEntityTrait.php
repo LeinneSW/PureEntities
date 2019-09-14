@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\entity\Entity;
-use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\Server;
 use pocketmine\timings\Timings;
+use pocketmine\world\World;
 
 /**
  * This trait override most methods in the {@link Entity} abstract class.
  *
  * @property bool           $keepMovement
- * @property Level          $level
+ * @property World          $level
  * @property Server         $server
  * @property AxisAlignedBB  $boundingBox
  */
@@ -50,9 +50,9 @@ trait WalkEntityTrait{
 
         $target = $this->checkTarget();
 
-        $x = $target->x - $this->x;
-        $y = 0.0 + $target->y - $this->y;
-        $z = $target->z - $this->z;
+        $x = $target->x - $this->getLocation()->getX();
+        $y = 0.0 + $target->y - $this->getLocation()->getY();
+        $z = $target->z - $this->getLocation()->getZ();
 
         $diff = \abs($x) + \abs($z);
         $needJump = \false;
@@ -79,8 +79,10 @@ trait WalkEntityTrait{
             }
         }
 
-        $this->yaw = \rad2deg(\atan2($z, $x)) - 90.0;
-        $this->pitch = (!$target instanceof Creature || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)));
+        $this->setRotation(
+                \rad2deg(\atan2($z, $x)) - 90.0,
+                (!$target instanceof Living || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
+        );
 
         return $hasUpdate;
     }
@@ -109,7 +111,7 @@ trait WalkEntityTrait{
             $this->boundingBox->offset($dx, $dy, $dz);
         }else{
             /** @var Entity $this */
-            $list = $this->level->getCollisionBoxes($this, $this->level->getTickRateTime() > 50 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
+            $list = $this->getWorld()->getCollisionBoxes($this, $this->getWorld()->getTickRateTime() > 50 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
 
             foreach($list as $k => $bb){
                 $dy = $bb->calculateYOffset($this->boundingBox, $dy);
@@ -144,9 +146,9 @@ trait WalkEntityTrait{
             }
         }
 
-        $this->x += $dx;
-        $this->y += $dy;
-        $this->z += $dz;
+        $this->location->x += $dx;
+        $this->location->y += $dy;
+        $this->location->z += $dz;
 
         $this->checkChunks();
         $this->checkBlockCollision();

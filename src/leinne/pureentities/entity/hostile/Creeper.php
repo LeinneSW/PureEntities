@@ -9,9 +9,10 @@ use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Explosive;
 use pocketmine\event\entity\ExplosionPrimeEvent;
-use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\Explosion;
+use pocketmine\item\ItemIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\world\Explosion;
 use pocketmine\nbt\tag\CompoundTag;
 
 class Creeper extends Monster implements Explosive{
@@ -19,7 +20,7 @@ class Creeper extends Monster implements Explosive{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::CREEPER;
+    const NETWORK_ID = EntityLegacyIds::CREEPER;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -45,7 +46,7 @@ class Creeper extends Monster implements Explosive{
         $ev->call();
 
         if(!$ev->isCancelled()){
-            $explosion = new Explosion($this, $ev->getForce(), $this);
+            $explosion = new Explosion($this->getPosition(), $ev->getForce(), $this);
             if($ev->isBlockBreaking()){
                 $explosion->explodeA();
             }
@@ -80,7 +81,7 @@ class Creeper extends Monster implements Explosive{
     public function getDrops() : array{
         //TODO: 드롭 아이템 개수
         return [
-            ItemFactory::get(Item::GUNPOWDER, 0, 0)
+            ItemFactory::get(ItemIds::GUNPOWDER, 0, 0)
         ];
     }
 

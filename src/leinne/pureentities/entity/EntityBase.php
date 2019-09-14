@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity;
 
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\timings\Timings;
 
-abstract class EntityBase extends Creature{
+abstract class EntityBase extends Living {
 
     /** @var float */
     public $eyeHeight = 0.8;
@@ -33,12 +33,12 @@ abstract class EntityBase extends Creature{
     /**
      * $this 와 $target의 관계가 상호작용하는 관계인지 확인
      *
-     * @param Creature $target
+     * @param Living $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public abstract function hasInteraction(Creature $target, float $distanceSquare) : bool;
+    public abstract function hasInteraction(Living $target, float $distanceSquare) : bool;
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -66,15 +66,15 @@ abstract class EntityBase extends Creature{
     /**
      * 상호작용이 가능한 거리인지 체크
      *
-     * @return Creature
+     * @return Living
      */
-    public function checkInteract() : ?Creature{
+    public function checkInteract() : ?Living{
         $target = $this->target;
         if(
-            $target instanceof Creature
-            && \abs($this->x - $target->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
-            && \abs($this->z - $target->z) <= $width
-            && \abs($this->y - $target->y) <= \min(1, $this->eyeHeight)
+            $target instanceof Living
+            && \abs($this->getLocation()->getX() - $target->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
+            && \abs($this->getLocation()->getZ() - $target->z) <= $width
+            && \abs($this->getLocation()->getY()- $target->y) <= \min(1, $this->eyeHeight)
         ){
             return $target;
         }
@@ -143,14 +143,14 @@ abstract class EntityBase extends Creature{
     }
 
     public function isTargetFixed() : bool{
-        if($this->target === \null || ($this->target instanceof Creature && !$this->target->isAlive())){
+        if($this->target === \null || ($this->target instanceof Living && !$this->target->isAlive())){
             $this->targetFixed = \false;
         }
         return $this->targetFixed;
     }
 
     public function setTargetFixed(bool $fixed = \true) : void{
-        $this->targetFixed = $fixed && $this->target !== \null && (!($this->target instanceof Creature) || $this->target->isAlive());
+        $this->targetFixed = $fixed && $this->target !== \null && (!($this->target instanceof Living) || $this->target->isAlive());
     }
 
     protected final function checkTarget() : Vector3{
@@ -158,7 +158,7 @@ abstract class EntityBase extends Creature{
             return $this->target;
         }
 
-        if(!($this->target instanceof Creature) || !($option = $this->hasInteraction($this->target, $this->distanceSquared($this->target)))){
+        if(!($this->target instanceof Living) || !($option = $this->hasInteraction($this->target, $this->distanceSquared($this->target)))){
             if(isset($option)){
                 $this->target = \null;
             }
@@ -169,7 +169,7 @@ abstract class EntityBase extends Creature{
                 if(
                     $target === $this
                     || $distance > $near
-                    || !($target instanceof Creature)
+                    || !($target instanceof Living)
                     || !$this->hasInteraction($target, $distance)
                 ){
                     continue;
@@ -180,7 +180,7 @@ abstract class EntityBase extends Creature{
             }
         }
 
-        if($this->target instanceof Creature && $this->target->isAlive()){
+        if($this->target instanceof Living && $this->target->isAlive()){
             return $this->target;
         }
 

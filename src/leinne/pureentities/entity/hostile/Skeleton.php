@@ -7,7 +7,7 @@ namespace leinne\pureentities\entity\hostile;
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
-use pocketmine\entity\Creature;
+use pocketmine\entity\Living;
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\projectile\Arrow;
@@ -20,15 +20,18 @@ use pocketmine\item\Bow;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\sound\LaunchSound;
+use pocketmine\item\ItemIds;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
+use pocketmine\world\sound\LaunchSound;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
 
 class Skeleton extends Monster{
 
     use WalkEntityTrait;
 
-    const NETWORK_ID = self::SKELETON;
+    const NETWORK_ID = EntityLegacyIds::SKELETON;
 
     public $width = 0.6;
     public $height = 1.8;
@@ -41,7 +44,7 @@ class Skeleton extends Monster{
     }
 
     public function getDefaultHeldItem() : Item{
-        return ItemFactory::get(ITem::BOW);
+        return ItemFactory::get(ItemIds::BOW);
     }
 
     public function getName() : string{
@@ -50,7 +53,7 @@ class Skeleton extends Monster{
 
     public function interactTargetBow() : bool{
         $target = $this->getTarget();
-        if(!($target instanceof Creature)){
+        if(!($target instanceof Living)){
             return \false;
         }
 
@@ -59,29 +62,29 @@ class Skeleton extends Monster{
             $baseForce = \min((($p ** 2) + $p * 2) / 3, 1);
 
             $nbt = EntityFactory::createBaseNBT(
-                $this->add(0, $this->eyeHeight, 0),
+                $this->getPosition()->add(0, $this->eyeHeight, 0),
                 $this->getDirectionVector(),
-                ($this->yaw > 180 ? 360 : 0) - $this->yaw,
-                -$this->pitch
+                ($this->getLocation()->getYaw() > 180 ? 360 : 0) - $this->getLocation()->getYaw(),
+                -$this->getLocation()->getPitch()
             );
             $arrow = new Arrow($this->level, $nbt, $this, $baseForce >= 1);
             //TODO: 올바른 화살 대미지[1~4(쉬움, 보통), 1~5(어려움)]
             //$arrow->setBaseDamage($arrow->getBaseDamage() + $this->getResultDamage());
-            $arrow->setPickupMode(($item = $this->inventory->getItemInHand())->hasEnchantment(Enchantment::INFINITY) ? Arrow::PICKUP_CREATIVE : Arrow::PICKUP_NONE);
+            $arrow->setPickupMode(($item = $this->inventory->getItemInHand())->hasEnchantment(Enchantment::INFINITY()) ? Arrow::PICKUP_CREATIVE : Arrow::PICKUP_NONE);
 
-            if(($punchLevel = $item->getEnchantmentLevel(Enchantment::PUNCH)) > 0){
+            if(($punchLevel = $item->getEnchantmentLevel(Enchantment::PUNCH())) > 0){
                 $arrow->setPunchKnockback($punchLevel);
             }
 
-            if(($powerLevel = $item->getEnchantmentLevel(Enchantment::POWER)) > 0){
+            if(($powerLevel = $item->getEnchantmentLevel(Enchantment::POWER())) > 0){
                 $arrow->setBaseDamage($arrow->getBaseDamage() + (($powerLevel + 1) / 2));
             }
 
-            if($item->hasEnchantment(Enchantment::FLAME)){
+            if($item->hasEnchantment(Enchantment::FLAME())){
                 $arrow->setOnFire($arrow->getFireTicks() * 20 + 100);
             }
 
-            $ev = new EntityShootBowEvent($this, Item::get(Item::ARROW, 0, 1), $arrow, $baseForce * 3);
+            $ev = new EntityShootBowEvent($this, ItemFactory::get(ItemIds::ARROW, 0, 1), $arrow, $baseForce * 3);
             $ev->call();
 
             $entity = $ev->getProjectile();
@@ -98,14 +101,14 @@ class Skeleton extends Monster{
                     }else{
                         $this->attackDelay = 0;
                         $entity->spawnToAll();
-                        $this->level->addSound($this, new LaunchSound(), $this->getViewers());
+                        $this->level->addSound($this->getPosition(), new LaunchSound(), $this->getViewers());
                     }
                 }else{
                     $entity->spawnToAll();
                 }
             }
         }
-        return $this->distanceSquared($target) <= 7.84; //2.5 ** 2
+        return $this->getLocation()->distanceSquared($target) <= 7.84; //2.5 ** 2
     }
 
     public function interactTarget() : bool{
@@ -119,10 +122,10 @@ class Skeleton extends Monster{
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
-            $pk = new EntityEventPacket();
+            $pk = new ActorEventPacket();
             $pk->entityRuntimeId = $this->id;
-            $pk->event = EntityEventPacket::ARM_SWING;
-            $this->server->broadcastPacket($this->hasSpawned, $pk);
+            $pk->event = ActorEventPacket::ARM_SWING;
+            $this->server->broadcastPackets($this->hasSpawned, [$pk]);
 
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);
@@ -137,8 +140,8 @@ class Skeleton extends Monster{
     public function getDrops() : array{
         //TODO: 드롭 아이템 개수
         return [
-            ItemFactory::get(Item::BOW, 0, 0),
-            ItemFactory::get(Item::ARROW, 0, 0),
+            ItemFactory::get(ItemIds::BOW, 0, 0),
+            ItemFactory::get(ItemIds::ARROW, 0, 0),
         ];
     }
 

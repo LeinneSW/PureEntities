@@ -9,7 +9,8 @@ use pocketmine\inventory\BaseInventory;
 use pocketmine\item\Item;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
-use pocketmine\Player;
+use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
+use pocketmine\player\Player;
 
 class MonsterInventory extends BaseInventory{
 
@@ -18,15 +19,11 @@ class MonsterInventory extends BaseInventory{
 
     public function __construct(Monster $mob){
         $this->holder = $mob;
-        parent::__construct();
+        parent::__construct(1);
     }
 
     public function getName() : string{
         return "Monster";
-    }
-
-    public function getDefaultSize() : int{
-        return 1;
     }
 
     public function setSize(int $size): void{
@@ -37,13 +34,9 @@ class MonsterInventory extends BaseInventory{
         return $this->getItem(0);
     }
 
-    public function setItemInHand(Item $item) : bool{
-        if($this->setItem(0, $item)){
-            $this->sendHeldItem($this->holder->getViewers());
-            return \true;
-        }
-
-        return \false;
+    public function setItemInHand(Item $item) : void{
+        $this->setItem(0, $item);
+        $this->sendHeldItem($this->holder->getViewers());
     }
 
     /**
@@ -64,12 +57,12 @@ class MonsterInventory extends BaseInventory{
         $pk->entityRuntimeId = $this->getHolder()->getId();
         $pk->item = $item;
         $pk->inventorySlot = $pk->hotbarSlot = 0;
-        $pk->windowId = ContainerIds::INVENTORY;
+        $pk->windowId = WindowTypes::INVENTORY;
 
         if(!\is_array($target)){
-            $target->sendDataPacket($pk);
+            $target->getNetworkSession()->sendDataPacket($pk);
         }else{
-            $this->getHolder()->getLevel()->getServer()->broadcastPacket($target, $pk);
+            $this->getHolder()->getWorld()->getServer()->broadcastPacket($target, $pk);
         }
     }
 
