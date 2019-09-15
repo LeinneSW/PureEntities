@@ -98,14 +98,14 @@ abstract class EntityBase extends Living {
     public function updateMovement(bool $teleport = \false) : void{
         $send = \false;
         if(
-            $this->lastLocation->x !== $this->x
-            || $this->lastLocation->y !== $this->y
-            || $this->lastLocation->z !== $this->z
-            || $this->lastLocation->yaw !== $this->yaw
-            || $this->lastLocation->pitch !== $this->pitch
+            $this->lastLocation->x !== $this->getLocation()->getX()
+            || $this->lastLocation->y !== $this->getLocation()->getY()
+            || $this->lastLocation->z !== $this->getLocation()->getZ()
+            || $this->lastLocation->yaw !== $this->getLocation()->getYaw()
+            || $this->lastLocation->pitch !== $this->getLocation()->getPitch()
         ){
             $send = \true;
-            $this->lastLocation = $this->asLocation();
+            $this->lastLocation = $this->getLocation();
         }
 
         if(
@@ -158,14 +158,14 @@ abstract class EntityBase extends Living {
             return $this->target;
         }
 
-        if(!($this->target instanceof Living) || !($option = $this->hasInteraction($this->target, $this->distanceSquared($this->target)))){
+        if(!($this->target instanceof Living) || !($option = $this->hasInteraction($this->target, $this->getLocation()->distanceSquared($this->target)))){
             if(isset($option)){
                 $this->target = \null;
             }
 
             $near = \PHP_INT_MAX;
-            foreach($this->level->getEntities() as $k => $target){
-                $distance = $this->distanceSquared($target);
+            foreach($this->getWorld()->getEntities() as $k => $target){
+                $distance = $this->getLocation()->distanceSquared($target->getPosition());
                 if(
                     $target === $this
                     || $distance > $near
@@ -176,7 +176,7 @@ abstract class EntityBase extends Living {
                 }
 
                 $near = $distance;
-                $this->target = $target;
+                $this->target = $target->getPosition()->asVector3();
             }
         }
 
@@ -186,12 +186,12 @@ abstract class EntityBase extends Living {
 
         if(
             $this->target === \null
-            || (--$this->moveTime <= 0 || $this->distanceSquared($this->target) <= 0.00025)
+            || (--$this->moveTime <= 0 || $this->getLocation()->distanceSquared($this->target) <= 0.00025)
         ){
             $x = \mt_rand(7, 80);
             $z = \mt_rand(7, 80);
             $this->moveTime = \mt_rand(300, 2400);
-            $this->target = $this->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
+            $this->target = $this->getLocation()->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
         }
 
         return $this->target;
@@ -213,7 +213,7 @@ abstract class EntityBase extends Living {
         if($this->keepMovement){
             $this->boundingBox->offset($dx, $dy, $dz);
         }else{
-            $list = $this->level->getCollisionBoxes($this, $this->level->getTickRateTime() > 50 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
+            $list = $this->getWorld()->getCollisionBoxes($this, $this->getWorld()->getTickRateTime() > 50 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
 
             foreach($list as $k => $bb){
                 $dy = $bb->calculateYOffset($this->boundingBox, $dy);
@@ -231,9 +231,9 @@ abstract class EntityBase extends Living {
             $this->boundingBox->offset(0, 0, $dz);
         }
 
-        $this->x += $dx;
-        $this->y += $dy;
-        $this->z += $dz;
+        $this->location->x += $dx;
+        $this->location->y += $dy;
+        $this->location->z += $dz;
 
         $this->checkChunks();
         $this->checkBlockCollision();
