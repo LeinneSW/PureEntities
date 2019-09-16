@@ -9,7 +9,6 @@ use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\block\utils\DyeColor;
 use pocketmine\entity\Living;
-use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;

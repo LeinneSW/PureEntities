@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity;
 
 use leinne\pureentities\entity\inventory\MonsterInventory;
+
 use pocketmine\entity\Living;
-use pocketmine\inventory\CallbackInventoryChangeListener;
-use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;

@@ -48,11 +48,19 @@ trait WalkEntityTrait{
             return $hasUpdate;
         }
 
+        /** @var Entity $this */
+        $me = $this->getPosition();
         $target = $this->checkTarget();
-
-        $x = $target->x - $this->getLocation()->getX();
-        $y = 0.0 + $target->y - $this->getLocation()->getY();
-        $z = $target->z - $this->getLocation()->getZ();
+        if($target instanceof Living){
+            $pos = $target->getPosition();
+            $x = $pos->x - $me->getX();
+            $y = $pos->y - $me->getY();
+            $z = $pos->z - $me->getZ();
+        }else{
+            $x = $target->x - $me->getX();
+            $y = $target->y - $me->getY();
+            $z = $target->z - $me->getZ();
+        }
 
         $diff = \abs($x) + \abs($z);
         $needJump = \false;
@@ -80,8 +88,8 @@ trait WalkEntityTrait{
         }
 
         $this->setRotation(
-                \rad2deg(\atan2($z, $x)) - 90.0,
-                (!$target instanceof Living || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
+            \rad2deg(\atan2($z, $x)) - 90.0,
+            (!$target instanceof Living || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
         );
 
         return $hasUpdate;
@@ -110,40 +118,44 @@ trait WalkEntityTrait{
         if($this->keepMovement){
             $this->boundingBox->offset($dx, $dy, $dz);
         }else{
+            $moveBB = clone $this->boundingBox;
+
             /** @var Entity $this */
-            $list = $this->getWorld()->getCollisionBoxes($this, $this->getWorld()->getTickRateTime() > 50 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz));
+            $list = $this->getWorld()->getCollisionBoxes($this, $moveBB->addCoord($dx, $dy, $dz));
 
             foreach($list as $k => $bb){
-                $dy = $bb->calculateYOffset($this->boundingBox, $dy);
+                $dy = $bb->calculateYOffset($moveBB, $dy);
             }
-            $this->boundingBox->offset(0, $dy, 0);
+            $moveBB->offset(0, $dy, 0);
 
             foreach($list as $k => $bb){
-                $dx = $bb->calculateXOffset($this->boundingBox, $dx);
-                $dz = $bb->calculateZOffset($this->boundingBox, $dz);
+                $dx = $bb->calculateXOffset($moveBB, $dx);
+                $dz = $bb->calculateZOffset($moveBB, $dz);
             }
-            $this->boundingBox->offset($dx, 0, $dz);
+            $moveBB->offset($dx, 0, $dz);
 
             if(
                 $this->needSlabJump
                 && ($movX !== $dx || $movZ !== $dz)
             ){
-                $this->boundingBox->offset(-$dx, -$dy, -$dz);
+                $moveBB = clone $this->boundingBox;
 
                 $dx = $movX;
                 $dy = 0.5;
                 $dz = $movZ;
                 foreach($list as $k => $bb){
-                    $dy = $bb->calculateYOffset($this->boundingBox, $dy);
+                    $dy = $bb->calculateYOffset($moveBB, $dy);
                 }
-                $this->boundingBox->offset(0, $dy, 0);
+                $moveBB->offset(0, $dy, 0);
 
                 foreach($list as $k => $bb){
-                    $dx = $bb->calculateXOffset($this->boundingBox, $dx);
-                    $dz = $bb->calculateZOffset($this->boundingBox, $dz);
+                    $dx = $bb->calculateXOffset($moveBB, $dx);
+                    $dz = $bb->calculateZOffset($moveBB, $dz);
                 }
-                $this->boundingBox->offset($dx, 0, $dz);
+                $moveBB->offset($dx, 0, $dz);
             }
+
+            $this->boundingBox = $moveBB;
         }
 
         $this->location->x += $dx;

@@ -8,7 +8,6 @@ use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Living;
-use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;

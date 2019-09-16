@@ -8,7 +8,6 @@ use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Living;
-use pocketmine\entity\Entity;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Projectile;
@@ -24,7 +23,6 @@ use pocketmine\item\ItemIds;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\world\sound\LaunchSound;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
 
 class Skeleton extends Monster{

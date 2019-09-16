@@ -17,7 +17,6 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
-use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 
