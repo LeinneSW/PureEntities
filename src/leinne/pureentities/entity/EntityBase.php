@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity;
 
 use pocketmine\entity\Living;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
@@ -28,7 +29,6 @@ abstract class EntityBase extends Living {
 
     /** @var Living|Vector3 */
     private $target = \null;
-    private $targetFixed = \false;
 
     /**
      * $this 와 $target의 관계가 상호작용하는 관계인지 확인
@@ -140,33 +140,15 @@ abstract class EntityBase extends Living {
 
     /**
      * @param Living|Vector3 $target
-     * @param bool $fixed
      */
-    public function setTarget($target, bool $fixed = \false) : void{
-        if(!$fixed){
-            $this->moveTime = \mt_rand(300, 2000);
-        }
-
+    public function setTarget($target) : void{
         $this->target = $target;
-        $this->targetFixed = $fixed;
+        $this->moveTime = \mt_rand(300, 2000);
     }
-
-    public function isTargetFixed() : bool{
-        return $this->targetFixed;
-    }
-
-    public function setTargetFixed(bool $fixed = \true) : void{
-        $this->targetFixed = $fixed;
-    }
-
     /**
      * @return Living|Vector3
      */
     protected final function checkTarget(){
-        if($this->isTargetFixed()){
-            return $this->target;
-        }
-
         $pos = $this->getLocation();
         if(!($this->target instanceof Living) || !($option = $this->hasInteraction($this->target, $pos->distanceSquared($this->target instanceof Living ? $this->target->getPosition() : $this->target)))){
             if(isset($option)){
@@ -198,13 +180,41 @@ abstract class EntityBase extends Living {
             $this->target === \null
             || (--$this->moveTime <= 0 || $pos->distanceSquared($this->target instanceof Living ? $this->target->getPosition() : $this->target) <= 0.00025)
         ){
-            $x = \mt_rand(10, 80);
-            $z = \mt_rand(10, 80);
+            $x = \mt_rand(15, 40);
+            $z = \mt_rand(15, 40);
             $this->moveTime = \mt_rand(300, 2400);
             $this->target = $pos->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
         }
 
         return $this->target;
+    }
+
+    public function updateBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
+        $aabb = clone $this->boundingBox;
+
+        if($this->keepMovement){
+            $aabb->offset($dx, $dy, $dz);
+        }else{
+            $list = $this->getWorld()->getCollisionBoxes($this, $aabb->addCoord($dx, $dy, $dz));
+
+            foreach($list as $k => $bb){
+                $dy = $bb->calculateYOffset($aabb, $dy);
+            }
+            $aabb->offset(0, $dy, 0);
+
+            foreach($list as $k => $bb){
+                $dx = $bb->calculateXOffset($aabb, $dx);
+            }
+            $aabb->offset($dx, 0, 0);
+
+            foreach($list as $k => $bb){
+                $dz = $bb->calculateZOffset($aabb, $dz);
+            }
+            $aabb->offset(0, 0, $dz);
+
+            $this->boundingBox = $aabb;
+        }
+        return $aabb;
     }
 
     protected function move(float $dx, float $dy, float $dz) : void{
@@ -220,30 +230,7 @@ abstract class EntityBase extends Living {
         $movY = $dy;
         $movZ = $dz;
 
-        if($this->keepMovement){
-            $this->boundingBox->offset($dx, $dy, $dz);
-        }else{
-            $moveBB = clone $this->boundingBox;
-
-            $list = $this->getWorld()->getCollisionBoxes($this, $moveBB->addCoord($dx, $dy, $dz));
-
-            foreach($list as $k => $bb){
-                $dy = $bb->calculateYOffset($moveBB, $dy);
-            }
-            $moveBB->offset(0, $dy, 0);
-
-            foreach($list as $k => $bb){
-                $dx = $bb->calculateXOffset($moveBB, $dx);
-            }
-            $moveBB->offset($dx, 0, 0);
-
-            foreach($list as $k => $bb){
-                $dz = $bb->calculateZOffset($moveBB, $dz);
-            }
-            $moveBB->offset(0, 0, $dz);
-
-            $this->boundingBox = $moveBB;
-        }
+        $this->boundingBox = $this->updateBoundingBoxState($dx, $dy, $dz);
 
         $this->location->x += $dx;
         $this->location->y += $dy;

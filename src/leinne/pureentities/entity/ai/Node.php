@@ -6,27 +6,48 @@ namespace leinne\pureentities\entity\ai;
 
 class Node{
 
+    /** @var int */
     public $id;
     
     /**
      * F = G + H
      * @var float
      */
-    public $fscore;
+    public $fscore = 0.0;
     
     /**
      * 부모 노드와의 거리
      * @var float
      */
-    public $gscore;
+    public $gscore = 0.0;
 
     /**
      * 현재 노드와 목적지까지의 최단 거리
      * @var float
      */
-    public $hscore
+    public $hscore = 0.0;
     
-    /** @var int */
-    public $parentNode;
+    /** @var ?int */
+    public $parentNode = null;
+
+    /**
+     * @param int $id
+     * @param float $fscore
+     * @param float $gscore
+     * @param $hscore
+     * @param int $parentNode
+     *
+     * @return Node
+     */
+    public static function create(int $id, float $fscore, float $gscore, $hscore, ?int $parentNode = null) : self{
+        $node = new self;
+        $node->id = $id;
+        $node->fscore = $fscore;
+        $node->gscore = $gscore;
+        $node->hscore = $hscore;
+        $node->parentNode = $parentNode;
+
+        return $node;
+    }
 
 }

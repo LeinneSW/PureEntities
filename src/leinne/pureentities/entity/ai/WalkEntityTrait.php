@@ -8,7 +8,6 @@ use pocketmine\entity\Living;
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\Server;
-use pocketmine\timings\Timings;
 use pocketmine\world\World;
 
 /**
@@ -75,7 +74,7 @@ trait WalkEntityTrait{
         $this->needSlabJump = \false;
         if($needJump){
             /** @var Entity $this */
-            switch(EntityAI::checkJumpState($this->getWorld(), $this->boundingbox, $this->motion)){
+            switch(EntityAI::checkBlockState($this->getWorld(), $this->boundingBox, $this->motion)){
                 case EntityAI::BLOCK:
                     $hasUpdate = \true;
                     $this->motion->y += 0.52;
@@ -95,95 +94,61 @@ trait WalkEntityTrait{
         return $hasUpdate;
     }
 
+
     /**
-     * @see Entity::move()
+     * @see EntityBase::updateBoundingBoxState()
      *
      * @param float $dx
      * @param float $dy
      * @param float $dz
+     *
+     * @return AxisAlignedBB
      */
-    protected function move(float $dx, float $dy, float $dz) : void{
-        if(!$this->isMovable()){
-            return;
-        }
-
-        $this->blocksAround = \null;
-
-        Timings::$entityMoveTimer->startTiming();
+    public function updateBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
+        $aabb = clone $this->boundingBox;
 
         $movX = $dx;
-        $movY = $dy;
         $movZ = $dz;
 
         if($this->keepMovement){
-            $this->boundingBox->offset($dx, $dy, $dz);
+            $aabb->offset($dx, $dy, $dz);
         }else{
-            $moveBB = clone $this->boundingBox;
-
             /** @var Entity $this */
-            $list = $this->getWorld()->getCollisionBoxes($this, $moveBB->addCoord($dx, $dy, $dz));
+            $list = $this->getWorld()->getCollisionBoxes($this, $aabb->addCoord($dx, $dy, $dz));
 
             foreach($list as $k => $bb){
-                $dy = $bb->calculateYOffset($moveBB, $dy);
+                $dy = $bb->calculateYOffset($aabb, $dy);
             }
-            $moveBB->offset(0, $dy, 0);
+            $aabb->offset(0, $dy, 0);
 
             foreach($list as $k => $bb){
-                $dx = $bb->calculateXOffset($moveBB, $dx);
-                $dz = $bb->calculateZOffset($moveBB, $dz);
+                $dx = $bb->calculateXOffset($aabb, $dx);
+                $dz = $bb->calculateZOffset($aabb, $dz);
             }
-            $moveBB->offset($dx, 0, $dz);
+            $aabb->offset($dx, 0, $dz);
 
             if(
                 $this->needSlabJump
                 && ($movX !== $dx || $movZ !== $dz)
             ){
-                $moveBB = clone $this->boundingBox;
+                $aabb = clone $this->boundingBox;
 
                 $dx = $movX;
                 $dy = 0.5;
                 $dz = $movZ;
                 foreach($list as $k => $bb){
-                    $dy = $bb->calculateYOffset($moveBB, $dy);
+                    $dy = $bb->calculateYOffset($aabb, $dy);
                 }
-                $moveBB->offset(0, $dy, 0);
+                $aabb->offset(0, $dy, 0);
 
                 foreach($list as $k => $bb){
-                    $dx = $bb->calculateXOffset($moveBB, $dx);
-                    $dz = $bb->calculateZOffset($moveBB, $dz);
+                    $dx = $bb->calculateXOffset($aabb, $dx);
+                    $dz = $bb->calculateZOffset($aabb, $dz);
                 }
-                $moveBB->offset($dx, 0, $dz);
+                $aabb->offset($dx, 0, $dz);
             }
-
-            $this->boundingBox = $moveBB;
         }
-
-        $this->location->x += $dx;
-        $this->location->y += $dy;
-        $this->location->z += $dz;
-
-        $this->checkChunks();
-        $this->checkBlockCollision();
-        $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
-        $this->updateFallState($dy, $this->onGround);
-
-        if($movX != $dx || $movZ != $dz){
-            $this->moveTime -= 100;
-        }
-
-        if($movX != $dx){
-            $this->motion->x = 0;
-        }
-
-        if($movY != $dy){
-            $this->motion->y = 0;
-        }
-
-        if($movZ != $dz){
-            $this->motion->z = 0;
-        }
-
-        Timings::$entityMoveTimer->stopTiming();
+        return $aabb;
     }
 
 }

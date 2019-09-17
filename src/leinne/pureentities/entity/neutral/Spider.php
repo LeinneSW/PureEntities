@@ -12,7 +12,6 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
 use pocketmine\player\Player;
 
@@ -48,11 +47,6 @@ class Spider extends Monster{
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
-            $pk = new ActorEventPacket();
-            $pk->entityRuntimeId = $this->id;
-            $pk->event = ActorEventPacket::ARM_SWING;
-            $this->server->broadcastPackets($this->hasSpawned, [$pk]);
-
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);
 

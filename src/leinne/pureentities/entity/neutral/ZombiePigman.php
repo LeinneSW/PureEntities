@@ -95,12 +95,13 @@ class ZombiePigman extends Monster implements Ageable{
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
-        $target = $this->getTarget();
-        if($this->getSpeed() < 3.8 && $this->isAngry() && $target instanceof Living){
-            $this->setSpeed(3.8);
-        }elseif($this->getSpeed() === 3.5){
+        //TODO: PigZombie speed
+        /*$target = $this->getTarget();
+        if($this->getSpeed() < 2.5 && $this->isAngry() && $target instanceof Living){
+            $this->setSpeed(2.5);
+        }elseif($this->getSpeed() === 2.5){
             $this->setSpeed(1.0);
-        }
+        }*/
 
         if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
             return \false;
@@ -110,7 +111,9 @@ class ZombiePigman extends Monster implements Ageable{
             $pk = new ActorEventPacket();
             $pk->entityRuntimeId = $this->id;
             $pk->event = ActorEventPacket::ARM_SWING;
-            $this->server->broadcastPackets($this->hasSpawned, [$pk]);
+            foreach($this->hasSpawned as $viewer){
+                $viewer->getNetworkSession()->sendDataPacket($pk);
+            }
 
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
             $target->attack($ev);

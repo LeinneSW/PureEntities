@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\ai;
 
 use pocketmine\block\Stair;
-use pocketmine\entity\Entity;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\world\World;
@@ -18,9 +17,6 @@ class EntityAI{
     const SLAB = 2;
     const STAIR = 3;
 
-    /**
-     * @var AxisAlignedBB|Entity $entity
-     */
     public static function checkBlockState(World $world, AxisAlignedBB $aabb, Vector3 $motion) : int{
         $block = $world->getBlock(new Vector3(
             (int) (($motion->x > 0 ? $aabb->maxX : $aabb->minX) + $motion->x),
@@ -39,7 +35,7 @@ class EntityAI{
                 if($block instanceof Stair){
                     return EntityAI::STAIR;
                 }
-                return $blockBox->maxY - $aabb->minY === 0.5 ? EntityAI::JUMP_SLAB : EntityAI::JUMP_BLOCK;
+                return $blockBox->maxY - $aabb->minY === 0.5 ? EntityAI::SLAB : EntityAI::BLOCK;
             }
         }elseif($up->maxY - $aabb->minY === 1.0){ /** 반블럭 위에서 반블럭 * 3 점프 */
             return EntityAI::BLOCK;

@@ -96,7 +96,9 @@ class IronGolem extends Monster{
                 $pk = new ActorEventPacket();
                 $pk->entityRuntimeId = $this->id;
                 $pk->event = ActorEventPacket::ARM_SWING;
-                $this->server->broadcastPackets($this->hasSpawned, [$pk]);
+                foreach($this->hasSpawned as $viewer){
+                    $viewer->getNetworkSession()->sendDataPacket($pk);
+                }
 
                 $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
                 $target->attack($ev);

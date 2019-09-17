@@ -7,12 +7,15 @@ namespace leinne\pureentities\entity;
 use leinne\pureentities\entity\inventory\MonsterInventory;
 
 use pocketmine\entity\Living;
+use pocketmine\inventory\CallbackInventoryChangeListener;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\ListTag;
+use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
+use pocketmine\network\mcpe\protocol\types\inventory\ContainerIds;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
@@ -55,6 +58,14 @@ abstract class Monster extends EntityBase{
         if(!$item->isNull()){
             $this->inventory->setItemInHand($item);
         }
+
+        $this->inventory->addChangeListeners(CallbackInventoryChangeListener::onAnyChange(
+            function(MonsterInventory $inv) : void{
+                foreach($this->getViewers() as $viewer){
+                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $inv->getItemInHand(), 0, ContainerIds::INVENTORY));
+                }
+            }
+        ));
     }
 
     protected function entityBaseTick(int $tickDiff = 1) : bool{
@@ -177,7 +188,7 @@ abstract class Monster extends EntityBase{
     protected function sendSpawnPacket(Player $player) : void{
         parent::sendSpawnPacket($player);
 
-        $this->inventory->sendContents($player);
+        $player->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->id, $this->inventory->getItemInHand(), 0, ContainerIds::INVENTORY));
     }
 
     public function saveNBT() : CompoundTag{
