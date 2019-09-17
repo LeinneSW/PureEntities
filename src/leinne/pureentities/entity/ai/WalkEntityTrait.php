@@ -75,13 +75,13 @@ trait WalkEntityTrait{
         $this->needSlabJump = \false;
         if($needJump){
             /** @var Entity $this */
-            switch(EntityAI::checkJumpState($this)){
-                case EntityAI::JUMP_BLOCK:
+            switch(EntityAI::checkJumpState($this->getWorld(), $this->boundingbox, $this->motion)){
+                case EntityAI::BLOCK:
                     $hasUpdate = \true;
                     $this->motion->y += 0.52;
                     break;
-                case EntityAI::JUMP_SLAB:
-                case EntityAI::JUMP_STAIR:
+                case EntityAI::SLAB:
+                case EntityAI::STAIR:
                     $this->needSlabJump = \true;
                     break;
             }
