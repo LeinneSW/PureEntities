@@ -9,6 +9,9 @@ class Node{
     /** @var int */
     public $id;
     
+    /** @var Position */
+    public $location;
+    
     /**
      * F = G + H
      * @var float
@@ -39,9 +42,10 @@ class Node{
      *
      * @return Node
      */
-    public static function create(int $id, float $fscore, float $gscore, $hscore, ?int $parentNode = null) : self{
+    public static function create(int $id, Position $pos, float $fscore, float $gscore, $hscore, ?int $parentNode = null) : self{
         $node = new self;
         $node->id = $id;
+        $node->location = $pos;
         $node->fscore = $fscore;
         $node->gscore = $gscore;
         $node->hscore = $hscore;
