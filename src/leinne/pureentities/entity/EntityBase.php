@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity;
 
+use leinne\pureentities\entity\ai\EntityAI;
+use leinne\pureentities\entity\ai\Node;
+use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
@@ -27,24 +30,29 @@ abstract class EntityBase extends Living {
     /** @var int */
     protected $moveTime = 0;
 
-    /** @var Living */
-    private $target = null;
+    /** @var bool */
     protected $fixedTarget = false;
     
     /** @var Vector3 */
     private $goal = null;
 
     /**
-     * $this 와 $target의 관계가 상호작용하는 관계인지 확인
-     *
-     * @param Living $target
+     * THIS IS VERY 실.험.적, so 당신의 서버 TPS Load 100% 으로 been replaced
+     * @var Node[]
+     */
+    private $openNode = [];
+    /** @var Node[] */
+    private $closeNode = [];
+    /** @var Node[] */
+    private $finalGoal = [];
+
+    /**
+     * @param Entity $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public function hasInteraction(Living $target, float $distanceSquare) : bool{
-        return $this->fixedTarget || $distanceSquare <= 10000;
-    }
+    public abstract function hasInteraction(Entity $target, float $distanceSquare) : bool;
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -72,15 +80,15 @@ abstract class EntityBase extends Living {
     /**
      * 상호작용이 가능한 거리인지 체크
      *
-     * @return Living
+     * @return Entity
      */
-    public function checkInteract() : ?Living{
-        $target = $this->target;
+    public function checkInteract() : ?Entity{
+        $target = $this->getTargetEntity();
         if(
             $target !== null
-            && \abs($this->getLocation()->getX() - $target->getLocation()->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
-            && \abs($this->getLocation()->getZ() - $target->getLocation()->z) <= $width
-            && \abs($this->getLocation()->getY()- $target->getLocation()->y) <= min(1, $this->eyeHeight)
+            && abs($this->getLocation()->getX() - $target->getLocation()->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
+            && abs($this->getLocation()->getZ() - $target->getLocation()->z) <= $width
+            && abs($this->getLocation()->getY()- $target->getLocation()->y) <= min(1, $this->eyeHeight)
         ){
             return $target;
         }
@@ -136,13 +144,10 @@ abstract class EntityBase extends Living {
     public function setSpeed(float $speed) : void{
         $this->speed = $speed;
     }
-
-    public function getTarget() : ?Living{
-        return $this->target;
-    }
     
     public function getGoal() : Vector3{
-        if($this->target === null){
+        $target = $this->getTargetEntity();
+        if($target === null){
             if($this->goal === null){
                 $x = mt_rand(15, 40);
                 $z = mt_rand(15, 40);
@@ -151,12 +156,7 @@ abstract class EntityBase extends Living {
             }
             return $this->goal;
         }
-        return $this->target->getPosition();
-    }
-
-    public function setTarget(?Living $target, bool $fixed = false) : void{
-        $this->target = $target;
-        $this->fixedTarget = $fixed;
+        return $target->getPosition();
     }
 
     public function setGoal(Vector3 $target, ?int $time = null) : void{
@@ -164,9 +164,15 @@ abstract class EntityBase extends Living {
         $this->moveTime = $time ?? mt_rand(400, 6000);
     }
 
+    public function setTargetEntity(?Entity $target, bool $fixed = false) : void{
+        parent::setTargetEntity($target);
+        $this->fixedTarget = $fixed;
+    }
+
     protected final function updateTarget() : void{
         $pos = $this->getLocation();
-        if($this->target === null || !$this->hasInteraction($this->target, $pos->distanceSquared($this->getGoal()))){
+        $target = $this->getTargetEntity();
+        if($target === null || !$this->hasInteraction($target, $pos->distanceSquared($target->getPosition()))){
             $near = PHP_INT_MAX;
             $target = null;
             foreach($this->getWorld()->getEntities() as $k => $t){
@@ -179,15 +185,74 @@ abstract class EntityBase extends Living {
                 ){
                     continue;
                 }
-
                 $near = $distance;
                 $target = $t;
             }
-            $this->setTarget($target);
+            $this->setTargetEntity($target);
+        }
+
+        if(
+            $this->getTargetEntityId() === null
+            && (--$this->moveTime <= 0 || $pos->distanceSquared($this->getGoal()) <= 0.00025)
+        ){
+            $x = mt_rand(15, 40);
+            $z = mt_rand(15, 40);
+            $this->moveTime = mt_rand(400, 6000);
+            $this->goal = $this->getPosition()->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z);
+        }
+
+        if(!empty($this->finalGoal)){
+            return;
+        }
+        $index = 1;
+        $goal = $this->getGoal();
+        $start = Node::create($index++, $this->boundingBox, 0, abs($goal->x - $pos->x) + abs($goal->z - $pos->z));
+        $this->openNode[] = $start;
+        while(true){
+            $nextNode = array_pop($this->openNode);
+            $this->closeNode[] = $nextNode;
+            for($xi = -1; $xi < 2; ++$xi){
+                for($zi = -1; $zi < 2; ++$zi){
+                    if($xi === 0 && $zi === 0){
+                        continue;
+                    }
+                    $node = Node::create(
+                        $index++,
+                        $nextNode->boundingBox->offsetCopy($xi, 0, $zi),
+                        abs($xi) === 1 && abs($zi) === 1 ? 14 : 10,
+                        abs($goal->x - $pos->x) + abs($goal->z - $pos->z),
+                        $nextNode->id
+                    );
+
+                    if(
+                        abs($node->boundingBox->minX - $this->boundingBox->minX) < 1
+                        && abs($node->boundingBox->minZ - $this->boundingBox->minZ) < 1
+                    ){
+                        $this->openNode[] = $node;
+                        break;
+                    }elseif(EntityAI::checkBlockState($this->getWorld(), $node->boundingBox) !== EntityAI::WALL){
+                        $this->openNode[] = $node;
+                    }
+
+                }
+            }
+
+            $this->openNode = EntityAI::quickSort(0, count($this->openNode) - 1, $this->openNode);
+            $this->closeNode[] = array_shift($this->openNode);
+        }
+
+        $index = 0;
+        $this->finalGoal = [array_pop($this->closeNode)];
+        while(($node = array_pop($this->closeNode)) !== null){
+            if($node->parentNode === $this->finalGoal[$index]->id){
+                ++$index;
+                $this->finalGoal[] = $node;
+            }
         }
     }
 
-    public function updateBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
+
+    public function checkBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
         $aabb = clone $this->boundingBox;
 
         if($this->keepMovement){
@@ -228,7 +293,7 @@ abstract class EntityBase extends Living {
         $movY = $dy;
         $movZ = $dz;
 
-        $this->boundingBox = $this->updateBoundingBoxState($dx, $dy, $dz);
+        $this->boundingBox = $this->checkBoundingBoxState($dx, $dy, $dz);
 
         $this->location->x += $dx;
         $this->location->y += $dy;

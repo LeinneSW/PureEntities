@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
+use pocketmine\math\AxisAlignedBB;
+
 class Node{
 
     /** @var int */
     public $id;
     
-    /** @var Position */
-    public $location;
+    /** @var AxisAlignedBB */
+    public $boundingBox;
     
     /**
      * F = G + H
@@ -25,7 +27,7 @@ class Node{
     public $gscore = 0.0;
 
     /**
-     * 현재 노드와 목적지까지의 최단 거리
+     * 현재 노드와 목적지까지의 택시 거리
      * @var float
      */
     public $hscore = 0.0;
@@ -35,6 +37,7 @@ class Node{
 
     /**
      * @param int $id
+     * @param AxisAlignedBB $aabb
      * @param float $fscore
      * @param float $gscore
      * @param $hscore
@@ -42,11 +45,11 @@ class Node{
      *
      * @return Node
      */
-    public static function create(int $id, Position $pos, float $fscore, float $gscore, $hscore, ?int $parentNode = null) : self{
+    public static function create(int $id, AxisAlignedBB $aabb, float $gscore, float $hscore, ?int $parentNode = null) : self{
         $node = new self;
         $node->id = $id;
-        $node->location = $pos;
-        $node->fscore = $fscore;
+        $node->boundingBox = $aabb;
+        $node->fscore = $gscore + $hscore;
         $node->gscore = $gscore;
         $node->hscore = $hscore;
         $node->parentNode = $parentNode;

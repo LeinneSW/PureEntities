@@ -8,7 +8,7 @@ use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
 use pocketmine\entity\Ageable;
-use pocketmine\entity\Living;
+use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -65,7 +65,7 @@ class ZombiePigman extends Monster implements Ageable{
         return $this->baby;
     }
 
-    public function hasInteraction(Living $target, float $distance) : bool{
+    public function hasInteraction(Entity $target, float $distance) : bool{
         return $this->isAngry() && parent::hasInteraction($target, $distance);
     }
 
@@ -96,7 +96,7 @@ class ZombiePigman extends Monster implements Ageable{
     public function interactTarget() : bool{
         ++$this->attackDelay;
         //TODO: PigZombie speed
-        /*$target = $this->getTarget();
+        /*$target = $this->getTargetEntity();
         if($this->getSpeed() < 2.5 && $this->isAngry() && $target instanceof Living){
             $this->setSpeed(2.5);
         }elseif($this->getSpeed() === 2.5){

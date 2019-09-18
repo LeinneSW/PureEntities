@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\utility;
 
-use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
-use pocketmine\entity\Living;
+use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\ItemFactory;
@@ -66,12 +65,12 @@ class IronGolem extends Monster{
     /**
      * $this 와 $target의 관계가 적대관계인지 확인
      *
-     * @param Living $target
+     * @param Entity $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public function hasInteraction(Living $target, float $distanceSquare) : bool{
+    public function hasInteraction(Entity $target, float $distanceSquare) : bool{
         if($target instanceof Player && (!empty($this->owner) || !$target->isSurvival())){
             return \false;
         }elseif($target instanceof IronGolem){

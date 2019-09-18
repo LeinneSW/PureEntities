@@ -6,7 +6,7 @@ namespace leinne\pureentities\entity;
 
 use leinne\pureentities\entity\inventory\MonsterInventory;
 
-use pocketmine\entity\Living;
+use pocketmine\entity\Entity;
 use pocketmine\inventory\CallbackInventoryChangeListener;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -89,7 +89,7 @@ abstract class Monster extends EntityBase{
         return $this->inventory;
     }
 
-    public function hasInteraction(Living $target, float $distance) : bool{
+    public function hasInteraction(Entity $target, float $distance) : bool{
         return $this->fixedTarget || $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
     }
 

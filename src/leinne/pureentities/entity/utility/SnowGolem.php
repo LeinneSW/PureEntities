@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\utility;
 
 use leinne\pureentities\entity\ai\WalkEntityTrait;
-use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\Monster;
 
-use pocketmine\entity\Living;
+use pocketmine\entity\Entity;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
@@ -36,12 +35,12 @@ class SnowGolem extends Monster{
      *
      * $this 와 $target의 관계가 적대관계인지 확인
      *
-     * @param Living $target
+     * @param Entity $target
      * @param float $distanceSquare
      *
      * @return bool
      */
-    public function hasInteraction(Living $target, float $distanceSquare) : bool{
+    public function hasInteraction(Entity $target, float $distanceSquare) : bool{
         return $this->fixedTarget || $target instanceof Monster && $target->isAlive() && !$target->closed && $distanceSquare <= 196;
     }
 

@@ -4,19 +4,12 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
-use pocketmine\entity\Living;
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\Server;
-use pocketmine\world\World;
+use pocketmine\world\Position;
 
 /**
  * This trait override most methods in the {@link EntityBase} abstract class.
- *
- * @property bool           $keepMovement
- * @property World          $level
- * @property Server         $server
- * @property AxisAlignedBB  $boundingBox
  */
 trait WalkEntityTrait{
 
@@ -47,27 +40,25 @@ trait WalkEntityTrait{
             return $hasUpdate;
         }
 
-        /** @var Entity $this */
-        $me = $this->getPosition();
-
         $this->updateTarget();
-        $x = $this->getGoal()->x - $me->getX();
-        $y = $this->getGoal()->y - $me->getY();
-        $z = $this->getGoal()->z - $me->getZ();
 
+        /** @var Position $me */
+        $me = $this->getPosition();
+        /** @var Position $goal */
+        $goal = $this->getGoal();
+        $x = $goal->x - $me->getX();
+        $y = $goal->y - $me->getY();
+        $z = $goal->z - $me->getZ();
         $diff = abs($x) + abs($z);
-        $needJump = false;
         if(!$this->interactTarget() && $diff !== 0.0){
             $hasUpdate = true;
-            $needJump = $this->onGround;
             $ground = $this->onGround ? 0.125 : 0.0025;
             $this->motion->x += $this->getSpeed() * $ground * $x / $diff;
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
 
         $this->needSlabJump = \false;
-        if($needJump){
-            /** @var Entity $this */
+        if($hasUpdate && $this->onGround){
             switch(EntityAI::checkBlockState($this->getWorld(), $this->boundingBox, $this->motion)){
                 case EntityAI::BLOCK:
                     $hasUpdate = true;
@@ -82,7 +73,7 @@ trait WalkEntityTrait{
 
         $this->setRotation(
             \rad2deg(\atan2($z, $x)) - 90.0,
-            ($this->getTarget() !== null || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
+            ($this->getTargetEntity() !== null || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
         );
 
         return $hasUpdate;
@@ -90,7 +81,7 @@ trait WalkEntityTrait{
 
 
     /**
-     * @see EntityBase::updateBoundingBoxState()
+     * @see EntityBase::checkBoundingBoxState()
      *
      * @param float $dx
      * @param float $dy
@@ -98,7 +89,8 @@ trait WalkEntityTrait{
      *
      * @return AxisAlignedBB
      */
-    public function updateBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
+    public function checkBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
+        /** @var AxisAlignedBB $aabb */
         $aabb = clone $this->boundingBox;
 
         $movX = $dx;

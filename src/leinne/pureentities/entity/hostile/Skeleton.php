@@ -7,7 +7,6 @@ namespace leinne\pureentities\entity\hostile;
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
-use pocketmine\entity\Living;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Projectile;
@@ -49,8 +48,8 @@ class Skeleton extends Monster{
     }
 
     public function interactTargetBow() : bool{
-        $target = $this->getTarget();
-        if(!($target instanceof Living)){
+        $target = $this->getTargetEntity();
+        if($target === null){
             return \false;
         }
 
@@ -64,7 +63,7 @@ class Skeleton extends Monster{
                 ($this->getLocation()->getYaw() > 180 ? 360 : 0) - $this->getLocation()->getYaw(),
                 -$this->getLocation()->getPitch()
             );
-            $arrow = new Arrow($this->level, $nbt, $this, $baseForce >= 1);
+            $arrow = new Arrow($this->getWorld(), $nbt, $this, $baseForce >= 1);
             //TODO: 올바른 화살 대미지[1~4(쉬움, 보통), 1~5(어려움)]
             //$arrow->setBaseDamage($arrow->getBaseDamage() + $this->getResultDamage());
             $arrow->setPickupMode(($item = $this->inventory->getItemInHand())->hasEnchantment(Enchantment::INFINITY()) ? Arrow::PICKUP_CREATIVE : Arrow::PICKUP_NONE);
@@ -98,14 +97,14 @@ class Skeleton extends Monster{
                     }else{
                         $this->attackDelay = 0;
                         $entity->spawnToAll();
-                        $this->level->addSound($this->getPosition(), new LaunchSound(), $this->getViewers());
+                        $this->getWorld()->addSound($this->getPosition(), new LaunchSound(), $this->getViewers());
                     }
                 }else{
                     $entity->spawnToAll();
                 }
             }
         }
-        return $this->getLocation()->distanceSquared($target) <= 7.84; //2.5 ** 2
+        return $this->getLocation()->distanceSquared($target->getPosition()) <= 7.84; //2.5 ** 2
     }
 
     public function interactTarget() : bool{

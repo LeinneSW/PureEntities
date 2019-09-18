@@ -4,13 +4,8 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\tile;
 
-use pocketmine\entity\Entity;
-use pocketmine\entity\EntityFactory;
-use pocketmine\world\Position;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\player\Player;
 use pocketmine\block\tile\Spawnable;
 use pocketmine\world\World;
 

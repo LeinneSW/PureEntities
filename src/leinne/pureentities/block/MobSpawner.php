@@ -31,7 +31,7 @@ class MobSpawner extends MonsterSpawner{
             $list = [];
             $isValid = \false;
             foreach($spawner->getPos()->getWorld()->getEntities() as $k => $entity){
-                if($entity->distance($spawner) <= $spawner->getRequiredPlayerRange()){
+                if($entity->getPosition()->distance($spawner->getPos()) <= $spawner->getRequiredPlayerRange()){
                     if($entity instanceof Player){
                         $isValid = \true;
                     }
