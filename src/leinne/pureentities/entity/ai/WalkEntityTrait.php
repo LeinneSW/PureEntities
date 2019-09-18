@@ -11,7 +11,7 @@ use pocketmine\Server;
 use pocketmine\world\World;
 
 /**
- * This trait override most methods in the {@link Entity} abstract class.
+ * This trait override most methods in the {@link EntityBase} abstract class.
  *
  * @property bool           $keepMovement
  * @property World          $level
@@ -30,7 +30,7 @@ trait WalkEntityTrait{
     public abstract function interactTarget() : bool;
 
     /**
-     * @see Entity::entityBaseTick()
+     * @see EntityBase::entityBaseTick()
      *
      * @param int $tickDiff
      *
@@ -38,7 +38,7 @@ trait WalkEntityTrait{
      */
     protected function entityBaseTick(int $tickDiff = 1) : bool{
         if($this->closed){
-            return \false;
+            return false;
         }
 
         $hasUpdate = parent::entityBaseTick($tickDiff);
@@ -49,22 +49,16 @@ trait WalkEntityTrait{
 
         /** @var Entity $this */
         $me = $this->getPosition();
-        $target = $this->checkTarget();
-        if($target instanceof Living){
-            $pos = $target->getPosition();
-            $x = $pos->x - $me->getX();
-            $y = $pos->y - $me->getY();
-            $z = $pos->z - $me->getZ();
-        }else{
-            $x = $target->x - $me->getX();
-            $y = $target->y - $me->getY();
-            $z = $target->z - $me->getZ();
-        }
 
-        $diff = \abs($x) + \abs($z);
-        $needJump = \false;
+        $this->updateTarget();
+        $x = $this->getGoal()->x - $me->getX();
+        $y = $this->getGoal()->y - $me->getY();
+        $z = $this->getGoal()->z - $me->getZ();
+
+        $diff = abs($x) + abs($z);
+        $needJump = false;
         if(!$this->interactTarget() && $diff !== 0.0){
-            $hasUpdate = \true;
+            $hasUpdate = true;
             $needJump = $this->onGround;
             $ground = $this->onGround ? 0.125 : 0.0025;
             $this->motion->x += $this->getSpeed() * $ground * $x / $diff;
@@ -76,19 +70,19 @@ trait WalkEntityTrait{
             /** @var Entity $this */
             switch(EntityAI::checkBlockState($this->getWorld(), $this->boundingBox, $this->motion)){
                 case EntityAI::BLOCK:
-                    $hasUpdate = \true;
+                    $hasUpdate = true;
                     $this->motion->y += 0.52;
                     break;
                 case EntityAI::SLAB:
                 case EntityAI::STAIR:
-                    $this->needSlabJump = \true;
+                    $this->needSlabJump = true;
                     break;
             }
         }
 
         $this->setRotation(
             \rad2deg(\atan2($z, $x)) - 90.0,
-            (!$target instanceof Living || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
+            ($this->getTarget() !== null || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
         );
 
         return $hasUpdate;

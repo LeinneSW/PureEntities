@@ -17,7 +17,8 @@ class EntityAI{
     const SLAB = 2;
     const STAIR = 3;
 
-    public static function checkBlockState(World $world, AxisAlignedBB $aabb, Vector3 $motion) : int{
+    public static function checkBlockState(World $world, AxisAlignedBB $aabb, ?Vector3 $motion = null) : int{
+        $motion = $motion ?? new Vector3();
         $block = $world->getBlock(new Vector3(
             (int) (($motion->x > 0 ? $aabb->maxX : $aabb->minX) + $motion->x),
             (int) $aabb->minY,

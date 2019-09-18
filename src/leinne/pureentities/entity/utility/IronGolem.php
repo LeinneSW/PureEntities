@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\utility;
 
+use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\WalkEntityTrait;
 
@@ -76,7 +77,7 @@ class IronGolem extends Monster{
         }elseif($target instanceof IronGolem){
             return \false;
         }
-        return ($target instanceof Monster || !$this->isFriendly()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
+        return $this->fixedTarget || ($target instanceof Monster || !$this->isFriendly()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
     }
 
     public function interactTarget() : bool{
@@ -120,8 +121,8 @@ class IronGolem extends Monster{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(ItemIds::IRON_INGOT, 0, \mt_rand(3, 5)),
-            ItemFactory::get(ItemIds::POPPY, 0, \mt_rand(0, 2)),
+            ItemFactory::get(ItemIds::IRON_INGOT, 0, mt_rand(3, 5)),
+            ItemFactory::get(ItemIds::POPPY, 0, mt_rand(0, 2)),
         ];
     }
 

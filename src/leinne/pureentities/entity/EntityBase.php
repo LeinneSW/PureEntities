@@ -29,7 +29,7 @@ abstract class EntityBase extends Living {
 
     /** @var Living */
     private $target = null;
-    private $fixedTarget = false;
+    protected $fixedTarget = false;
     
     /** @var Vector3 */
     private $goal = null;
@@ -43,7 +43,7 @@ abstract class EntityBase extends Living {
      * @return bool
      */
     public function hasInteraction(Living $target, float $distanceSquare) : bool{
-        return $this->fixedTarget;
+        return $this->fixedTarget || $distanceSquare <= 10000;
     }
 
     protected function initEntity(CompoundTag $nbt) : void{
@@ -80,7 +80,7 @@ abstract class EntityBase extends Living {
             $target !== null
             && \abs($this->getLocation()->getX() - $target->getLocation()->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
             && \abs($this->getLocation()->getZ() - $target->getLocation()->z) <= $width
-            && \abs($this->getLocation()->getY()- $target->getLocation()->y) <= \min(1, $this->eyeHeight)
+            && \abs($this->getLocation()->getY()- $target->getLocation()->y) <= min(1, $this->eyeHeight)
         ){
             return $target;
         }
@@ -101,8 +101,8 @@ abstract class EntityBase extends Living {
         return \true;
     }
 
-    public function updateMovement(bool $teleport = \false) : void{
-        $send = \false;
+    public function updateMovement(bool $teleport = false) : void{
+        $send =\false;
         $pos = $this->getLocation();
         $last = $this->lastLocation;
         if(
@@ -147,7 +147,7 @@ abstract class EntityBase extends Living {
                 $x = mt_rand(15, 40);
                 $z = mt_rand(15, 40);
                 $this->moveTime = mt_rand(400, 6000);
-                $this->goal = $pos->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z);
+                $this->goal = $this->getPosition()->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z);
             }
             return $this->goal;
         }
@@ -164,10 +164,7 @@ abstract class EntityBase extends Living {
         $this->moveTime = $time ?? mt_rand(400, 6000);
     }
 
-    /**
-     * @return Living
-     */
-    protected final function checkTarget() : ?Living{
+    protected final function updateTarget() : void{
         $pos = $this->getLocation();
         if($this->target === null || !$this->hasInteraction($this->target, $pos->distanceSquared($this->getGoal()))){
             $near = PHP_INT_MAX;
@@ -188,11 +185,6 @@ abstract class EntityBase extends Living {
             }
             $this->setTarget($target);
         }
-
-        if($this->target !== null && $this->target->isAlive()){
-            return $this->target;
-        }
-        return null;
     }
 
     public function updateBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{

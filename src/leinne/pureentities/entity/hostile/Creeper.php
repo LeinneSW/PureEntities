@@ -28,8 +28,6 @@ class Creeper extends Monster implements Explosive{
 
     private $force = 3.0;
 
-    protected $interactDistance = 3.6;
-
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
@@ -38,6 +36,15 @@ class Creeper extends Monster implements Explosive{
 
     public function getName() : string{
         return 'Creeper';
+    }
+
+    /**
+     * 상호작용을 위한 최소 거리
+     *
+     * @return float
+     */
+    public function getInteractDistance() : float{
+        return 3.6;
     }
 
     public function explode() : void{
@@ -65,10 +72,6 @@ class Creeper extends Monster implements Explosive{
         }
 
         //TODO: boom event
-        /*$pk = new EntityEventPacket();
-        $pk->entityRuntimeId = $this->id;
-        $pk->event = EntityEventPacket::ARM_SWING;
-        $this->server->broadcastPacket($this->hasSpawned, $pk);*/
 
         $this->setSpeed(0.4);
         if(++$this->attackDelay >= 32){

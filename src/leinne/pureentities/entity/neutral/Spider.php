@@ -59,13 +59,13 @@ class Spider extends Monster{
 
     public function getDrops() : array{
         $drops = [
-            ItemFactory::get(ItemIds::STRING, 0, \mt_rand(0, 2))
+            ItemFactory::get(ItemIds::STRING, 0, mt_rand(0, 2))
         ];
 
         if(
             $this->lastDamageCause instanceof EntityDamageByEntityEvent
             && $this->lastDamageCause->getDamager() instanceof Player
-            && \mt_rand(1, 3) === 1
+            && mt_rand(1, 3) === 1
         ){
             $drops[] = ItemFactory::get(ItemIds::SPIDER_EYE, 0, 1);
         }

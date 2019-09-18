@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\utility;
 
 use leinne\pureentities\entity\ai\WalkEntityTrait;
+use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\Monster;
 
 use pocketmine\entity\Living;
@@ -41,7 +42,7 @@ class SnowGolem extends Monster{
      * @return bool
      */
     public function hasInteraction(Living $target, float $distanceSquare) : bool{
-        return $target instanceof Monster && $target->isAlive() && !$target->closed && $distanceSquare <= 196;
+        return $this->fixedTarget || $target instanceof Monster && $target->isAlive() && !$target->closed && $distanceSquare <= 196;
     }
 
     public function interactTarget() : bool{
@@ -51,7 +52,7 @@ class SnowGolem extends Monster{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(ItemIds::SNOWBALL, 0, \mt_rand(0, 15)),
+            ItemFactory::get(ItemIds::SNOWBALL, 0, mt_rand(0, 15)),
         ];
     }
 

@@ -85,11 +85,11 @@ class Zombie extends Monster implements Ageable{
 
     public function getDrops() : array{
         $drops = [
-            ItemFactory::get(ItemIds::ROTTEN_FLESH, 0, \mt_rand(0, 2))
+            ItemFactory::get(ItemIds::ROTTEN_FLESH, 0, mt_rand(0, 2))
         ];
 
-        if(\mt_rand(0, 199) < 5){
-            switch(\mt_rand(0, 2)){
+        if(mt_rand(0, 199) < 5){
+            switch(mt_rand(0, 2)){
                 case 0:
                     $drops[] = ItemFactory::get(ItemIds::IRON_INGOT, 0, 1);
                     break;

@@ -9,7 +9,7 @@ use pocketmine\entity\EntityFactory;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 
-class MobSpawner extends MonsterSpawner {
+class MobSpawner extends MonsterSpawner{
 
     public function onScheduledUpdate(): void {
         $spawner = $this->getPos()->getWorld()->getTile($this->getPos());
@@ -25,7 +25,7 @@ class MobSpawner extends MonsterSpawner {
             return;
         }
 
-        if(++$spawner->delay >= \mt_rand($spawner->getMinSpawnDelay(), $spawner->getMaxSpawnDelay())){
+        if(++$spawner->delay >= mt_rand($spawner->getMinSpawnDelay(), $spawner->getMaxSpawnDelay())){
             $spawner->delay = 0;
 
             $list = [];
@@ -42,10 +42,10 @@ class MobSpawner extends MonsterSpawner {
 
             if($isValid && count($list) < $spawner->getMaxNearbyEntities()){
                 $nbt = EntityFactory::createBaseNBT($pos = new Position(
-                        $spawner->getPos()->getX() + \mt_rand(-$spawner->getSpawnRange(), $spawner->getSpawnRange()),
-                        $spawner->getPos()->getY(),
-                        $spawner->getPos()->getZ() + \mt_rand(-$spawner->getSpawnRange(), $spawner->getSpawnRange()),
-                        $spawner->getPos()->getWorld()
+                    $spawner->getPos()->getX() + mt_rand(-$spawner->getSpawnRange(), $spawner->getSpawnRange()),
+                    $spawner->getPos()->getY(),
+                    $spawner->getPos()->getZ() + mt_rand(-$spawner->getSpawnRange(), $spawner->getSpawnRange()),
+                    $spawner->getPos()->getWorld()
                 ));
                 $nbt->setInt("id", $spawner->getEntityId());
                 $entity = EntityFactory::createFromData($spawner->getPos()->getWorld(), $nbt);

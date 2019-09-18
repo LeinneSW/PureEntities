@@ -54,9 +54,9 @@ class Skeleton extends Monster{
             return \false;
         }
 
-        if(++$this->attackDelay >= 32 && \mt_rand(1, 30) === 1){
+        if(++$this->attackDelay >= 32 && mt_rand(1, 30) === 1){
             $p = ($this->attackDelay - 20) / 20;
-            $baseForce = \min((($p ** 2) + $p * 2) / 3, 1);
+            $baseForce = min((($p ** 2) + $p * 2) / 3, 1);
 
             $nbt = EntityFactory::createBaseNBT(
                 $this->getPosition()->add(0, $this->eyeHeight, 0),

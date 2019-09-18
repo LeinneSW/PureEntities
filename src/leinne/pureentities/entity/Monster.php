@@ -90,7 +90,7 @@ abstract class Monster extends EntityBase{
     }
 
     public function hasInteraction(Living $target, float $distance) : bool{
-        return $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
+        return $this->fixedTarget || $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
     }
 
     public function canAttackTarget() : bool{
@@ -141,14 +141,14 @@ abstract class Monster extends EntityBase{
         if($difficulty > 3 || $difficulty < 0){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-        $this->minDamage[$difficulty] = \min($damage, $this->maxDamage[$difficulty]);
+        $this->minDamage[$difficulty] = min($damage, $this->maxDamage[$difficulty]);
     }
 
     public function setMaxDamage(float $damage, int $difficulty = -1) : void{
         if($difficulty < 1 || $difficulty > 3){
             $difficulty = Server::getInstance()->getDifficulty();
         }
-        $this->maxDamage[$difficulty] = \max($damage, $this->minDamage[$difficulty]);
+        $this->maxDamage[$difficulty] = max($damage, $this->minDamage[$difficulty]);
     }
 
     public function setDamage(float $damage, int $difficulty = -1) : void{
@@ -172,7 +172,7 @@ abstract class Monster extends EntityBase{
      */
     public function setMinDamages(array $damages) : void{
         foreach($damages as $i => $damage){
-            $this->minDamage[$i] = \min((float) $damage, $this->maxDamage[$i]);
+            $this->minDamage[$i] = min((float) $damage, $this->maxDamage[$i]);
         }
     }
 
@@ -181,7 +181,7 @@ abstract class Monster extends EntityBase{
      */
     public function setMaxDamages(array $damages) : void{
         foreach($damages as $i => $damage){
-            $this->maxDamage[$i] = \max((float) $damage, $this->minDamage[$i]);
+            $this->maxDamage[$i] = max((float) $damage, $this->minDamage[$i]);
         }
     }
 

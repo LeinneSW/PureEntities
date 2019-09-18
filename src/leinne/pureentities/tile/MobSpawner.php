@@ -44,11 +44,11 @@ class MobSpawner extends Spawnable {
     }
 
     public function getMinSpawnDelay() : int{
-        return \min($this->minSpawnDelay, $this->maxSpawnDelay);
+        return min($this->minSpawnDelay, $this->maxSpawnDelay);
     }
 
     public function getMaxSpawnDelay() : int{
-        return \max($this->minSpawnDelay, $this->maxSpawnDelay);
+        return max($this->minSpawnDelay, $this->maxSpawnDelay);
     }
 
     public function addAdditionalSpawnData(CompoundTag $tag) : void{

@@ -40,7 +40,7 @@ class Cow extends Animal{
      * @return bool
      */
     public function hasInteraction(Living $target, float $distanceSquare) : bool{
-        return $target instanceof Player && $target->isAlive() && !$target->closed && $distanceSquare <= 64
+        return $this->fixedTarget || $target instanceof Player && $target->isAlive() && !$target->closed && $distanceSquare <= 64
             && $target->getInventory()->getItemInHand()->getId() === ItemIds::SEEDS; //TODO: 아이템 유인 구현
     }
 
@@ -51,13 +51,13 @@ class Cow extends Animal{
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(ItemIds::LEATHER, 0, \mt_rand(0, 2)),
-            ItemFactory::get($this->fireTicks > 0 ? ItemIds::STEAK : ItemIds::RAW_BEEF, 0, \mt_rand(1, 3)),
+            ItemFactory::get(ItemIds::LEATHER, 0, mt_rand(0, 2)),
+            ItemFactory::get($this->fireTicks > 0 ? ItemIds::STEAK : ItemIds::RAW_BEEF, 0, mt_rand(1, 3)),
         ];
     }
 
     public function getXpDropAmount() : int{
-        return \mt_rand(1, 3);
+        return mt_rand(1, 3);
     }
 
 }
