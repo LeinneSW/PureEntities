@@ -27,8 +27,12 @@ abstract class EntityBase extends Living {
     /** @var int */
     protected $moveTime = 0;
 
-    /** @var Living|Vector3 */
-    private $target = \null;
+    /** @var Living */
+    private $target = null;
+    private $fixedTarget = false;
+    
+    /** @var Vector3 */
+    private $goal = null;
 
     /**
      * $this 와 $target의 관계가 상호작용하는 관계인지 확인
@@ -38,7 +42,9 @@ abstract class EntityBase extends Living {
      *
      * @return bool
      */
-    public abstract function hasInteraction(Living $target, float $distanceSquare) : bool;
+    public function hasInteraction(Living $target, float $distanceSquare) : bool{
+        return $this->fixedTarget;
+    }
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -71,7 +77,7 @@ abstract class EntityBase extends Living {
     public function checkInteract() : ?Living{
         $target = $this->target;
         if(
-            $target instanceof Living
+            $target !== null
             && \abs($this->getLocation()->getX() - $target->getLocation()->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
             && \abs($this->getLocation()->getZ() - $target->getLocation()->z) <= $width
             && \abs($this->getLocation()->getY()- $target->getLocation()->y) <= \min(1, $this->eyeHeight)
@@ -131,62 +137,62 @@ abstract class EntityBase extends Living {
         $this->speed = $speed;
     }
 
-    /**
-     * @return Living|Vector3
-     */
-    public function getTarget(){
+    public function getTarget() : ?Living{
         return $this->target;
     }
-
-    /**
-     * @param Living|Vector3 $target
-     */
-    public function setTarget($target) : void{
-        $this->target = $target;
-        $this->moveTime = \mt_rand(300, 2000);
-    }
-    /**
-     * @return Living|Vector3
-     */
-    protected final function checkTarget(){
-        $pos = $this->getLocation();
-        if(!($this->target instanceof Living) || !($option = $this->hasInteraction($this->target, $pos->distanceSquared($this->target instanceof Living ? $this->target->getPosition() : $this->target)))){
-            if(isset($option)){
-                $this->target = \null;
+    
+    public function getGoal() : Vector3{
+        if($this->target === null){
+            if($this->goal === null){
+                $x = mt_rand(15, 40);
+                $z = mt_rand(15, 40);
+                $this->moveTime = mt_rand(400, 6000);
+                $this->goal = $pos->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z);
             }
+            return $this->goal;
+        }
+        return $this->target->getPosition();
+    }
 
-            $near = \PHP_INT_MAX;
-            foreach($this->getWorld()->getEntities() as $k => $target){
-                $distance = $pos->distanceSquared($target->getPosition());
+    public function setTarget(?Living $target, bool $fixed = false) : void{
+        $this->target = $target;
+        $this->fixedTarget = $fixed;
+    }
+
+    public function setGoal(Vector3 $target, ?int $time = null) : void{
+        $this->goal = $target->asVector3();
+        $this->moveTime = $time ?? mt_rand(400, 6000);
+    }
+
+    /**
+     * @return Living
+     */
+    protected final function checkTarget() : ?Living{
+        $pos = $this->getLocation();
+        if($this->target === null || !$this->hasInteraction($this->target, $pos->distanceSquared($this->getGoal()))){
+            $near = PHP_INT_MAX;
+            $target = null;
+            foreach($this->getWorld()->getEntities() as $k => $t){
+                $distance = $pos->distanceSquared($t->getPosition());
                 if(
-                    $target === $this
+                    $t === $this
                     || $distance > $near
-                    || !($target instanceof Living)
-                    || !$this->hasInteraction($target, $distance)
+                    || !($t instanceof Living)
+                    || !$this->hasInteraction($t, $distance)
                 ){
                     continue;
                 }
 
                 $near = $distance;
-                $this->target = $target;
+                $target = $t;
             }
+            $this->setTarget($target);
         }
 
-        if($this->target instanceof Living && $this->target->isAlive()){
+        if($this->target !== null && $this->target->isAlive()){
             return $this->target;
         }
-
-        if(
-            $this->target === \null
-            || (--$this->moveTime <= 0 || $pos->distanceSquared($this->target instanceof Living ? $this->target->getPosition() : $this->target) <= 0.00025)
-        ){
-            $x = \mt_rand(15, 40);
-            $z = \mt_rand(15, 40);
-            $this->moveTime = \mt_rand(300, 2400);
-            $this->target = $pos->add(\mt_rand(0, 1) ? $x : -$x, 0, \mt_rand(0, 1) ? $z : -$z);
-        }
-
-        return $this->target;
+        return null;
     }
 
     public function updateBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
