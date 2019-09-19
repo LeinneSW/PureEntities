@@ -13,7 +13,7 @@ use pocketmine\world\Position;
  */
 trait WalkEntityTrait{
 
-    private $needSlabJump = \false;
+    private $needSlabJump = false;
 
     /**
      * 타겟과의 상호작용
@@ -44,8 +44,14 @@ trait WalkEntityTrait{
 
         /** @var Position $me */
         $me = $this->getPosition();
-        /** @var Position $goal */
-        $goal = $this->getGoal();
+        /** @var Entity $target */
+        $target = $this->getTargetEntity();
+        if($target !== null){
+            $goal = $target->getPosition();
+            $pitch = 0.0;
+        }else{
+            $goal = $this->getGoal();
+        }
         $x = $goal->x - $me->getX();
         $y = $goal->y - $me->getY();
         $z = $goal->z - $me->getZ();
@@ -57,7 +63,7 @@ trait WalkEntityTrait{
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
 
-        $this->needSlabJump = \false;
+        $this->needSlabJump = false;
         if($hasUpdate && $this->onGround){
             switch(EntityAI::checkBlockState($this->getWorld(), $this->boundingBox, $this->motion)){
                 case EntityAI::BLOCK:
@@ -72,8 +78,8 @@ trait WalkEntityTrait{
         }
 
         $this->setRotation(
-            \rad2deg(\atan2($z, $x)) - 90.0,
-            ($this->getTargetEntity() !== null || $y === 0.0) ? 0.0 : \rad2deg(-\atan2($y, \sqrt($x ** 2 + $z ** 2)))
+            rad2deg(atan2($z, $x)) - 90.0,
+            $pitch ?? rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)))
         );
 
         return $hasUpdate;
