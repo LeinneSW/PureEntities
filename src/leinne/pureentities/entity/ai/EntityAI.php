@@ -21,9 +21,9 @@ class EntityAI{
 
     public static function checkJumpState(World $world, AxisAlignedBB $aabb, Vector3 $motion) : int{
         return self::checkBlockState(new Position(
-            (int) (($motion->x > 0 ? $aabb->maxX : $aabb->minX) + $motion->x),
-            (int) $aabb->minY,
-            (int) (($motion->z > 0 ? $aabb->maxZ : $aabb->minZ) + $motion->z),
+            ($motion->x > 0 ? $aabb->maxX : $aabb->minX) + $motion->x,
+            $aabb->minY,
+            ($motion->z > 0 ? $aabb->maxZ : $aabb->minZ) + $motion->z,
             $world
         ));
     }

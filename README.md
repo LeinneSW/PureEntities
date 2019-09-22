@@ -1,11 +1,12 @@
 <p align="center">
-	<a href="https://github.com/LeinneSW/PureEntities"><img src="https://i.imgur.com/wSQCLmT.png" title="source: imgur.com"/></a>
-	<b>The best plugin for PMMP to implement entities with AI</b>
+    <a href="https://github.com/LeinneSW/PureEntities">
+        <img src="https://i.imgur.com/wSQCLmT.png" title="source: imgur.com"/>
+    </a>
+    <b>The best plugin for PMMP to implement entities with AI</b><br><br>
+    Development: <b><a href="https://github.com/LeinneSW">LeinneSW</a></b> (before milk0417)<br><br>
+    PureEntities is a Plug-in that makes implement the entity.<br>
+    This Plug-in provides a simple Entity AI.
 </p>
-Development: **[LeinneSW](https://github.com/LeinneSW)** (before milk0417)
-
-PureEntities is a Plug-in that makes implement the entity.  
-This Plug-in provides a simple Entity AI.
 
 ## Notice
 
@@ -20,7 +21,7 @@ This plug-in is in development. Therefore, It is possible to function abnormally
     * `function getGoal() : Vector3`
     * `function getSpeed() : float`
     * `function setSpeed(float $speed) : void`
-    * `function setGoal(?Vector3 $target) : void`
+    * `function setFinalGoal(?Vector3 $target) : void`
     * `function setTargetEntity(?Entity $target, bool $fixed = \false) : void`
   * Animal
     * `function isBaby() : bool`

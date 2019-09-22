@@ -10,6 +10,7 @@ use leinne\pureentities\entity\ai\Node;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
@@ -180,7 +181,7 @@ abstract class EntityBase extends Living{
 
     protected final function updateTarget() : void{
         $pos = $this->getLocation();
-        $target = $this->getTargetEntity();
+        /*$target = $this->getTargetEntity();
         if($target === null || !$this->hasInteraction($target, $pos->distanceSquared($target->getPosition()))){
             $near = PHP_INT_MAX;
             $target = null;
@@ -197,34 +198,38 @@ abstract class EntityBase extends Living{
                 $target = $t;
             }
             $this->setTargetEntity($target);
-        }
+        }*/
 
-        if($this->getTargetEntity() === null){
+        //if($this->getTargetEntity() === null){
             if(!empty($this->goalNode)){
                 if($this->goalIndex < 0){
                     $x = mt_rand(15, 40);
                     $z = mt_rand(15, 40);
-                    $this->setFinalGoal($this->getPosition()->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z));
-                }elseif($pos->distanceSquared($this->getNextGoal()) < 0.2){
+                    $this->setFinalGoal($pos->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z));
+                }elseif($pos->distanceSquared($this->getNextGoal()) < 0.15){
                     --$this->goalIndex;
                 }
             }
 
-            if($this->moveTime >= 60 || $this->goalIndex < 0){
+            if($this->moveTime >= 50 || $this->goalIndex < 0){
                 $x = mt_rand(15, 40);
                 $z = mt_rand(15, 40);
-                $this->setFinalGoal($this->getPosition()->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z));
+                $this->setFinalGoal($pos->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z));
             }
-        }
+        //}
 
+        //echo "골인덱스: " . $this->goalIndex. ", {$this->getFinalGoal()}\n";
         //TODO: 작동은 어느정도 되나 굉장히 미흡함
-        if(!empty($this->goalNode) || $this->goalIndex >= 0){
+        if($this->goalIndex >= 0){
             return;
         }
         $goal = $this->getFinalGoal();
-        $this->openNode = [Node::create($pos, 0, $goal)];
+        $wallNode = [];
         $finished = false;
+        $this->closeNode = [];
+        $this->openNode = [Node::create($pos, 0, $goal)];
         while(!$finished && !empty($this->openNode)){
+            $wallCheck = false;
             EntityAI::quickSort($this->openNode, 0, count($this->openNode) - 1);
             $parentNode = array_shift($this->openNode);
             $parentPos = $parentNode->getPosition();
@@ -237,7 +242,7 @@ abstract class EntityBase extends Living{
 
                     $node = Node::create(
                         new Position($parentPos->x + $xi, $parentPos->y, $parentPos->z + $zi, $parentPos->world),
-                        abs($xi) === 1 && abs($zi) === 1 ? 14 : 10,
+                        (abs($xi) === 1 && abs($zi) === 1 ? 14 : 10),
                         $goal,
                         $parentNode->id
                     );
@@ -260,27 +265,36 @@ abstract class EntityBase extends Living{
                         switch($state){
                             case EntityAI::STAIR:
                             case EntityAI::BLOCK:
-                                //$node->position->y += 1;
+                                $node->position->y += 1;
                                 break;
                             case EntityAI::SLAB:
-                                //$node->position->y += 0.5;
+                                $node->position->y += 0.5;
                                 break;
                             case EntityAI::AIR:
-                                //TODO: 최소가 되는 블럭
-                                /*$lastY = 1;
                                 $blockPos = $nodePos->floor();
-                                while(true){
-                                    --$blockPos->y;
+                                while(--$blockPos->y > 0){
                                     $aabb = $this->getWorld()->getBlock($blockPos)->getCollisionBoxes()[0] ?? null;
-                                    if($aabb === null || $aabb->maxY - $aabb->minY < 0.5){
-                                        $node->position->y -= $lastY;
+                                    if($aabb !== null){
+                                        if($aabb->maxY - $aabb->minY > 0.5){
+                                            ++$blockPos->y;
+                                        }elseif($aabb->maxY - $aabb->minY === 0.5){
+                                            $blockPos->y += 0.5;
+                                        }
+                                        break;
                                     }
-                                }*/
+                                }
+                                $node->position->y = $blockPos->y;
                                 break;
                         }
                         $this->openNode[$key] = $node;
+                    }else{
+                        $wallCheck = true;
                     }
                 }
+            }
+
+            if($wallCheck){
+                $wallNode["{$parentPos->x}:{$parentPos->y}:{$parentPos->z}"] = $parentNode;
             }
         }
 
@@ -290,18 +304,26 @@ abstract class EntityBase extends Living{
         }
 
         $index = 0;
-        //$keys = array_keys($this->closeNode);
-        //$closeIndex = count($this->closeNode) - 1;
-        $this->goalNode = [/**$keys[$closeIndex] => */array_pop($this->closeNode)];
+        $goalNode = [array_pop($this->closeNode)];
         while(($node = array_pop($this->closeNode)) !== null){
-            //--$closeIndex;
-            if($node->id === $this->goalNode[$index]->parentNode){
+            if($node->id === $goalNode[$index]->parentNode){
                 ++$index;
-                $this->goalNode[/**$keys[$closeIndex]*/] = $node;
+                $node->position->x = Math::floorFloat($node->position->x) + 0.5;
+                $node->position->z = Math::floorFloat($node->position->z) + 0.5;
+                $goalNode[] = $node;
             }
         }
+
+        $this->goalNode = [array_shift($goalNode)];
+        foreach($goalNode as $n){
+            $pos = $n->getPosition();
+            if(isset($wallNode["{$pos->x}:{$pos->y}:{$pos->z}"])){
+                $this->goalNode[] = $n;
+            }
+        }
+        //foreach($anchor as $n) $n->position->getWorld()->setBlock($n->position, BlockFactory::get(BlockLegacyIds::WEB), \false);
         $this->goalIndex = count($this->goalNode) - 1;
-        //foreach($this->finalGoal as $n) echo $n->getPosition() , "\n";
+        //foreach($this->goalNode as $n) echo $n->getPosition() , "\n";
     }
 
     public function checkBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
