@@ -48,9 +48,9 @@ trait WalkEntityTrait{
         $target = $this->getTargetEntity();
         if($target !== null){
             $goal = $target->getPosition();
-            $pitch = 0.0;
         }else{
-            $goal = $this->getGoal();
+            $goal = $this->getNextGoal();
+            $pitch = 0.0;
         }
         $x = $goal->x - $me->getX();
         $y = $goal->y - $me->getY();
@@ -65,7 +65,7 @@ trait WalkEntityTrait{
 
         $this->needSlabJump = false;
         if($hasUpdate && $this->onGround){
-            switch(EntityAI::checkBlockState($this->getWorld(), $this->boundingBox, $this->motion)){
+            switch(EntityAI::checkJumpState($this->getWorld(), $this->boundingBox, $this->motion)){
                 case EntityAI::BLOCK:
                     $hasUpdate = true;
                     $this->motion->y += 0.52;

@@ -1,5 +1,7 @@
-# PureEntities
-
+<p align="center">
+	<a href="https://github.com/LeinneSW/PureEntities"><img src="https://i.imgur.com/wSQCLmT.png" title="source: imgur.com"/></a>
+	<b>The best plugin for PMMP to implement entities with AI</b>
+</p>
 Development: **[LeinneSW](https://github.com/LeinneSW)** (before milk0417)
 
 PureEntities is a Plug-in that makes implement the entity.  
@@ -15,24 +17,24 @@ This plug-in is in development. Therefore, It is possible to function abnormally
 
 ## Simple API
   * EntityBase
-    * `float getSpeed()`
-    * `void setSpeed(float $speed)`
-    * `?Vector3 getTarget()`
-    * `void setTarget(Vector $target, bool $fixed = \false)`
-    * `void setTargetFixed(bool $fixed)`
+    * `function getGoal() : Vector3`
+    * `function getSpeed() : float`
+    * `function setSpeed(float $speed) : void`
+    * `function setGoal(?Vector3 $target) : void`
+    * `function setTargetEntity(?Entity $target, bool $fixed = \false) : void`
   * Animal
-    * `bool isBaby()`
+    * `function isBaby() : bool`
   * Monster
-    * `float getResultDamage()`
-    * `float[] getDamages()`
-    * `void setDamages(float[] $damages)`
-    * `void setMaxDamage(float[] $damages)`
-    * `void setMinDamages(float[] $damages)`
-    * `void setDamage(float $damage, int $difficulty = -1)`
-    * `float getMinDamage(int $difficulty = -1)`
-    * `void setMinDamage(float $damage, int $difficulty = -1)`
-    * `float getMaxDamage(int $difficulty = -1)`
-    * `void setMaxDamage(float $damage, int $difficulty = -1)`
+    * `function getResultDamage() : float`
+    * `function getDamages() : float[]`
+    * `function setDamages(float[] $damages) : void`
+    * `function setMaxDamage(float[] $damages) : void`
+    * `function setMinDamages(float[] $damages) : void`
+    * `function setDamage(float $damage, int $difficulty = -1) : void`
+    * `function getMinDamage(int $difficulty = -1) : float`
+    * `function setMinDamage(float $damage, int $difficulty = -1) : void`
+    * `function getMaxDamage(int $difficulty = -1) : float`
+    * `function setMaxDamage(float $damage, int $difficulty = -1) : void`
 
 ## Example
 ``` php
