@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
+use leinne\pureentities\entity\EntityBase;
+
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\world\Position;
@@ -40,7 +42,7 @@ trait WalkEntityTrait{
             return $hasUpdate;
         }
 
-        $this->updateTarget();
+        $this->navigator->update();
 
         /** @var Position $me */
         $me = $this->getPosition();
@@ -49,8 +51,12 @@ trait WalkEntityTrait{
         if($target !== null){
             $goal = $target->getPosition();
         }else{
-            $goal = $this->getNextGoal();
+            $goal = $this->navigator->next();
             $pitch = 0.0;
+        }
+
+        if($goal === null){
+            return $hasUpdate;
         }
         $x = $goal->x - $me->getX();
         $y = $goal->y - $me->getY();

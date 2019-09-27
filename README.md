@@ -1,51 +1,16 @@
 <p align="center">
     <a href="https://github.com/LeinneSW/PureEntities">
-        <img src="https://i.imgur.com/wSQCLmT.png" title="source: imgur.com"/>
-    </a>
-    <b>The best plugin for PMMP to implement entities with AI</b><br><br>
-    Development: <b><a href="https://github.com/LeinneSW">LeinneSW</a></b> (before milk0417)<br><br>
-    PureEntities is a Plug-in that makes implement the entity.<br>
-    This Plug-in provides a simple Entity AI.
+        <img width="610" src="https://i.imgur.com/wSQCLmT.png"/>
+    </a><br>
+    <b>The best environment for Minecraft, utilizing entities to provide more fun gameplay.</b><br>
+    Enjoy your server more fun with more powerful AI.
 </p>
 
-## Notice
+## Introduce
+PureEntities is a Plug-in that makes implement the entity.  
+ - Developer: [LeinneSW](https://github.com/LeinneSW) (before milk0417)
+ - This plug-in provides a variety of entities to [PMMP](https://pmmp.io).
+ - Added [A* algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm) to support simple mob AI.
 
-### Welcome Github issue!
-This plug-in is in development. Therefore, It is possible to function abnormally.
-
-### Supported Server software
-[PocketMine-MP](https://pmmp.io/)
-
-## Simple API
-  * EntityBase
-    * `function getGoal() : Vector3`
-    * `function getSpeed() : float`
-    * `function setSpeed(float $speed) : void`
-    * `function setFinalGoal(?Vector3 $target) : void`
-    * `function setTargetEntity(?Entity $target, bool $fixed = \false) : void`
-  * Animal
-    * `function isBaby() : bool`
-  * Monster
-    * `function getResultDamage() : float`
-    * `function getDamages() : float[]`
-    * `function setDamages(float[] $damages) : void`
-    * `function setMaxDamage(float[] $damages) : void`
-    * `function setMinDamages(float[] $damages) : void`
-    * `function setDamage(float $damage, int $difficulty = -1) : void`
-    * `function getMinDamage(int $difficulty = -1) : float`
-    * `function setMinDamage(float $damage, int $difficulty = -1) : void`
-    * `function getMaxDamage(int $difficulty = -1) : float`
-    * `function setMaxDamage(float $damage, int $difficulty = -1) : void`
-
-## Example
-``` php
-foreach(Server::getInstance()->getDefaultLevel()->getEntities() as $entity){
-    if($entity instanceof Monster){
-        $entity->setDamage(10); //Both max / min are set.
-
-        $entity->setMaxDamage(10);
-        $entity->setMinDamage(10);
-        //If you do not specify the difficulty level, it is set to the current server difficulty level.
-    }
-});
-```
+## License
+This plug-in is licensed under LGPL-3.0. Please see the [LICENSE](https://github.com/LeinneSW/PureEntities/blob/master/LICENSE) for details.

@@ -29,7 +29,7 @@ class EntityAI{
     }
 
     public static function checkBlockState(Position $pos) : int{
-        $block = $pos->getWorld()->getBlock($pos->floor());
+        $block = $pos->getWorld()->getBlock($pos);
         $blockBox = $block->getCollisionBoxes()[0] ?? null;
         if($blockBox === null){
             return EntityAI::AIR;
@@ -56,37 +56,6 @@ class EntityAI{
         }
         return EntityAI::WALL;
     }
-
-    /*public static function quickSort(array &$data, int $left, int $right) : void{
-        $keys = array_keys($data);
-        $pivot = $data[$keys[$left]];
-        for($i = $left, $j = $right; $i < $j; --$j){
-            while($data[$keys[$j]]->fscore >= $pivot->fscore && $i < $j){
-                --$j;
-            }
-
-            if($i < $j){
-                $data[$keys[$i]] = $data[$keys[$j]];
-            }
-
-            while($data[$keys[$i]]->fscore <= $pivot->fscore && $i < $j){
-                ++$i;
-            }
-
-            if($i >= $j){
-                break;
-            }
-            $data[$keys[$j]] = $data[$keys[$i]];
-        }
-        $data[$keys[$i]] = $pivot;
-
-        if($i > $left){
-            self::quickSort($data, $left, $i - 1);
-        }
-        if($i < $right){
-            self::quickSort($data, $i + 1, $right);
-        }
-    }*/
 
     public static function quickSort(array &$data, int $left, int $right) : void{
         $pivot = $left;

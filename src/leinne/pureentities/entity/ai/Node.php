@@ -24,28 +24,33 @@ class Node{
     public $fscore = 0.0;
     
     /**
-     * 부모 노드와의 거리
+     * 현재까지 이동한 거리
      * @var float
      */
     public $gscore = 0.0;
 
     /**
-     * 현재 노드와 목적지까지의 택시 거리
+     * 휴리스틱 값
      * @var float
      */
     public $hscore = 0.0;
+
+    public $wall = false;
     
     /** @var ?int */
     public $parentNode = null;
 
-    public static function create(Position $pos, float $gscore, Vector3 $goal, ?int $parentNode = null) : self{
+    public static function create(Position $pos, Vector3 $goal, ?Node $parent = null) : self{
         $node = new self;
         $node->id = Node::$nextId++;
         $node->position = $pos;
-        $node->hscore = abs($goal->x - $pos->x) + abs($goal->z - $pos->z);
-        $node->gscore = $gscore;
-        $node->fscore = $gscore + $node->hscore;
-        $node->parentNode = $parentNode;
+        if($parent !== null){
+            $parentPos = $parent->position;
+            $node->parentNode = $parent->id;
+            $node->gscore = $parent->gscore + (abs($parentPos->x - $pos->x) === 1 && abs($parentPos->z - $pos->z) === 1 ? 1.4 : 1);
+        }
+        $node->hscore = ($goal->x - $pos->x) ** 2 + ($goal->z - $pos->z) ** 2;
+        $node->fscore = $node->gscore + $node->hscore;
 
         return $node;
     }
