@@ -18,23 +18,15 @@ trait WalkEntityTrait{
 
     private $needSlabJump = false;
 
+    /** @var EntityNavigator */
+    protected $navigator = null;
+
     /**
      * 타겟과의 상호작용
      *
      * @return bool
      */
     public abstract function interactTarget() : bool;
-
-    /**
-     * @see EntityBase::initEntity()
-     *
-     * @param CompoundTag $nbt
-     */
-    protected function initEntity(CompoundTag $nbt) : void{
-        parent::initEntity($nbt);
-
-        $this->navigator = new WalkEntityNavigator($this);
-    }
 
     /**
      * @see EntityBase::entityBaseTick()
@@ -54,7 +46,7 @@ trait WalkEntityTrait{
             return $hasUpdate;
         }
 
-        $this->navigator->update();
+        $this->getNavigator()->update();
 
         /** @var Position $me */
         $me = $this->getPosition();
@@ -63,7 +55,7 @@ trait WalkEntityTrait{
         if($target !== null){
             $goal = $target->getPosition();
         }else{
-            $goal = $this->navigator->next();
+            $goal = $this->getNavigator()->next();
             $pitch = 0.0;
         }
 
@@ -159,6 +151,10 @@ trait WalkEntityTrait{
             }
         }
         return $aabb;
+    }
+
+    public function getNavigator() : EntityNavigator{
+        return $this->navigator ?? $this->navigator = new WalkEntityNavigator($this);
     }
 
 }

@@ -29,8 +29,7 @@ abstract class EntityBase extends Living{
     /** @var bool */
     protected $fixedTarget = false;
 
-    /** @var EntityNavigator */
-    protected $navigator = null;
+    public abstract function getNavigator() : EntityNavigator;
 
     /**
      * @param Entity $target
@@ -193,7 +192,7 @@ abstract class EntityBase extends Living{
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
 
-        $this->navigator->addStopDelay($movX != $dx || $movZ != $dz ? 1 : -1);
+        $this->getNavigator()->addStopDelay($movX != $dx || $movZ != $dz ? 1 : -1);
 
         if($movX != $dx){
             $this->motion->x = 0;

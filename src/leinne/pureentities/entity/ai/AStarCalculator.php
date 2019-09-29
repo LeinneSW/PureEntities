@@ -121,8 +121,8 @@ class AStarCalculator{
             $near = $node->position->getSide($f);
             if(isset($this->mapCache["{$near->x}:{$near->y}:{$near->z}"])){
                 $cache = $this->mapCache["{$near->x}:{$near->y}:{$near->z}"];
-                if($cache[1] !== EntityAI::WALL){
-                    $result[] = $cache[0];
+                if($cache[0] !== EntityAI::WALL){
+                    $result[] = $cache[1];
                 }
             }else{
                 $state = EntityAI::checkBlockState($near);
