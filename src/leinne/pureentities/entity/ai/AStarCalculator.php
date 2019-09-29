@@ -10,8 +10,8 @@ use pocketmine\world\Position;
 
 class AStarCalculator{
 
-    public static $maximumTick = 50;
-    public static $blockPerTick = 200;
+    private static $maximumTick = 50;
+    private static $blockPerTick = 200;
 
     /** @var Node[] */
     private $openNode = [];
@@ -26,6 +26,11 @@ class AStarCalculator{
 
     /** @var WalkEntityNavigator */
     private $navigator;
+
+    public static function init(int $tick, int $block) : void{
+        self::$maximumTick = $tick;
+        self::$blockPerTick = $block;
+    }
 
     public function __construct(WalkEntityNavigator $navigator){
         $this->navigator = $navigator;

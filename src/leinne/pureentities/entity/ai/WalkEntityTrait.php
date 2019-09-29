@@ -150,6 +150,8 @@ trait WalkEntityTrait{
                 $aabb->offset($dx, 0, $dz);
             }
         }
+
+        $this->getNavigator()->addStopDelay($movX != $dx || $movZ != $dz ? 1 : -1);
         return $aabb;
     }
 

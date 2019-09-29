@@ -105,8 +105,7 @@ class PureEntities extends PluginBase implements Listener{
             $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), (int) ($this->data["autospawn"]["tick"] ?? 80));
         }
 
-        AStarCalculator::$maximumTick = $this->data["astar"]["maximum-tick"] ?? 50;
-        AStarCalculator::$blockPerTick = $this->data["astar"]["block-per-tick"] ?? 200;
+        AStarCalculator::init((int) $this->data["astar"]["maximum-tick"] ?? 50, (int) $this->data["astar"]["block-per-tick"] ?? 200);
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
 

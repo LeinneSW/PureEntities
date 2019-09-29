@@ -134,9 +134,10 @@ abstract class EntityBase extends Living{
 
     public function setTargetEntity(?Entity $target, bool $fixed = false) : void{
         parent::setTargetEntity($target);
-        if($target !== null){
-            $this->navigator->setEnd($target->getPosition());
-        }
+        //TODO: 속도 문제로 Entity는 아직 보류
+        /*if($target !== null){
+            $this->getNavigator()->setEnd($target->getPosition());
+        }*/
         $this->fixedTarget = $fixed;
     }
 
@@ -191,8 +192,6 @@ abstract class EntityBase extends Living{
         $this->checkBlockCollision();
         $this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
         $this->updateFallState($dy, $this->onGround);
-
-        $this->getNavigator()->addStopDelay($movX != $dx || $movZ != $dz ? 1 : -1);
 
         if($movX != $dx){
             $this->motion->x = 0;
