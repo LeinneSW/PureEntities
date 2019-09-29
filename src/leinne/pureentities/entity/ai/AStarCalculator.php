@@ -10,8 +10,8 @@ use pocketmine\world\Position;
 
 class AStarCalculator{
 
-    public static $maximumCount = 50;
-    public static $tickPerBlock = 200;
+    public static $maximumTick = 50;
+    public static $blockPerTick = 200;
 
     /** @var Node[] */
     private $openNode = [];
@@ -44,7 +44,7 @@ class AStarCalculator{
      * @return Position[]
      */
     public function calculate() : ?array{
-        if(++$this->findCount > self::$maximumCount){
+        if(++$this->findCount > self::$maximumTick){
             return null;
         }
 
@@ -61,7 +61,7 @@ class AStarCalculator{
         }
 
         $valid = false;
-        while(++$this->findTick <= self::$tickPerBlock){
+        while(++$this->findTick <= self::$blockPerTick){
             if(empty($this->openNode)){
                 break;
             }
