@@ -45,7 +45,6 @@ abstract class EntityBase extends Living{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->navigator = new EntityNavigator($this);
         $this->setMaxHealth($health = $nbt->getInt("MaxHealth", $this->getDefaultMaxHealth()));
         if($nbt->hasTag("HealF", FloatTag::class)){
             $health = $nbt->getFloat("HealF");

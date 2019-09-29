@@ -10,6 +10,9 @@ use pocketmine\world\Position;
 
 class AStarCalculator{
 
+    public static $maximumCount = 50;
+    public static $tickPerBlock = 200;
+
     /** @var Node[] */
     private $openNode = [];
     /** @var Node[] */
@@ -21,10 +24,10 @@ class AStarCalculator{
     private $findTick = -1;
     private $findCount = 0;
 
-    /** @var EntityNavigator */
+    /** @var WalkEntityNavigator */
     private $navigator;
 
-    public function __construct(EntityNavigator $navigator){
+    public function __construct(WalkEntityNavigator $navigator){
         $this->navigator = $navigator;
     }
 
@@ -41,7 +44,7 @@ class AStarCalculator{
      * @return Position[]
      */
     public function calculate() : ?array{
-        if(++$this->findCount > 70){
+        if(++$this->findCount > self::$maximumCount){
             return null;
         }
 
@@ -58,7 +61,7 @@ class AStarCalculator{
         }
 
         $valid = false;
-        while(++$this->findTick <= 100){
+        while(++$this->findTick <= self::$tickPerBlock){
             if(empty($this->openNode)){
                 break;
             }
@@ -116,9 +119,22 @@ class AStarCalculator{
         $facing = [Facing::EAST, Facing::WEST, Facing::SOUTH, Facing::NORTH];
         foreach($facing as $_ => $f){
             $near = $node->position->getSide($f);
-            if(($state = $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] ?? EntityAI::checkBlockState($near)) === EntityAI::WALL){
-                $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] = EntityAI::WALL;
-                /*switch($f){
+            if(isset($this->mapCache["{$near->x}:{$near->y}:{$near->z}"])){
+                $cache = $this->mapCache["{$near->x}:{$near->y}:{$near->z}"];
+                if($cache[1] !== EntityAI::WALL){
+                    $result[] = $cache[0];
+                }
+            }else{
+                $state = EntityAI::checkBlockState($near);
+                $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] = [$state, $near];
+                if($state !== EntityAI::WALL){
+                    $result[] = $near;
+                    $this->calculateYPos($state, $near);
+                }
+            }
+
+            /*if($state === EntityAI::WALL) {
+                switch($f){
                     case Facing::EAST:
                         $diagonal["1:1"] = 0;
                         $diagonal["1:-1"] = 0;
@@ -135,12 +151,8 @@ class AStarCalculator{
                         $diagonal["1:-1"] = 0;
                         $diagonal["-1:-1"] = 0;
                         break;
-                }*/
-            }else{
-                $result[] = $near;
-                $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] = $state;
-                $this->calculateYPos($state, $near);
-            }
+                }
+            }*/
         }
 
         /*foreach($diagonal as $index => $isWall){

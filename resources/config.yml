@@ -1,3 +1,6 @@
 autospawn:
   enable: true
   spawn-tick: 80
+astar:
+  block-per-tick: 200
+  maximum-tick: 50

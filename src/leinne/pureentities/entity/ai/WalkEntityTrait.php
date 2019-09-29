@@ -8,6 +8,7 @@ use leinne\pureentities\entity\EntityBase;
 
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\world\Position;
 
 /**
@@ -23,6 +24,17 @@ trait WalkEntityTrait{
      * @return bool
      */
     public abstract function interactTarget() : bool;
+
+    /**
+     * @see EntityBase::initEntity()
+     *
+     * @param CompoundTag $nbt
+     */
+    protected function initEntity(CompoundTag $nbt) : void{
+        parent::initEntity($nbt);
+
+        $this->navigator = new WalkEntityNavigator($this);
+    }
 
     /**
      * @see EntityBase::entityBaseTick()

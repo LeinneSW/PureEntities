@@ -2,7 +2,7 @@
     <a href="https://github.com/LeinneSW/PureEntities">
         <img width="610" src="https://i.imgur.com/wSQCLmT.png"/>
     </a><br>
-    <b>The best environment for Minecraft, utilizing entities to provide more fun gameplay.</b><br>
+    <b>The best plugin for the best experience, more fun Minecraft play with entities.</b><br>
     Enjoy your server more fun with more powerful AI.
 </p>
 
