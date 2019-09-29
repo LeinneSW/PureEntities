@@ -74,7 +74,7 @@ class Sheep extends Animal{
 
     public function interactTarget() : bool{
         // TODO: Implement interactTarget() method.
-        return \false;
+        return false;
     }
 
     public function getDrops() : array{

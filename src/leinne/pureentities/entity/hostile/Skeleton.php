@@ -50,7 +50,7 @@ class Skeleton extends Monster{
     public function interactTargetBow() : bool{
         $target = $this->getTargetEntity();
         if($target === null){
-            return \false;
+            return false;
         }
 
         if(++$this->attackDelay >= 32 && mt_rand(1, 30) === 1){
@@ -113,8 +113,8 @@ class Skeleton extends Monster{
         }
 
         ++$this->attackDelay;
-        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
-            return \false;
+        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+            return false;
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
@@ -125,7 +125,7 @@ class Skeleton extends Monster{
                 $this->attackDelay = 0;
             }
         }
-        return \true;
+        return true;
     }
 
     public function getDrops() : array{

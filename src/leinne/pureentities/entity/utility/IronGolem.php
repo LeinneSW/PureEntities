@@ -72,17 +72,17 @@ class IronGolem extends Monster{
      */
     public function hasInteraction(Entity $target, float $distanceSquare) : bool{
         if($target instanceof Player && (!empty($this->owner) || !$target->isSurvival())){
-            return \false;
+            return false;
         }elseif($target instanceof IronGolem){
-            return \false;
+            return false;
         }
         return $this->fixedTarget || ($target instanceof Monster || !$this->isFriendly()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
     }
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
-        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
-            return \false;
+        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+            return false;
         }
 
         if($this->attackDelay >= 20){
@@ -108,7 +108,7 @@ class IronGolem extends Monster{
                 }
             }
         }
-        return \true;
+        return true;
     }
 
     public function saveNBT() : CompoundTag{

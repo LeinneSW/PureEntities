@@ -42,8 +42,8 @@ class Spider extends Monster{
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
-        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
-            return \false;
+        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+            return false;
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
@@ -54,7 +54,7 @@ class Spider extends Monster{
                 $this->attackDelay = 0;
             }
         }
-        return \true;
+        return true;
     }
 
     public function getDrops() : array{

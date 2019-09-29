@@ -81,7 +81,7 @@ class ZombiePigman extends Monster implements Ageable{
         return $this->angry > 0;
     }
 
-    public function setAngry(?int $second = \null) : void{
+    public function setAngry(?int $second = null) : void{
         $this->angry = ($second ?? mt_rand(20, 40)) * 20;
     }
 
@@ -103,8 +103,8 @@ class ZombiePigman extends Monster implements Ageable{
             $this->setSpeed(1.0);
         }*/
 
-        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
-            return \false;
+        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+            return false;
         }
 
         if($this->attackDelay >= 15 && ($damage = $this->getResultDamage()) > 0){
@@ -122,7 +122,7 @@ class ZombiePigman extends Monster implements Ageable{
                 $this->attackDelay = 0;
             }
         }
-        return \true;
+        return true;
     }
 
     public function saveNBT() : CompoundTag{

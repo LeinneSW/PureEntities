@@ -55,8 +55,8 @@ class Zombie extends Monster implements Ageable{
 
     public function interactTarget() : bool{
         ++$this->attackDelay;
-        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
-            return \false;
+        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+            return false;
         }
 
         if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
@@ -74,7 +74,7 @@ class Zombie extends Monster implements Ageable{
                 $this->attackDelay = 0;
             }
         }
-        return \true;
+        return true;
     }
 
     public function saveNBT() : CompoundTag{

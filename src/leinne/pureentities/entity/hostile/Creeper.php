@@ -62,13 +62,13 @@ class Creeper extends Monster implements Explosive{
     }
 
     public function interactTarget() : bool{
-        if(($target = $this->checkInteract()) === \null || !$this->canAttackTarget()){
+        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
             if($this->attackDelay > 0) {
                 --$this->attackDelay;
             }elseif($this->getSpeed() < 1){
                 $this->setSpeed(0.95);
             }
-            return \false;
+            return false;
         }
 
         //TODO: boom event
@@ -78,7 +78,7 @@ class Creeper extends Monster implements Explosive{
             $this->flagForDespawn();
             $this->explode();
         }
-        return \false;
+        return false;
     }
 
     public function getDrops() : array{
