@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai;
+namespace leinne\pureentities\entity\ai\walk;
 
+use leinne\pureentities\entity\ai\EntityAI;
+use leinne\pureentities\entity\ai\EntityNavigator;
 use leinne\pureentities\entity\EntityBase;
 
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\world\Position;
 
 /**
@@ -75,7 +76,12 @@ trait WalkEntityTrait{
 
         $this->needSlabJump = false;
         if($hasUpdate && $this->onGround){
-            switch(EntityAI::checkJumpState($this->getWorld(), $this->boundingBox, $this->motion)){
+            switch(EntityAI::checkBlockState(new Position(
+                ($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x,
+                $this->boundingBox->minY,
+                ($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z,
+                $this->getWorld()
+            ))){
                 case EntityAI::BLOCK:
                     $hasUpdate = true;
                     $this->motion->y += 0.52;
@@ -99,18 +105,18 @@ trait WalkEntityTrait{
     /**
      * @see EntityBase::checkBoundingBoxState()
      *
+     * @param float $movX
+     * @param float $movY
+     * @param float $movZ
      * @param float $dx
      * @param float $dy
      * @param float $dz
      *
      * @return AxisAlignedBB
      */
-    public function checkBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
+    public function checkBoundingBoxState(float $movX, float $movY, float $movZ, float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
         /** @var AxisAlignedBB $aabb */
         $aabb = clone $this->boundingBox;
-
-        $movX = $dx;
-        $movZ = $dz;
 
         if($this->keepMovement){
             $aabb->offset($dx, $dy, $dz);

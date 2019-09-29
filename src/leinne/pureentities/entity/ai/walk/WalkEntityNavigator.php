@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai;
+namespace leinne\pureentities\entity\ai\walk;
 
-use pocketmine\entity\Entity;
+use leinne\pureentities\entity\ai\EntityNavigator;
+
 use pocketmine\entity\Living;
 use pocketmine\math\Vector3;
 
@@ -12,13 +13,8 @@ class WalkEntityNavigator extends EntityNavigator{
 
     private $stopDelay = 0;
 
-    /** @var AStarCalculator */
-    private $calculator = null;
-
-    public function __construct(Entity $entity){
-        parent::__construct($entity);
-        $this->calculator = new AStarCalculator($this);
-    }
+    /** @var AStarHelper */
+    protected $helper = null;
 
     public function update() : void{
         $pos = $this->holder->getLocation();
@@ -60,7 +56,7 @@ class WalkEntityNavigator extends EntityNavigator{
         }
 
         if($this->goalIndex < 0 || empty($this->goal)) {
-            $this->goal = $this->calculator->calculate();
+            $this->goal = $this->getHelper()->calculate();
             if($this->goal === null){
                 $this->setEnd($this->makeRandomGoal());
             }else{
@@ -72,7 +68,7 @@ class WalkEntityNavigator extends EntityNavigator{
     public function setEnd(Vector3 $pos) : void{
         parent::setEnd($pos);
 
-        $this->calculator->reset();
+        $this->getHelper()->reset();
     }
 
     public function makeRandomGoal() : Vector3{
@@ -83,6 +79,10 @@ class WalkEntityNavigator extends EntityNavigator{
 
     public function addStopDelay(int $add) : void{
         $this->stopDelay += $add;
+    }
+
+    public function getHelper() : AStarHelper{
+        return $this->helper ?? $this->helper = new AStarHelper($this);
     }
 
 }

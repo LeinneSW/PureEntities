@@ -6,10 +6,7 @@ namespace leinne\pureentities\entity\ai;
 
 use pocketmine\block\Stair;
 use pocketmine\math\Facing;
-use pocketmine\math\Vector3;
 use pocketmine\world\Position;
-use pocketmine\world\World;
-use pocketmine\math\AxisAlignedBB;
 
 class EntityAI{
 
@@ -18,15 +15,6 @@ class EntityAI{
     const BLOCK = 2;
     const SLAB = 3;
     const STAIR = 4;
-
-    public static function checkJumpState(World $world, AxisAlignedBB $aabb, Vector3 $motion) : int{
-        return self::checkBlockState(new Position(
-            ($motion->x > 0 ? $aabb->maxX : $aabb->minX) + $motion->x,
-            $aabb->minY,
-            ($motion->z > 0 ? $aabb->maxZ : $aabb->minZ) + $motion->z,
-            $world
-        ));
-    }
 
     public static function checkBlockState(Position $pos) : int{
         $block = $pos->getWorld()->getBlock($pos);

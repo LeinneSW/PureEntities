@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\passive;
 
 use leinne\pureentities\entity\Animal;
-use leinne\pureentities\entity\ai\WalkEntityTrait;
+use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
 
 use pocketmine\block\utils\DyeColor;
 use pocketmine\entity\Entity;

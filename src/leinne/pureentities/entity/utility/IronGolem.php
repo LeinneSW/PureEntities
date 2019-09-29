@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\utility;
 
 use leinne\pureentities\entity\Monster;
-use leinne\pureentities\entity\ai\WalkEntityTrait;
+use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
 
 use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;

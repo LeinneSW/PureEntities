@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
-use leinne\pureentities\entity\ai\AStarCalculator;
+use leinne\pureentities\entity\ai\AStarHelper;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\neutral\ZombiePigman;
 use leinne\pureentities\entity\neutral\Spider;
@@ -105,7 +105,7 @@ class PureEntities extends PluginBase implements Listener{
             $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), (int) ($this->data["autospawn"]["tick"] ?? 80));
         }
 
-        AStarCalculator::init((int) $this->data["astar"]["maximum-tick"] ?? 50, (int) $this->data["astar"]["block-per-tick"] ?? 200);
+        AStarHelper::init((int) $this->data["astar"]["maximum-tick"] ?? 50, (int) $this->data["astar"]["block-per-tick"] ?? 200);
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
 

@@ -141,7 +141,7 @@ abstract class EntityBase extends Living{
         $this->fixedTarget = $fixed;
     }
 
-    public function checkBoundingBoxState(float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
+    public function checkBoundingBoxState(float $movX, float $movY, float $movZ, float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
         $aabb = clone $this->boundingBox;
 
         if($this->keepMovement){
@@ -163,8 +163,6 @@ abstract class EntityBase extends Living{
                 $dz = $bb->calculateZOffset($aabb, $dz);
             }
             $aabb->offset(0, 0, $dz);
-
-            $this->boundingBox = $aabb;
         }
         return $aabb;
     }
@@ -182,7 +180,7 @@ abstract class EntityBase extends Living{
         $movY = $dy;
         $movZ = $dz;
 
-        $this->boundingBox = $this->checkBoundingBoxState($dx, $dy, $dz);
+        $this->boundingBox = $this->checkBoundingBoxState($movX, $movY, $movZ, $dx, $dy, $dz);
 
         $this->location->x += $dx;
         $this->location->y += $dy;

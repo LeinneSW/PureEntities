@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai;
+namespace leinne\pureentities\entity\ai\walk;
+
+use leinne\pureentities\entity\ai\EntityAI;
 
 use pocketmine\math\Facing;
 use pocketmine\math\Math;
 use pocketmine\world\Position;
 
-class AStarCalculator{
+class AStarHelper{
 
     private static $maximumTick = 50;
     private static $blockPerTick = 200;
@@ -46,6 +48,8 @@ class AStarCalculator{
     }
 
     /**
+     * 목적지까지의 경로를 구합니다
+     *
      * @return Position[]
      */
     public function calculate() : ?array{
@@ -113,7 +117,10 @@ class AStarCalculator{
         return [];
     }
 
+
     /**
+     * 해당 노드가 갈 수 있는 근처의 블럭좌표를 구합니다
+     *
      * @param Node $node
      *
      * @return Position[]

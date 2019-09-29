@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai;
+namespace leinne\pureentities\entity\ai\walk;
 
 use pocketmine\math\Vector3;
 use pocketmine\world\Position;
@@ -34,8 +34,6 @@ class Node{
      * @var float
      */
     public $hscore = 0.0;
-
-    public $wall = false;
     
     /** @var ?int */
     public $parentNode = null;
@@ -53,10 +51,6 @@ class Node{
         $node->fscore = $node->gscore + $node->hscore;
 
         return $node;
-    }
-
-    public function getPosition() : Position{
-        return $this->position->asPosition();
     }
 
 }
