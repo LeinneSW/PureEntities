@@ -19,6 +19,8 @@ class AStarHelper{
 
     /** @var Node[] */
     private $openNode = [];
+    /** @var Node[] */
+    private $openHash = [];
 
     /** @var Node[] */
     private $closeNode = [];
@@ -48,14 +50,13 @@ class AStarHelper{
 
         $i = $left + 1;
         $j = $pivot = $left;
-        $keys = array_keys($this->openNode);
         for(; $i <= $right; ++$i){
-            if($this->openNode[$keys[$i]]->fscore < $this->openNode[$keys[$pivot]]->fscore){
+            if($this->openNode[$i]->fscore < $this->openNode[$pivot]->fscore){
                 ++$j;
-                [$this->openNode[$keys[$j]], $this->openNode[$keys[$i]]] = [$this->openNode[$keys[$i]], $this->openNode[$keys[$j]]];
+                [$this->openNode[$j], $this->openNode[$i]] = [$this->openNode[$i], $this->openNode[$j]];
             }
         }
-        [$this->openNode[$keys[$left]], $this->openNode[$keys[$j]]] = [$this->openNode[$keys[$j]], $this->openNode[$keys[$left]]];
+        [$this->openNode[$left], $this->openNode[$j]] = [$this->openNode[$j], $this->openNode[$left]];
         $this->sortOpenNode($left, $j - 1);
         $this->sortOpenNode($j + 1, $right);
     }
@@ -71,6 +72,7 @@ class AStarHelper{
 
         $this->mapCache = [];
         $this->openNode = [];
+        $this->openHash = [];
         $this->closeNode = [];
     }
 
@@ -94,6 +96,7 @@ class AStarHelper{
 
             $start = Node::create($pos, $end);
             $this->mapCache = [];
+            $this->openHash = [];
             $this->closeNode = [];
             $this->openNode = [$start];
         }
@@ -107,6 +110,7 @@ class AStarHelper{
 
             $this->sortOpenNode(0, count($this->openNode) - 1);
             $parent = array_shift($this->openNode);
+            unset($this->openHash[$parent->getHash()]);
 
             $parent->y = $this->calculateYPos($parent);
             $hash = $parent->getHash();
@@ -127,10 +131,17 @@ class AStarHelper{
                 }
 
                 $node = Node::create($pos, $end, $parent);
-                if(isset($this->openNode[$key]) && $this->openNode[$key]->gscore <= $node->gscore){ /** 기존 노드보다 이동 거리가 더 길 경우 */
-                    continue;
+                if(isset($this->openHash[$key])){ /** 기존 노드보다 이동 거리가 더 길 경우 */
+                    if($this->openHash[$key]->gscore > $node->gscore){
+                        $change = $this->openHash[$key];
+                        $change->gscore = $node->gscore;
+                        $change->fscore = $node->gscore + $change->hscore;
+                        $change->parentNode = $node->parentNode;
+                    }
+                }else{
+                    $this->openNode[] = $node;
+                    $this->openHash[$key] = $node;
                 }
-                $this->openNode[$key] = $node;
             }
         }
 
