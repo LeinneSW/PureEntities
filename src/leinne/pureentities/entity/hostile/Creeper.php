@@ -65,7 +65,7 @@ class Creeper extends Monster implements Explosive{
         if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
             if($this->attackDelay > 0) {
                 --$this->attackDelay;
-            }elseif($this->getSpeed() < 1){
+            }elseif($this->getSpeed() < 0.95){
                 $this->setSpeed(0.95);
             }
             return false;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
-use pocketmine\block\Stair;
 use pocketmine\math\Facing;
+use pocketmine\Server;
 use pocketmine\world\Position;
 
 class EntityAI{
@@ -15,55 +15,48 @@ class EntityAI{
     const BLOCK = 2;
     const SLAB = 3;
     const STAIR = 4;
+    const LAVA = 5;
+    const DOOR = 6;
 
     public static function checkBlockState(Position $pos) : int{
         $block = $pos->getWorld()->getBlock($pos);
         $blockBox = $block->getCollisionBoxes()[0] ?? null;
-        if($blockBox === null){
-            return EntityAI::AIR;
-        }elseif(($aabb = $block->getSide(Facing::UP, 2)->getCollisionBoxes()[0] ?? null) !== null){
-            if($aabb->minY - $blockBox->maxY >= 1){
-                return EntityAI::SLAB;
-            }
-            return EntityAI::WALL;
-        }
-
-        if(($up = $block->getSide(Facing::UP)->getCollisionBoxes()[0] ?? null) === null){ /** y + 1(머리)에 아무 블럭이 없을 때 */
-            if($blockBox->maxY - $blockBox->minY > 1){ /** 울타리 */
-                return EntityAI::WALL;
-            }elseif($blockBox->maxY === $pos->y){ /** 반블럭 위 */
+        if($blockBox === null){ //블럭이 없을때
+            $up = $block->getSide(Facing::UP)->getCollisionBoxes()[0] ?? null;
+            if($up === null || $up->maxY - $up->minY <= 0){ //y + 1에도 아무 블럭이 없다면
                 return EntityAI::AIR;
             }else{
-                if($block instanceof Stair){
-                    return EntityAI::STAIR;
-                }
-                return $blockBox->maxY - $pos->y === 0.5 ? EntityAI::SLAB : EntityAI::BLOCK;
+                return EntityAI::WALL;
             }
-        }elseif($up->maxY - $pos->y === 1.0){ /** 반블럭 위에서 반블럭 * 3 점프 */
-            return EntityAI::BLOCK;
+        }elseif($blockBox->maxY - $blockBox->minY > 1){ //울타리일 때
+            return EntityAI::WALL;
+        }elseif($blockBox->maxY - $blockBox->minY == 1){ //블럭일 때
+            $up = $block->getSide(Facing::UP)->getCollisionBoxes()[0] ?? null;
+            if($up === null || $up->maxY - $up->minY <= 0){ //y + 1에 아무 블럭이 없고
+                $aabb = $block->getSide(Facing::UP, 2)->getCollisionBoxes()[0] ?? null;
+                if($aabb === null || $aabb->maxY - $aabb->minY <= 0){ //y + 2에도 아무 블럭이 없다면
+                    return EntityAI::BLOCK;
+                }else{
+                    return EntityAI::WALL;
+                }
+            }else{
+                return EntityAI::WALL;
+            }
+        }elseif($blockBox->maxY - $blockBox->minY === 0.5){ //반블럭일 때
+            $up = $block->getSide(Facing::UP)->getCollisionBoxes()[0] ?? null;
+            if($up === null || $up->maxY - $up->minY <= 0){ //y + 1에 아무 블럭이 없고
+                $aabb = $block->getSide(Facing::UP, 2)->getCollisionBoxes()[0] ?? null;
+                if($aabb === null || ($aabb->maxY - $aabb->minY === 0.5 && $aabb->minY - (int) $aabb->minY === 0.5)){ //y + 2에도 아무 블럭이 없거나 반블럭이라면
+                    return EntityAI::SLAB;
+                }else{
+                    return EntityAI::WALL;
+                }
+            }else{
+                return EntityAI::WALL;
+            }
         }
+        Server::getInstance()->getLogger()->warning("[PureEntities]정체불명의 블럭 감지됨: $block, 차이 값: " . ($blockBox->maxY - $blockBox->minY));
         return EntityAI::WALL;
-    }
-
-    public static function quickSort(array &$data, int $left, int $right) : void{
-        $pivot = $left;
-        $j = $pivot;
-        $i = $left + 1;
-
-        $keys = array_keys($data);
-        if($left < $right){
-            for(; $i <= $right; ++$i){
-                if($data[$keys[$i]]->fscore < $data[$keys[$pivot]]->fscore){
-                    ++$j;
-                    [$data[$keys[$j]], $data[$keys[$i]]] = [$data[$keys[$i]], $data[$keys[$j]]];
-                }
-            }
-            [$data[$keys[$left]], $data[$keys[$j]]] = [$data[$keys[$j]], $data[$keys[$left]]];
-            $pivot = $j;
-
-            self::quickSort($data, $left, $pivot - 1);
-            self::quickSort($data, $pivot + 1, $right);
-        }
     }
 
 }

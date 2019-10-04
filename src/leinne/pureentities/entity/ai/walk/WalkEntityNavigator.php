@@ -7,7 +7,8 @@ namespace leinne\pureentities\entity\ai\walk;
 use leinne\pureentities\entity\ai\EntityNavigator;
 
 use pocketmine\entity\Living;
-use pocketmine\math\Vector3;
+use pocketmine\math\Math;
+use pocketmine\world\Position;
 
 class WalkEntityNavigator extends EntityNavigator{
 
@@ -40,13 +41,14 @@ class WalkEntityNavigator extends EntityNavigator{
 
         if($holder->getTargetEntity() === null){
             if(!empty($this->goal)){
+                $next = $this->next();
+                if($next !== null && (abs($next->x - $pos->x) < 0.1 && abs($next->z - $pos->z) < 0.1)){// && abs($next->y - $pos->y) < 0.1)){
+                    --$this->goalIndex;
+                }
+
                 if($this->goalIndex < 0){
+                    //$this->end = null;
                     $this->setEnd($this->makeRandomGoal());
-                }else{
-                    $next = $this->next();
-                    if(($next->x - $pos->x) ** 2 + ($next->z - $pos->z) ** 2 < 0.15){
-                        --$this->goalIndex;
-                    }
                 }
             }
 
@@ -55,9 +57,14 @@ class WalkEntityNavigator extends EntityNavigator{
             }
         }
 
+        /*if($this->end === null){
+            return;
+        }*/
+
         if($this->goalIndex < 0 || empty($this->goal)) {
             $this->goal = $this->getHelper()->calculate();
             if($this->goal === null){
+                //$this->end = null;
                 $this->setEnd($this->makeRandomGoal());
             }else{
                 $this->goalIndex = count($this->goal) - 1;
@@ -65,16 +72,20 @@ class WalkEntityNavigator extends EntityNavigator{
         }
     }
 
-    public function setEnd(Vector3 $pos) : void{
+    public function setEnd(Position $pos) : void{
         parent::setEnd($pos);
 
         $this->getHelper()->reset();
     }
 
-    public function makeRandomGoal() : Vector3{
-        $x = mt_rand(10, 30);
-        $z = mt_rand(10, 30);
-        return $this->holder->getPosition()->add(mt_rand(0, 1) ? $x : -$x, 0, mt_rand(0, 1) ? $z : -$z);
+    public function makeRandomGoal() : Position{
+        $x = mt_rand(8, 25);
+        $z = mt_rand(8, 25);
+
+        $pos = $this->holder->getPosition();
+        $pos->x = Math::floorFloat($pos->x) + 0.5 + (mt_rand(0, 1) ? $x : -$x);
+        $pos->z = Math::floorFloat($pos->z) + 0.5 + (mt_rand(0, 1) ? $z : -$z);
+        return $pos;
     }
 
     public function addStopDelay(int $add) : void{

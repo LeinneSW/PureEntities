@@ -2,5 +2,5 @@ autospawn:
   enable: true
   spawn-tick: 80
 astar:
-  maximum-tick: 50
-  block-per-tick: 200
+  maximum-tick: 80 #4초
+  block-per-tick: 70 #1틱당 70회 시도

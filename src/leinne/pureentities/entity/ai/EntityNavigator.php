@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\ai;
 
 use pocketmine\entity\Entity;
-use pocketmine\math\Vector3;
 use pocketmine\world\Position;
 
 abstract class EntityNavigator{
 
-    /** @var Vector3  */
+    /** @var Position  */
     protected $end;
 
     /** @var Position[] */
@@ -33,11 +32,11 @@ abstract class EntityNavigator{
         return $this->goalIndex >= 0 ? $this->goal[$this->goalIndex] : null;
     }
 
-    public function getEnd() : Vector3{
+    public function getEnd() : ?Position{
         return $this->end;
     }
 
-    public function setEnd(Vector3 $pos) : void{
+    public function setEnd(Position $pos) : void{
         $this->end = $pos;
         $this->goal = [];
         $this->goalIndex = -1;

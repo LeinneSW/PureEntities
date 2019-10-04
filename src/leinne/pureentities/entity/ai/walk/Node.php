@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai\walk;
 
-use pocketmine\math\Vector3;
 use pocketmine\world\Position;
 
-class Node{
+class Node extends Position{
 
     private static $nextId = 0;
 
     /** @var int */
-    public $id;
-    
-    /** @var Position */
-    public $position;
+    private $id;
     
     /**
      * F = G + H
@@ -38,19 +34,29 @@ class Node{
     /** @var ?int */
     public $parentNode = null;
 
-    public static function create(Position $pos, Vector3 $goal, ?Node $parent = null) : self{
+    public static function create(Position $pos, Position $goal, ?Node $parent = null) : self{
         $node = new self;
         $node->id = Node::$nextId++;
-        $node->position = $pos;
+        $node->x = $pos->x;
+        $node->y = $pos->y;
+        $node->z = $pos->z;
+        $node->world = $pos->world;
         if($parent !== null){
-            $parentPos = $parent->position;
             $node->parentNode = $parent->id;
-            $node->gscore = $parent->gscore + (abs($parentPos->x - $pos->x) === 1 && abs($parentPos->z - $pos->z) === 1 ? 1.4 : 1);
+            $node->gscore = $parent->gscore + $pos->distanceSquared($parent);
         }
-        $node->hscore = ($goal->x - $pos->x) ** 2 + ($goal->z - $pos->z) ** 2;
+        $node->hscore = $pos->distanceSquared($goal);
         $node->fscore = $node->gscore + $node->hscore;
 
         return $node;
+    }
+
+    public function getId() : int{
+        return $this->id;
+    }
+
+    public function getHash() : string{
+        return "{$this->x}:{$this->y}:{$this->z}";
     }
 
 }

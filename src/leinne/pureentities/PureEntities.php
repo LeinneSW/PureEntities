@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
-use leinne\pureentities\entity\ai\AStarHelper;
+use leinne\pureentities\entity\ai\walk\AStarHelper;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\neutral\ZombiePigman;
 use leinne\pureentities\entity\neutral\Spider;
@@ -84,12 +84,12 @@ class PureEntities extends PluginBase implements Listener{
 //        EntityFactory::register(LargeFireBall::class, ['minecraft:largefireball']);
 
         TileFactory::register(MobSpawner::class, ["MobSpanwer", 'minecraft:mob_spawner']);
-        BlockFactory::register(new \leinne\pureentities\block\MobSpawner(new BID(Ids::MOB_SPAWNER, 0, null, TileMonsterSpawner::class), "Monster Spawner"), true);
+        BlockFactory::register(new block\MobSpawner(new BID(Ids::MOB_SPAWNER, 0, null, TileMonsterSpawner::class), "Monster Spawner"), true);
 
         foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var Living|string $className */
-            if(\is_a($className, EntityBase::class, \true) && $className::NETWORK_ID !== -1){
-                ItemFactory::register(new SpawnEgg(ItemIds::SPAWN_EGG, $className::NETWORK_ID, "Spawn " . (new \ReflectionClass($className))->getShortName(), $className), \true);
+            if(is_a($className, EntityBase::class, true) && $className::NETWORK_ID !== -1){
+                ItemFactory::register(new SpawnEgg(ItemIds::SPAWN_EGG, $className::NETWORK_ID, "Spawn " . (new \ReflectionClass($className))->getShortName(), $className), true);
             }
         }
 
@@ -105,7 +105,8 @@ class PureEntities extends PluginBase implements Listener{
             $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), (int) ($this->data["autospawn"]["tick"] ?? 80));
         }
 
-        AStarHelper::init((int) $this->data["astar"]["maximum-tick"] ?? 50, (int) $this->data["astar"]["block-per-tick"] ?? 200);
+        $astar = $this->data["astar"] ?? [];
+        AStarHelper::init((int) $astar["maximum-tick"] ?? 50, (int) $astar["block-per-tick"] ?? 200);
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
 
@@ -127,7 +128,7 @@ class PureEntities extends PluginBase implements Listener{
             if($tile instanceof MobSpawner){
                 $tile->setSpawnEntityType($item->getMeta());
             }else{
-                if($tile !== \null){
+                if($tile !== null){
                     $tile->close();
                 }
 
@@ -136,7 +137,28 @@ class PureEntities extends PluginBase implements Listener{
                 $tile->getPos()->getWorld()->addTile($tile);
             }
         }
+        /*$pos = $block->getPos()->asPosition();
+        $pos->x = Math::floorFloat($pos->x) + 0.5;
+        $pos->z = Math::floorFloat($pos->z) + 0.5;
+        echo "좌표: $pos\n";
+
+        $entity = $this->getServer()->getWorldManager()->getDefaultWorld()->getEntity($this->data[$ev->getPlayer()->getNameTag()] ?? -1);
+        if($entity instanceof EntityBase){
+            $entity->getNavigator()->setEnd($pos);
+        }*/
     }
+
+    /*public function onDamageEvent(EntityDamageEvent $ev) : void{
+        $entity = $ev->getEntity();
+        if($ev instanceof EntityDamageByEntityEvent){
+            $damager = $ev->getDamager();
+            if($damager->getInventory()->getItemInHand()->getId() == ItemIds::STICK){
+                $ev->setCancelled();
+            }
+            $this->data[$damager->getNameTag()] = $entity->getId();
+            $this->getLogger()->info($damager->getNameTag() . "님의 히트 감지, " . $entity->getId());
+        }
+    }*/
 
     public function onBlockPlaceEvent(BlockPlaceEvent $ev) : void{
         if($ev->isCancelled()){

@@ -12,15 +12,18 @@ use pocketmine\world\Position;
 
 class AStarHelper{
 
-    private static $maximumTick = 50;
-    private static $blockPerTick = 200;
+    /** @var int */
+    private static $maximumTick = 0;
+    /** @var int */
+    private static $blockPerTick = 0;
 
     /** @var Node[] */
     private $openNode = [];
+
     /** @var Node[] */
     private $closeNode = [];
 
-    /** @var array */
+    /** @var int[][] */
     private $mapCache = [];
 
     private $findTick = -1;
@@ -33,6 +36,30 @@ class AStarHelper{
         self::$maximumTick = $tick;
         self::$blockPerTick = $block;
     }
+
+    /**
+     * @param int $left
+     * @param int $right
+     */
+    protected function sortOpenNode(int $left, int $right) : void{
+        if($left >= $right){
+            return;
+        }
+
+        $i = $left + 1;
+        $j = $pivot = $left;
+        $keys = array_keys($this->openNode);
+        for(; $i <= $right; ++$i){
+            if($this->openNode[$keys[$i]]->fscore < $this->openNode[$keys[$pivot]]->fscore){
+                ++$j;
+                [$this->openNode[$keys[$j]], $this->openNode[$keys[$i]]] = [$this->openNode[$keys[$i]], $this->openNode[$keys[$j]]];
+            }
+        }
+        [$this->openNode[$keys[$left]], $this->openNode[$keys[$j]]] = [$this->openNode[$keys[$j]], $this->openNode[$keys[$left]]];
+        $this->sortOpenNode($left, $j - 1);
+        $this->sortOpenNode($j + 1, $right);
+    }
+
 
     public function __construct(WalkEntityNavigator $navigator){
         $this->navigator = $navigator;
@@ -58,7 +85,9 @@ class AStarHelper{
         }
 
         $end = $this->navigator->getEnd();
-        if($this->findTick === -1){
+        $end->y = $this->calculateYPos($end);
+        if($this->findTick++ === -1){
+            //echo "탐색 시작\n";
             $pos = $this->navigator->getHolder()->getPosition();
             $pos->x = Math::floorFloat($pos->x) + 0.5;
             $pos->z = Math::floorFloat($pos->z) + 0.5;
@@ -69,25 +98,31 @@ class AStarHelper{
             $this->openNode = [$start];
         }
 
-        $valid = false;
+        $valid = null;
         while(++$this->findTick <= self::$blockPerTick){
             if(empty($this->openNode)){
+                $valid = false;
                 break;
             }
 
-            if(count($this->openNode) > 1){
-                EntityAI::quickSort($this->openNode, 0, count($this->openNode) - 1);
-            }
+            $this->sortOpenNode(0, count($this->openNode) - 1);
             $parent = array_shift($this->openNode);
-            $this->closeNode["{$parent->position->x}:{$parent->position->y}:{$parent->position->z}"] = $parent;
-            if(abs($parent->position->x - $end->x) < 1 && abs($parent->position->z - $end->z) < 1){
+
+            $parent->y = $this->calculateYPos($parent);
+            $hash = $parent->getHash();
+            if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->gscore <= $parent->gscore){ //다른 Y값으로 이미 최적 경로에 도달했을 경우
+                continue;
+            }
+
+            $this->closeNode[$hash] = $parent;
+            if($parent->getFloorX() === $end->getFloorX() && $parent->getFloorZ() === $end->getFloorZ() && $parent->getFloorY() === $end->getFloorY()){
                 $valid = true;
                 break;
             }
 
             foreach($this->getNear($parent) as $_ => $pos){
                 $key = "{$pos->x}:{$pos->y}:{$pos->z}";
-                if(isset($this->closeList[$key])){ /** 이미 최적 경로를 찾은 경우 */
+                if(isset($this->closeNode[$key])){ /** 이미 최적 경로를 찾은 경우 */
                     continue;
                 }
 
@@ -100,20 +135,22 @@ class AStarHelper{
         }
 
         if($valid){
+            //echo "탐색 끝\n";
             $last = array_pop($this->closeNode);
-            $result = [$last->position];
+            $result = [$last];
             while(($node = array_pop($this->closeNode)) !== null){
-                if($last->parentNode === $node->id){
-                    $result[] = $node->position;
+                if($last->parentNode === $node->getId()){
                     $last = $node;
+                    $result[] = $node;
                 }
             }
             return $result;
-        }else{
-            if($this->findTick > 100){
-                $this->findTick = 0;
-            }
+        }elseif($valid === false){
+            //echo "경로 없음\n";
+            return null;
         }
+
+        $this->findTick = 0;
         return [];
     }
 
@@ -121,27 +158,21 @@ class AStarHelper{
     /**
      * 해당 노드가 갈 수 있는 근처의 블럭좌표를 구합니다
      *
-     * @param Node $node
+     * @param Position $pos
      *
      * @return Position[]
      */
-    public function getNear(Node $node) : array{
+    public function getNear(Position $pos) : array{
         $result = [];
-        //$diagonal = ["1:1" => 1, "1:-1" => 1, "-1:1" => 1, "-1:-1" => 1,];
+        //$diagonal = ["1:1" => 1, "1:-1" => 1, "-1:1" => 1, "-1:-1" => 1];
         $facing = [Facing::EAST, Facing::WEST, Facing::SOUTH, Facing::NORTH];
         foreach($facing as $_ => $f){
-            $near = $node->position->getSide($f);
-            if(isset($this->mapCache["{$near->x}:{$near->y}:{$near->z}"])){
-                $cache = $this->mapCache["{$near->x}:{$near->y}:{$near->z}"];
-                if($cache[0] !== EntityAI::WALL){
-                    $result[] = $cache[1];
-                }
-            }else{
-                $state = EntityAI::checkBlockState($near);
-                $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] = [$state, $near];
-                if($state !== EntityAI::WALL){
+            $near = $pos->getSide($f);
+            $state = $this->getBlockState($near);
+            if($state !== EntityAI::WALL){
+                $y = $this->calculateYPos($near);
+                if($near->y - $y <= 3){
                     $result[] = $near;
-                    $this->calculateYPos($state, $near);
                 }
             }
 
@@ -169,46 +200,63 @@ class AStarHelper{
 
         /*foreach($diagonal as $index => $isWall){
             $i = explode(":", $index);
-            $near = clone $node->position;
+            $near = $pos->asPosition();
             $near->x += (int) $i[0];
             $near->z += (int) $i[1];
-            if($isWall || ($state = $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] ?? EntityAI::checkBlockState($near)) === EntityAI::WALL){
-                $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] = EntityAI::WALL;
+            if($isWall){
+                $this->mapCache["{$near->x}:{$near->y}:{$near->z}"][0] = EntityAI::WALL;
+                continue;
+            }elseif($this->getBlockState($near) === EntityAI::WALL){
                 continue;
             }
 
             $result[] = $near;
-            $this->mapCache["{$near->x}:{$near->y}:{$near->z}"] = $state;
-            $this->calculateYPos($state, $near);
         }*/
         return $result;
     }
 
-    public function calculateYPos(int $state, Position $pos) : void{
-        switch($state){
+    public function getBlockState(Position $pos) : int{
+        if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"])){
+            $state = $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0];
+        }else{
+            $state = EntityAI::checkBlockState($pos);
+            $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0] = $state;
+        }
+        return $state;
+    }
+
+    public function calculateYPos(Position $pos) : float{
+        if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1])){
+            return $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1];
+        }
+        $y = $pos->y;
+        switch($this->getBlockState($pos)){
             case EntityAI::STAIR:
             case EntityAI::BLOCK:
-                $pos->y += 1;
+                $y += 1;
                 break;
             case EntityAI::SLAB:
-                $pos->y += 0.5;
+                $y += 0.5;
                 break;
             case EntityAI::AIR:
                 $blockPos = $pos->floor();
                 while(--$blockPos->y > 0){
-                    $aabb = $pos->world->getBlock($blockPos)->getCollisionBoxes()[0] ?? null;
+                    $aabb = ($block = $pos->world->getBlock($blockPos))->getCollisionBoxes()[0] ?? null;
                     if($aabb !== null){
-                        if($aabb->maxY - $aabb->minY > 0.5){
+                        $diffY = $aabb->maxY - $aabb->minY;
+                        if($diffY > 0.5 || $aabb->minY - (int) $aabb->minY === 0.5){
                             ++$blockPos->y;
-                        }elseif($aabb->maxY - $aabb->minY === 0.5){
+                        }elseif($diffY === 0.5){
                             $blockPos->y += 0.5;
                         }
                         break;
                     }
                 }
-                $pos->y = $blockPos->y;
+                $y = $blockPos->y;
                 break;
         }
+        $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1] = $y;
+        return $y;
     }
 
 }
