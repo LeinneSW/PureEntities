@@ -143,7 +143,8 @@ trait WalkEntityTrait{
             }
             $aabb->offset($dx, 0, $dz);
 
-            if($movX !== $dx || $movZ !== $dz){
+            $delay = $movX != $dx || $movZ != $dz ? 1 : -1;
+            if($delay === 1){
                 if($this->needSlabJump){
                     $aabb = clone $this->boundingBox;
 
@@ -161,15 +162,17 @@ trait WalkEntityTrait{
                     }
                     $aabb->offset($dx, 0, $dz);
                 }elseif($this->checkDoorState){
-                    if(++$this->doorBreakTick >= 15){
+                    $delay = -1;
+                    if(++$this->doorBreakTick >= 20){
                         $item = $this->getInventory()->getItemInHand();
                         $this->getWorld()->useBreakOn($this->getPosition(), $item, null, true);
                     }
                 }
             }
+
+            $this->getNavigator()->addStopDelay($delay);
         }
 
-        $this->getNavigator()->addStopDelay($movX != $dx || $movZ != $dz ? 1 : -1);
         return $aabb;
     }
 

@@ -90,6 +90,9 @@ class WalkEntityNavigator extends EntityNavigator{
 
     public function addStopDelay(int $add) : void{
         $this->stopDelay += $add;
+        if($this->stopDelay < 0){
+            $this->stopDelay = 0;
+        }
     }
 
     public function getHelper() : AStarHelper{
