@@ -19,6 +19,8 @@ trait WalkEntityTrait{
 
     private $needSlabJump = false;
 
+    private $checkDoorState = false;
+
     /** @var EntityNavigator */
     protected $navigator = null;
 
@@ -75,8 +77,9 @@ trait WalkEntityTrait{
         }
 
         $this->needSlabJump = false;
+        $this->checkDoorState = false;
         if($hasUpdate && $this->onGround){
-            switch(EntityAI::checkBlockState(new Position(
+            switch(EntityAI::checkBlockState($pos = new Position(
                 ($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x,
                 $this->boundingBox->minY,
                 ($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z,
@@ -89,6 +92,9 @@ trait WalkEntityTrait{
                 case EntityAI::SLAB:
                 case EntityAI::STAIR:
                     $this->needSlabJump = true;
+                    break;
+                case EntityAI::DOOR:
+                    $this->checkDoorState = true;
                     break;
             }
         }
@@ -135,25 +141,26 @@ trait WalkEntityTrait{
             }
             $aabb->offset($dx, 0, $dz);
 
-            if(
-                $this->needSlabJump
-                && ($movX !== $dx || $movZ !== $dz)
-            ){
-                $aabb = clone $this->boundingBox;
+            if($movX !== $dx || $movZ !== $dz){
+                if($this->needSlabJump){
+                    $aabb = clone $this->boundingBox;
 
-                $dx = $movX;
-                $dy = 0.5;
-                $dz = $movZ;
-                foreach($list as $k => $bb){
-                    $dy = $bb->calculateYOffset($aabb, $dy);
-                }
-                $aabb->offset(0, $dy, 0);
+                    $dx = $movX;
+                    $dy = 0.5;
+                    $dz = $movZ;
+                    foreach($list as $k => $bb){
+                        $dy = $bb->calculateYOffset($aabb, $dy);
+                    }
+                    $aabb->offset(0, $dy, 0);
 
-                foreach($list as $k => $bb){
-                    $dx = $bb->calculateXOffset($aabb, $dx);
-                    $dz = $bb->calculateZOffset($aabb, $dz);
+                    foreach($list as $k => $bb){
+                        $dx = $bb->calculateXOffset($aabb, $dx);
+                        $dz = $bb->calculateZOffset($aabb, $dz);
+                    }
+                    $aabb->offset($dx, 0, $dz);
+                }elseif($this->checkDoorState){
+                    $this->getWorld()->getBlock($this->getPosition())->onBreak($this->getInventory()->getItemInHand());
                 }
-                $aabb->offset($dx, 0, $dz);
             }
         }
 
