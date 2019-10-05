@@ -21,6 +21,8 @@ trait WalkEntityTrait{
 
     private $checkDoorState = false;
 
+    private $doorBreakTick = 0;
+
     /** @var EntityNavigator */
     protected $navigator = null;
 
@@ -159,7 +161,10 @@ trait WalkEntityTrait{
                     }
                     $aabb->offset($dx, 0, $dz);
                 }elseif($this->checkDoorState){
-                    $this->getWorld()->getBlock($this->getPosition())->onBreak($this->getInventory()->getItemInHand());
+                    if(++$this->doorBreakTick >= 15){
+                        $item = $this->getInventory()->getItemInHand();
+                        $this->getWorld()->useBreakOn($this->getPosition(), $item, null, true);
+                    }
                 }
             }
         }
