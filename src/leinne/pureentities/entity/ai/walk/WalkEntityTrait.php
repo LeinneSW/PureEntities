@@ -8,6 +8,7 @@ use leinne\pureentities\entity\ai\EntityAI;
 use leinne\pureentities\entity\ai\EntityNavigator;
 use leinne\pureentities\entity\EntityBase;
 
+use pocketmine\block\Door;
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\world\Position;
@@ -57,13 +58,8 @@ trait WalkEntityTrait{
         $me = $this->getPosition();
         /** @var Entity $target */
         $target = $this->getTargetEntity();
-        if($target !== null){
-            $goal = $target->getPosition();
-        }else{
-            $goal = $this->getNavigator()->next();
-            $pitch = 0.0;
-        }
 
+        $goal = $this->getNavigator()->next();
         if($goal === null){
             return $hasUpdate;
         }
@@ -81,7 +77,7 @@ trait WalkEntityTrait{
         $this->needSlabJump = false;
         $this->checkDoorState = false;
         if($hasUpdate && $this->onGround){
-            switch(EntityAI::checkBlockState($pos = new Position(
+            switch(EntityAI::checkPassablity($pos = new Position(
                 ($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x,
                 $this->boundingBox->minY,
                 ($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z,
@@ -103,7 +99,7 @@ trait WalkEntityTrait{
 
         $this->setRotation(
             rad2deg(atan2($z, $x)) - 90.0,
-            $pitch ?? rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)))
+            $target === null ? 0.0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)))
         );
 
         return $hasUpdate;
@@ -143,8 +139,8 @@ trait WalkEntityTrait{
             }
             $aabb->offset($dx, 0, $dz);
 
-            $delay = $movX != $dx || $movZ != $dz ? 1 : -1;
-            if($delay === 1){
+            $delay = ($movX != $dx) + ($movZ != $dz);
+            if($delay >= 1){
                 if($this->needSlabJump){
                     $aabb = clone $this->boundingBox;
 
@@ -163,7 +159,7 @@ trait WalkEntityTrait{
                     $aabb->offset($dx, 0, $dz);
                 }elseif($this->checkDoorState){
                     $delay = -1;
-                    if(++$this->doorBreakTick >= 20){
+                    if($this->getWorld()->getBlock($this->getPosition()) instanceof Door && ++$this->doorBreakTick >= 20){
                         $item = $this->getInventory()->getItemInHand();
                         $this->getWorld()->useBreakOn($this->getPosition(), $item, null, true);
                     }

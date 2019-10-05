@@ -134,10 +134,9 @@ abstract class EntityBase extends Living{
 
     public function setTargetEntity(?Entity $target, bool $fixed = false) : void{
         parent::setTargetEntity($target);
-        //TODO: 속도 문제로 Entity는 아직 보류
-        /*if($target !== null){
+        if($target !== null){
             $this->getNavigator()->setEnd($target->getPosition());
-        }*/
+        }
         $this->fixedTarget = $fixed;
     }
 

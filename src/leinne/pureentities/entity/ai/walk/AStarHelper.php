@@ -39,29 +39,6 @@ class AStarHelper{
         self::$blockPerTick = $block;
     }
 
-    /**
-     * @param int $left
-     * @param int $right
-     */
-    protected function sortOpenNode(int $left, int $right) : void{
-        if($left >= $right){
-            return;
-        }
-
-        $i = $left + 1;
-        $j = $pivot = $left;
-        for(; $i <= $right; ++$i){
-            if($this->openNode[$i]->fscore < $this->openNode[$pivot]->fscore){
-                ++$j;
-                [$this->openNode[$j], $this->openNode[$i]] = [$this->openNode[$i], $this->openNode[$j]];
-            }
-        }
-        [$this->openNode[$left], $this->openNode[$j]] = [$this->openNode[$j], $this->openNode[$left]];
-        $this->sortOpenNode($left, $j - 1);
-        $this->sortOpenNode($j + 1, $right);
-    }
-
-
     public function __construct(WalkEntityNavigator $navigator){
         $this->navigator = $navigator;
     }
@@ -88,8 +65,9 @@ class AStarHelper{
 
         $end = $this->navigator->getEnd();
         $end->y = $this->calculateYPos($end);
-        if($this->findTick++ === -1){
+        if($this->findTick === -1){
             //echo "탐색 시작\n";
+            ++$this->findTick;
             $pos = $this->navigator->getHolder()->getPosition();
             $pos->x = Math::floorFloat($pos->x) + 0.5;
             $pos->z = Math::floorFloat($pos->z) + 0.5;
@@ -114,7 +92,7 @@ class AStarHelper{
 
             $parent->y = $this->calculateYPos($parent);
             $hash = $parent->getHash();
-            if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->gscore <= $parent->gscore){ //다른 Y값으로 이미 최적 경로에 도달했을 경우
+            if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ //다른 Y값으로 이미 최적 경로에 도달했을 경우
                 continue;
             }
 
@@ -125,6 +103,7 @@ class AStarHelper{
             }
 
             foreach($this->getNear($parent) as $_ => $pos){
+                ++$this->findTick;
                 $key = "{$pos->x}:{$pos->y}:{$pos->z}";
                 if(isset($this->closeNode[$key])){ /** 이미 최적 경로를 찾은 경우 */
                     continue;
@@ -132,11 +111,10 @@ class AStarHelper{
 
                 $node = Node::create($pos, $end, $parent);
                 if(isset($this->openHash[$key])){ /** 기존 노드보다 이동 거리가 더 길 경우 */
-                    if($this->openHash[$key]->gscore > $node->gscore){
+                    if($this->openHash[$key]->getGoal() > $node->getGoal()){
                         $change = $this->openHash[$key];
-                        $change->gscore = $node->gscore;
-                        $change->fscore = $node->gscore + $change->hscore;
-                        $change->parentNode = $node->parentNode;
+                        $change->setGoal($node->getGoal());
+                        $change->setParentNode($node->getParentNode());
                     }
                 }else{
                     $this->openNode[] = $node;
@@ -150,7 +128,7 @@ class AStarHelper{
             $last = array_pop($this->closeNode);
             $result = [$last];
             while(($node = array_pop($this->closeNode)) !== null){
-                if($last->parentNode === $node->getId()){
+                if($last->getParentNode() === $node->getId()){
                     $last = $node;
                     $result[] = $node;
                 }
@@ -185,27 +163,25 @@ class AStarHelper{
                 if($near->y - $y <= 3){
                     $result[] = $near;
                 }
+                //continue;
             }
-
-            /*if($state === EntityAI::WALL) {
-                switch($f){
-                    case Facing::EAST:
-                        $diagonal["1:1"] = 0;
-                        $diagonal["1:-1"] = 0;
-                        break;
-                    case Facing::WEST:
-                        $diagonal["-1:1"] = 0;
-                        $diagonal["-1:-1"] = 0;
-                        break;
-                    case Facing::SOUTH:
-                        $diagonal["1:1"] = 0;
-                        $diagonal["-1:1"] = 0;
-                        break;
-                    case Facing::NORTH:
-                        $diagonal["1:-1"] = 0;
-                        $diagonal["-1:-1"] = 0;
-                        break;
-                }
+            /*switch($f){
+                case Facing::EAST:
+                    $diagonal["1:1"] = 0;
+                    $diagonal["1:-1"] = 0;
+                    break;
+                case Facing::WEST:
+                    $diagonal["-1:1"] = 0;
+                    $diagonal["-1:-1"] = 0;
+                    break;
+                case Facing::SOUTH:
+                    $diagonal["1:1"] = 0;
+                    $diagonal["-1:1"] = 0;
+                    break;
+                case Facing::NORTH:
+                    $diagonal["1:-1"] = 0;
+                    $diagonal["-1:-1"] = 0;
+                    break;
             }*/
         }
 
@@ -230,7 +206,7 @@ class AStarHelper{
         if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"])){
             $state = $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0];
         }else{
-            $state = EntityAI::checkBlockState($pos);
+            $state = EntityAI::checkPassablity($pos);
             $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0] = $state;
         }
         return $state;
@@ -249,7 +225,7 @@ class AStarHelper{
             case EntityAI::SLAB:
                 $y += 0.5;
                 break;
-            case EntityAI::AIR:
+            case EntityAI::PASS:
                 $blockPos = $pos->floor();
                 while(--$blockPos->y > 0){
                     $aabb = ($block = $pos->world->getBlock($blockPos))->getCollisionBoxes()[0] ?? null;
@@ -268,6 +244,27 @@ class AStarHelper{
         }
         $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1] = $y;
         return $y;
+    }
+
+    /**
+     * @param int $left
+     * @param int $right
+     */
+    protected function sortOpenNode(int $left, int $right) : void{
+        if($left >= $right){
+            return;
+        }
+
+        $j = $left;
+        for($i = $j + 1; $i <= $right; ++$i){
+            if($this->openNode[$i]->getFitness() < $this->openNode[$left]->getFitness()){
+                ++$j;
+                [$this->openNode[$j], $this->openNode[$i]] = [$this->openNode[$i], $this->openNode[$j]];
+            }
+        }
+        [$this->openNode[$left], $this->openNode[$j]] = [$this->openNode[$j], $this->openNode[$left]];
+        $this->sortOpenNode($left, $j - 1);
+        $this->sortOpenNode($j + 1, $right);
     }
 
 }

@@ -21,7 +21,7 @@ class WalkEntityNavigator extends EntityNavigator{
         $pos = $this->holder->getLocation();
         $holder = $this->holder;
         $target = $holder->getTargetEntity();
-        if($target === null || !$holder->hasInteraction($target, $pos->distanceSquared($target->getPosition()))){
+        if($target === null || !$holder->hasInteraction($target, $near = $pos->distanceSquared($target->getPosition()))){
             $near = PHP_INT_MAX;
             $target = null;
             foreach($holder->getWorld()->getEntities() as $k => $t){
@@ -39,22 +39,24 @@ class WalkEntityNavigator extends EntityNavigator{
             $holder->setTargetEntity($target);
         }
 
-        if($holder->getTargetEntity() === null){
-            if(!empty($this->goal)){
-                $next = $this->next();
-                if($next !== null && (abs($next->x - $pos->x) < 0.1 && abs($next->z - $pos->z) < 0.1)){// && abs($next->y - $pos->y) < 0.1)){
-                    --$this->goalIndex;
-                }
+        if($target !== null && $near > 1){
+            $this->setEnd($target->getPosition());
+        }
 
-                if($this->goalIndex < 0){
-                    //$this->end = null;
-                    $this->setEnd($this->makeRandomGoal());
-                }
+        if(!empty($this->goal)){
+            $next = $this->next();
+            if($next !== null && (abs($next->x - $pos->x) < 0.1 && abs($next->z - $pos->z) < 0.1 && abs($next->y - $pos->y) <= 1)){
+                --$this->goalIndex;
             }
 
-            if($this->stopDelay >= 60 || $this->end === null){
+            if($this->goalIndex < 0){
+                //$this->end = null;
                 $this->setEnd($this->makeRandomGoal());
             }
+        }
+
+        if($this->stopDelay >= 90 || $this->end === null){
+            $this->setEnd($this->makeRandomGoal());
         }
 
         /*if($this->end === null){

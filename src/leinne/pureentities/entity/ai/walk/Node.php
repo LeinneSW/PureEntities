@@ -14,49 +14,60 @@ class Node extends Position{
     private $id;
     
     /**
-     * F = G + H
-     * @var float
-     */
-    public $fscore = 0.0;
-    
-    /**
      * 현재까지 이동한 거리
      * @var float
      */
-    public $gscore = 0.0;
+    private $goal = 0.0;
 
     /**
      * 휴리스틱 값
      * @var float
      */
-    public $hscore = 0.0;
+    private $heuristic = 0.0;
     
     /** @var ?int */
-    public $parentNode = null;
+    private $parentNode = null;
 
-    public static function create(Position $pos, Position $goal, ?Node $parent = null) : self{
+    public static function create(Position $pos, Position $end, ?Node $parent = null) : self{
         $node = new self;
         $node->id = Node::$nextId++;
         $node->x = $pos->x;
         $node->y = $pos->y;
         $node->z = $pos->z;
         $node->world = $pos->world;
+        $node->heuristic = $pos->distanceSquared($end);
         if($parent !== null){
             $node->parentNode = $parent->id;
-            $node->gscore = $parent->gscore + $pos->distanceSquared($parent);
+            $node->goal = $parent->goal + $pos->distanceSquared($parent);
         }
-        $node->hscore = $pos->distanceSquared($goal);
-        $node->fscore = $node->gscore + $node->hscore;
-
         return $node;
-    }
-
-    public function getId() : int{
-        return $this->id;
     }
 
     public function getHash() : string{
         return "{$this->x}:{$this->y}:{$this->z}";
     }
 
+    public function getId() : int{
+        return $this->id;
+    }
+
+    public function getGoal() : float{
+        return $this->goal;
+    }
+
+    public function getFitness() : float{
+        return $this->heuristic + $this->goal;
+    }
+
+    public function getParentNode() : ?int{
+        return $this->parentNode;
+    }
+
+    public function setGoal(float $score) : void{
+        $this->goal = $score;
+    }
+
+    public function setParentNode(int $id) : void{
+        $this->parentNode = $id;
+    }
 }

@@ -8,7 +8,7 @@
 
 ## Introduce
 PureEntities is a Plug-in that makes implement the entity.  
- - Developer: [LeinneSW](https://github.com/LeinneSW) (before milk0417)
+ - Developer: <b><a href="https://github.com/LeinneSW">LeinneSW</a></b> (before milk0417)
  - This plug-in provides a variety of entities to [PMMP](https://pmmp.io).
  - Added [A* algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm) to support simple mob AI.
 
