@@ -18,11 +18,26 @@ use pocketmine\world\Position;
  */
 trait WalkEntityTrait{
 
-    private $needSlabJump = false;
+    /**
+     * 문을 부수기까지의 시간을 저장합니다
+     *
+     * @var int
+     */
+    private $doorBreakTick = 0;
 
+    /**
+     * 가야할 블럭이 문인지 확인합니다
+     *
+     * @var bool
+     */
     private $checkDoorState = false;
 
-    private $doorBreakTick = 0;
+    /**
+     * 가야할 블럭이 반블럭인지 확인합니다
+     *
+     * @var bool
+     */
+    private $needSlabJump = false;
 
     /** @var EntityNavigator */
     protected $navigator = null;
@@ -159,9 +174,14 @@ trait WalkEntityTrait{
                     $aabb->offset($dx, 0, $dz);
                 }elseif($this->checkDoorState){
                     $delay = -1;
-                    if($this->getWorld()->getBlock($this->getPosition()) instanceof Door && ++$this->doorBreakTick >= 20){
-                        $item = $this->getInventory()->getItemInHand();
-                        $this->getWorld()->useBreakOn($this->getPosition(), $item, null, true);
+                    if($this->getWorld()->getBlock($this->getPosition()) instanceof Door){
+                        if(++$this->doorBreakTick >= 20){
+                            $this->doorBreakTick = 0;
+                            $item = $this->getInventory()->getItemInHand();
+                            $this->getWorld()->useBreakOn($this->getPosition(), $item, null, true);
+                        }
+                    }else{
+                        $this->doorBreakTick = 0;
                     }
                 }
             }
