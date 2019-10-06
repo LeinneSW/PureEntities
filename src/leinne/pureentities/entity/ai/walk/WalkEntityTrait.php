@@ -12,6 +12,7 @@ use pocketmine\block\Door;
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\world\Position;
+use pocketmine\world\World;
 
 /**
  * This trait override most methods in the {@link EntityBase} abstract class.
@@ -103,7 +104,7 @@ trait WalkEntityTrait{
                     $this->motion->y += 0.52;
                     break;
                 case EntityAI::SLAB:
-                case EntityAI::STAIR:
+                //case EntityAI::STAIR:
                     $this->needSlabJump = true;
                     break;
                 case EntityAI::DOOR:
@@ -174,11 +175,13 @@ trait WalkEntityTrait{
                     $aabb->offset($dx, 0, $dz);
                 }elseif($this->checkDoorState){
                     $delay = -1;
-                    if($this->getWorld()->getBlock($this->getPosition()) instanceof Door){
+                    /** @var World $world */
+                    $world = $this->getWorld();
+                    if($world->getBlock($this->getPosition()) instanceof Door){
                         if(++$this->doorBreakTick >= 20){
                             $this->doorBreakTick = 0;
                             $item = $this->getInventory()->getItemInHand();
-                            $this->getWorld()->useBreakOn($this->getPosition(), $item, null, true);
+                            $world->useBreakOn($this->getPosition(), $item, null, true);
                         }
                     }else{
                         $this->doorBreakTick = 0;

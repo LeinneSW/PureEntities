@@ -106,7 +106,7 @@ class PureEntities extends PluginBase implements Listener{
         }
 
         $astar = $this->data["astar"] ?? [];
-        AStarHelper::init((int) $astar["maximum-tick"] ?? 50, (int) $astar["block-per-tick"] ?? 200);
+        AStarHelper::init((int) $astar["maximum-tick"] ?? 80, (int) $astar["block-per-tick"] ?? 220);
         $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
     }
 

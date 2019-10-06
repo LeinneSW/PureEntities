@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\ai\walk;
 
 use leinne\pureentities\entity\ai\EntityAI;
+use leinne\pureentities\entity\ai\Helper;
 
 use pocketmine\math\Facing;
 use pocketmine\math\Math;
 use pocketmine\world\Position;
 
-class AStarHelper{
+class AStarHelper implements Helper{
 
     /** @var int */
     private static $maximumTick = 0;
@@ -24,6 +25,9 @@ class AStarHelper{
 
     /** @var Node[] */
     private $closeNode = [];
+
+    /** @var array */
+    private $onChange = [];
 
     /** @var int[][] */
     private $mapCache = [];
@@ -47,7 +51,6 @@ class AStarHelper{
         $this->findTick = -1;
         $this->findCount = 0;
 
-        $this->mapCache = [];
         $this->openNode = [];
         $this->openHash = [];
         $this->closeNode = [];
@@ -90,8 +93,13 @@ class AStarHelper{
             $parent = array_shift($this->openNode);
             unset($this->openHash[$parent->getHash()]);
 
+            $beforeY = $parent->y;
             $parent->y = $this->calculateYPos($parent);
             $hash = $parent->getHash();
+            if($parent->y !== $beforeY){
+                $this->onChange[$hash] = true;
+            }
+
             if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ //다른 Y값으로 이미 최적 경로에 도달했을 경우
                 continue;
             }
@@ -102,7 +110,11 @@ class AStarHelper{
                 break;
             }
 
-            foreach($this->getNear($parent) as $_ => $pos){
+            $near = $this->getNear($parent);
+            if(count($near) < 4){
+                $this->onChange[$hash] = true;
+            }
+            foreach($near as $_ => $pos){
                 ++$this->findTick;
                 $key = "{$pos->x}:{$pos->y}:{$pos->z}";
                 if(isset($this->closeNode[$key])){ /** 이미 최적 경로를 찾은 경우 */
@@ -130,7 +142,9 @@ class AStarHelper{
             while(($node = array_pop($this->closeNode)) !== null){
                 if($last->getParentNode() === $node->getId()){
                     $last = $node;
-                    $result[] = $node;
+                    if(isset($this->onChange[$node->getHash()])){
+                        $result[] = $node;
+                    }
                 }
             }
             return $result;
@@ -153,7 +167,6 @@ class AStarHelper{
      */
     public function getNear(Position $pos) : array{
         $result = [];
-        //$diagonal = ["1:1" => 1, "1:-1" => 1, "-1:1" => 1, "-1:-1" => 1];
         $facing = [Facing::EAST, Facing::WEST, Facing::SOUTH, Facing::NORTH];
         foreach($facing as $_ => $f){
             $near = $pos->getSide($f);
@@ -163,42 +176,8 @@ class AStarHelper{
                 if($near->y - $y <= 3){
                     $result[] = $near;
                 }
-                //continue;
             }
-            /*switch($f){
-                case Facing::EAST:
-                    $diagonal["1:1"] = 0;
-                    $diagonal["1:-1"] = 0;
-                    break;
-                case Facing::WEST:
-                    $diagonal["-1:1"] = 0;
-                    $diagonal["-1:-1"] = 0;
-                    break;
-                case Facing::SOUTH:
-                    $diagonal["1:1"] = 0;
-                    $diagonal["-1:1"] = 0;
-                    break;
-                case Facing::NORTH:
-                    $diagonal["1:-1"] = 0;
-                    $diagonal["-1:-1"] = 0;
-                    break;
-            }*/
         }
-
-        /*foreach($diagonal as $index => $isWall){
-            $i = explode(":", $index);
-            $near = $pos->asPosition();
-            $near->x += (int) $i[0];
-            $near->z += (int) $i[1];
-            if($isWall){
-                $this->mapCache["{$near->x}:{$near->y}:{$near->z}"][0] = EntityAI::WALL;
-                continue;
-            }elseif($this->getBlockState($near) === EntityAI::WALL){
-                continue;
-            }
-
-            $result[] = $near;
-        }*/
         return $result;
     }
 
@@ -218,7 +197,7 @@ class AStarHelper{
         }
         $y = $pos->y;
         switch($this->getBlockState($pos)){
-            case EntityAI::STAIR:
+            //case EntityAI::STAIR:
             case EntityAI::BLOCK:
                 $y += 1;
                 break;
@@ -227,15 +206,13 @@ class AStarHelper{
                 break;
             case EntityAI::PASS:
                 $blockPos = $pos->floor();
-                while(--$blockPos->y > 0){
-                    $aabb = ($block = $pos->world->getBlock($blockPos))->getCollisionBoxes()[0] ?? null;
-                    if($aabb !== null){
-                        $diffY = $aabb->maxY - $aabb->minY;
-                        if($diffY > 0.5 || $aabb->minY - (int) $aabb->minY === 0.5){
-                            ++$blockPos->y;
-                        }elseif($diffY === 0.5){
-                            $blockPos->y += 0.5;
-                        }
+                for(; $blockPos->y >= 0; --$blockPos->y){
+                    $state = EntityAI::checkBlockState($pos->world->getBlockAt($blockPos->x, $blockPos->y, $blockPos->z));
+                    if($state === EntityAI::UP_SLAB || $state === EntityAI::BLOCK){
+                        ++$blockPos->y;
+                        break;
+                    }elseif($state === EntityAI::SLAB){
+                        $blockPos->y += 0.5;
                         break;
                     }
                 }

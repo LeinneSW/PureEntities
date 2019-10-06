@@ -61,7 +61,7 @@ abstract class EntityBase extends Living{
      * @return float
      */
     public function getInteractDistance() : float{
-        return 0.75;
+        return 0.6;
     }
 
     /**
@@ -71,15 +71,18 @@ abstract class EntityBase extends Living{
      */
     public function checkInteract() : ?Entity{
         $target = $this->getTargetEntity();
-        if(
-            $target !== null
-            && abs($this->getLocation()->getX() - $target->getLocation()->x) <= ($width = $this->getInteractDistance() + ($this->width + $target->width) / 2)
-            && abs($this->getLocation()->getZ() - $target->getLocation()->z) <= $width
-            && abs($this->getLocation()->getY()- $target->getLocation()->y) <= min(1, $this->eyeHeight)
-        ){
-            return $target;
+        if($target === null){
+            return null;
         }
-        return null;
+
+        $location = $this->location;
+        $targetPos = $target->location;
+        $width = $this->getInteractDistance() + ($this->width + $target->width) / 2;
+        return (
+            abs($location->getX() - $targetPos->x) <= $width
+            && abs($location->getZ() - $targetPos->z) <= $width
+            && abs($location->getY() - $targetPos->y) <= min(1, $this->eyeHeight)
+        ) ? $target : null;
     }
 
     public function getDefaultMaxHealth() : int{

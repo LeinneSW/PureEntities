@@ -30,7 +30,7 @@ class Node extends Position{
 
     public static function create(Position $pos, Position $end, ?Node $parent = null) : self{
         $node = new self;
-        $node->id = Node::$nextId++;
+        $node->id = ++Node::$nextId;
         $node->x = $pos->x;
         $node->y = $pos->y;
         $node->z = $pos->z;

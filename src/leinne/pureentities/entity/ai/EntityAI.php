@@ -8,7 +8,6 @@ use pocketmine\block\Block;
 use pocketmine\block\Lava;
 use pocketmine\block\Stair;
 use pocketmine\math\Facing;
-use pocketmine\Server;
 use pocketmine\world\Position;
 
 class EntityAI{
@@ -18,9 +17,16 @@ class EntityAI{
     const BLOCK = 2;
     const SLAB = 3;
     const UP_SLAB = 4;
-    const STAIR = 5;
-    const DOOR = 6;
+    const DOOR = 5;
+    //const STAIR = 6;
 
+    /**
+     * 특정 블럭이 어떤 상태인지를 확인해주는 메서드
+     *
+     * @param Block $block
+     *
+     * @return int
+     */
     public static function checkBlockState(Block $block) : int{
         if(count($blocks = $block->getAffectedBlocks()) > 1){ //이웃된 블럭이 있을 때
             $blockA = $blocks[0]->getCollisionBoxes()[0] ?? null;
@@ -35,24 +41,31 @@ class EntityAI{
         }
 
         $blockBox = $block->getCollisionBoxes()[0] ?? null;
-        if($blockBox === null){
+        $boxDiff = $blockBox === null ? 0 : $blockBox->maxY - $blockBox->minY;
+        if($boxDiff <= 0){
             if($block instanceof Lava){ //통과 가능 블럭중 예외처리
                 return EntityAI::WALL;
             }
             return EntityAI::PASS;
-        }elseif($blockBox->maxY - $blockBox->minY > 1){ //울타리라면
+        }elseif($boxDiff > 1){ //울타리라면
             return EntityAI::WALL;
-        }elseif($blockBox->maxY - $blockBox->minY == 1){ //블럭이라면
+        }elseif($boxDiff == 1){ //블럭이라면
             return EntityAI::BLOCK;
-        }elseif($blockBox->maxY - $blockBox->minY === 0.5){ //반블럭이라면
+        }elseif($boxDiff === 0.5){ //반블럭이라면
             return $blockBox->minY - (int) $blockBox->minY === 0.5 ? EntityAI::UP_SLAB : EntityAI::SLAB;
         }
-        Server::getInstance()->getLogger()->warning("[PureEntities] 정체불명의 블럭 감지됨: $block, 차이 값: " . ($blockBox->maxY - $blockBox->minY));
-        return EntityAI::WALL;
+        return $boxDiff > 0 ? EntityAI::BLOCK : EntityAI::PASS;
     }
 
+    /**
+     * 블럭이 통과 가능한 위치인지를 판단하는 메서드
+     *
+     * @param Position $pos
+     *
+     * @return int
+     */
     public static function checkPassablity(Position $pos) : int{
-        $block = $pos->getWorld()->getBlock($pos);
+        $block = $pos->world->getBlock($pos);
         $state = self::checkBlockState($block);
         switch($state){
             case EntityAI::WALL:
@@ -69,7 +82,7 @@ class EntityAI{
             case EntityAI::SLAB:
                 return (
                     self::checkBlockState($block->getSide(Facing::UP)) === EntityAI::PASS //y + 1이 통과가능하고
-                    && (($up = self::checkBlockState($block->getSide(Facing::UP, 2))) === EntityAI::PASS || $up === EntityAI::UP_SLAB) //y + 2가 윗반블럭/통과가능시
+                    && (($up = self::checkBlockState($block->getSide(Facing::UP, 2))) === EntityAI::PASS || $up === EntityAI::UP_SLAB) //y + 2을 통과가능(반블럭 포함)하면
                 ) ? ($pos->y - (int) $pos->y === 0.5 ? EntityAI::SLAB : EntityAI::BLOCK) : EntityAI::WALL;
         }
         return EntityAI::WALL;

@@ -4,36 +4,113 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
-use pocketmine\entity\Entity;
+use leinne\pureentities\entity\EntityBase;
+
+use pocketmine\entity\Living;
 use pocketmine\world\Position;
 
 abstract class EntityNavigator{
+
+    /**
+     * 엔티티가 같은위치에 벽 등의 장애로 인해 멈춰있던 시간을 나타냅니다
+     *
+     * @var int
+     */
+    private $stopDelay = 0;
 
     /** @var Position  */
     protected $end;
 
     /** @var Position[] */
     protected $goal = [];
+    /** @var int */
     protected $goalIndex = -1;
 
-    protected $holder = null;
+    /** @var EntityBase */
+    protected $holder;
 
-    public function __construct(Entity $entity){
+    public function __construct(EntityBase $entity){
         $this->holder = $entity;
     }
 
-    public abstract function update() : void;
+    public abstract function getHelper() : Helper;
 
-    public function getHolder() : Entity{
-        return $this->holder;
+    public abstract function makeRandomGoal() : Position;
+
+    public function update() : void{
+        $pos = $this->holder->getLocation();
+        $holder = $this->holder;
+        $target = $holder->getTargetEntity();
+        if($target === null || !$holder->hasInteraction($target, $near = $pos->distanceSquared($target->getPosition()))){
+            $near = PHP_INT_MAX;
+            $target = null;
+            foreach($holder->getWorld()->getEntities() as $k => $t){
+                if(
+                    $t === $this
+                    || !($t instanceof Living)
+                    || ($distance = $pos->distanceSquared($t->getPosition())) > $near
+                    || !$holder->hasInteraction($t, $distance)
+                ){
+                    continue;
+                }
+                $near = $distance;
+                $target = $t;
+            }
+            $holder->setTargetEntity($target);
+        }
+
+        if($target !== null && $this->getEnd()->distanceSquared($target->getPosition())){
+            $this->setEnd($target->getPosition());
+        }
+
+        if(!empty($this->goal)){
+            $next = $this->next();
+            if($next !== null && (abs($next->x - $pos->x) < 0.2 && abs($next->y - $pos->y) < 1 && abs($next->z - $pos->z) < 0.2)){
+                --$this->goalIndex;
+            }
+
+            if($this->goalIndex < 0){
+                //$this->end = null;
+                $this->setEnd($this->makeRandomGoal());
+            }
+        }
+
+        if($this->stopDelay >= 90){
+            $this->setEnd($this->makeRandomGoal());
+        }
+
+        /*if($this->end === null){
+            return;
+        }*/
+
+        if($this->goalIndex < 0 || empty($this->goal)) {
+            $this->goal = $this->getHelper()->calculate();
+            if($this->goal === null){
+                //$this->end = null;
+                $this->setEnd($this->makeRandomGoal());
+            }else{
+                $this->goalIndex = count($this->goal) - 1;
+            }
+        }
     }
 
     public function next() : ?Position{
         return $this->goalIndex >= 0 ? $this->goal[$this->goalIndex] : null;
     }
 
-    public function getEnd() : ?Position{
-        return $this->end;
+    public function addStopDelay(int $add) : void{
+        $this->stopDelay += $add;
+        if($this->stopDelay < 0){
+            $this->stopDelay = 0;
+        }
+    }
+
+    public function getHolder() : EntityBase{
+        return $this->holder;
+    }
+
+    public function getEnd() : Position{
+        return $this->end ?? $this->end = $this->makeRandomGoal();
     }
 
     public function setEnd(Position $pos) : void{
