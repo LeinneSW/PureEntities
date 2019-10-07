@@ -51,6 +51,7 @@ class AStarHelper implements Helper{
         $this->findTick = -1;
         $this->findCount = 0;
 
+        $this->mapCache = [];
         $this->openNode = [];
         $this->openHash = [];
         $this->closeNode = [];
