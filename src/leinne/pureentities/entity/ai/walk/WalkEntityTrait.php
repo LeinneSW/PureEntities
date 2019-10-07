@@ -137,12 +137,12 @@ trait WalkEntityTrait{
                 $z = ($dz > 0 ? $aabb->maxZ : $aabb->minZ) + $dz;
                 foreach($list as $k => $bb){
                     if(
-                        $bb->maxY - $y <= 0.5
+                        ($diff = $bb->maxY - $y) <= 0.5
                         && $x >= $bb->minX && $x <= $bb->maxX
                         && $y >= $bb->minY && $y < $bb->maxY
                         && $z >= $bb->minZ && $z <= $bb->maxZ
                     ){
-                        $dy = $bb->maxY - $aabb->minY;
+                        $dy = $diff;
                     }
                 }
             }
@@ -158,36 +158,18 @@ trait WalkEntityTrait{
             $aabb->offset($dx, 0, $dz);
 
             $delay = ($movX != $dx) + ($movZ != $dz);
-            if($delay >= 1){
-                /*if($this->needSlabJump){
-                    $aabb = clone $this->boundingBox;
-
-                    $dx = $movX;
-                    $dy = 0.5;
-                    $dz = $movZ;
-                    foreach($list as $k => $bb){
-                        $dy = $bb->calculateYOffset($aabb, $dy);
-                    }
-                    $aabb->offset(0, $dy, 0);
-
-                    foreach($list as $k => $bb){
-                        $dx = $bb->calculateXOffset($aabb, $dx);
-                        $dz = $bb->calculateZOffset($aabb, $dz);
-                    }
-                    $aabb->offset($dx, 0, $dz);
-                }else*/if($this->checkDoorState){
-                    $delay = -1;
-                    /** @var World $world */
-                    $world = $this->getWorld();
-                    if($world->getBlock($this->getPosition()) instanceof Door){
-                        if(++$this->doorBreakTick >= 20){
-                            $this->doorBreakTick = 0;
-                            $item = $this->getInventory()->getItemInHand();
-                            $world->useBreakOn($this->getPosition(), $item, null, true);
-                        }
-                    }else{
+            if($delay >= 1 && $this->checkDoorState){
+                $delay = -1;
+                /** @var World $world */
+                $world = $this->getWorld();
+                if($world->getBlock($this->getPosition()) instanceof Door){
+                    if(++$this->doorBreakTick >= 20){
                         $this->doorBreakTick = 0;
+                        $item = $this->getInventory()->getItemInHand();
+                        $world->useBreakOn($this->getPosition(), $item, null, true);
                     }
+                }else{
+                    $this->doorBreakTick = 0;
                 }
             }
 

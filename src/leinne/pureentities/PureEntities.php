@@ -19,10 +19,9 @@ use leinne\pureentities\entity\hostile\Zombie;
 use leinne\pureentities\entity\utility\IronGolem;
 use leinne\pureentities\entity\utility\SnowGolem;
 use leinne\pureentities\task\AutoSpawnTask;
-use leinne\pureentities\tile\MonsterSpawner;
 
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIdentifier as BID;
+use pocketmine\block\BlockIdentifier;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Living;
@@ -81,7 +80,7 @@ class PureEntities extends PluginBase implements Listener{
 //        EntityFactory::register(SmallFireBall::class, ['minecraft:smallfireball']);
 //        EntityFactory::register(LargeFireBall::class, ['minecraft:largefireball']);
 
-        BlockFactory::register(new block\MonsterSpawner(new BID(BlockLegacyIds::MOB_SPAWNER, 0, null, MonsterSpawner::class), "Monster Spawner"), true);
+        BlockFactory::register(new block\MonsterSpawner(new BlockIdentifier(BlockLegacyIds::MOB_SPAWNER, 0, null, tile\MonsterSpawner::class), "Monster Spawner"), true);
 
         foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var Living|string $className */
@@ -103,16 +102,16 @@ class PureEntities extends PluginBase implements Listener{
         }
 
         $astar = $this->data["astar"] ?? [];
-        AStarHelper::init((int) $astar["maximum-tick"] ?? 80, (int) $astar["block-per-tick"] ?? 220);
+        AStarHelper::init((int) $astar["maximum-tick"] ?? 80, (int) $astar["block-per-tick"] ?? 100);
         $this->getServer()->getLogger()->info(
             TextFormat::AQUA . "\n" .
             "------------------------------------------------------\n" .
-            " _____                ______       _   _ _   _\n" .
-            "|  __ \              |  ____|     | | (_) | (_)\n" .
-            "| |__) |   _ _ __ ___| |__   _ __ | |_ _| |_ _  ___  ___ \n" .
-            "|  ___/ | | | '__/ _ \  __| | '_ \| __| | __| |/ _ \/ __|\n" .
-            "| |   | |_| | | |  __/ |____| | | | |_| | |_| |  __/\__ \\\n" .
-            "|_|    \__,_|_|  \___|______|_| |_|\__|_|\__|_|\___||___/\n" .
+            " _____                _____       _    _ _    _\n" .
+            "|  __ \              |  ___|     | |  |_| |  |_|\n" .
+            "| |__) |   _ _ __ ___| |__  _ __ | |__ _| |__ _  ___  ___ \n" .
+            "|  ___/ | | | '__/ _ \  __|| '_ \| ___| | ___| |/ _ \/ __|\n" .
+            "| |   | |_| | | |  __/ |___| | | | |__| | |__| |  __/\__ \\\n" .
+            "|_|    \__,_|_|  \___|_____|_| |_|\___|_|\___|_|\___||___/\n" .
             "------------------------------------------------------\n"
         );
     }
@@ -132,7 +131,7 @@ class PureEntities extends PluginBase implements Listener{
             $ev->setCancelled();
 
             $tile = $block->getPos()->getWorld()->getTile($block->getPos());
-            if($tile instanceof MonsterSpawner){
+            if($tile instanceof tile\MonsterSpawner){
                 $tile->setSpawnEntityType($item->getMeta());
             }else{
                 if($tile !== null){
@@ -144,28 +143,7 @@ class PureEntities extends PluginBase implements Listener{
                 $tile->getPos()->getWorld()->addTile($tile);
             }
         }
-        /*$pos = $block->getPos()->asPosition();
-        $pos->x = Math::floorFloat($pos->x) + 0.5;
-        $pos->z = Math::floorFloat($pos->z) + 0.5;
-        echo "좌표: $pos\n";
-
-        $entity = $this->getServer()->getWorldManager()->getDefaultWorld()->getEntity($this->data[$ev->getPlayer()->getNameTag()] ?? -1);
-        if($entity instanceof EntityBase){
-            $entity->getNavigator()->setEnd($pos);
-        }*/
     }
-
-    /*public function onDamageEvent(EntityDamageEvent $ev) : void{
-        $entity = $ev->getEntity();
-        if($ev instanceof EntityDamageByEntityEvent){
-            $damager = $ev->getDamager();
-            if($damager->getInventory()->getItemInHand()->getId() == ItemIds::STICK){
-                $ev->setCancelled();
-            }
-            $this->data[$damager->getNameTag()] = $entity->getId();
-            $this->getLogger()->info($damager->getNameTag() . "님의 히트 감지, " . $entity->getId());
-        }
-    }*/
 
     public function onBlockPlaceEvent(BlockPlaceEvent $ev) : void{
         if($ev->isCancelled()){

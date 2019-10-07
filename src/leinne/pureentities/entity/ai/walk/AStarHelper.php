@@ -179,7 +179,7 @@ class AStarHelper implements Helper{
     }
 
     public function getBlockPassablity(Position $pos) : int{
-        if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"])){
+        if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0])){
             $state = $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0];
         }else{
             $state = EntityAI::checkPassablity($pos);
@@ -219,6 +219,9 @@ class AStarHelper implements Helper{
                 break;
         }
         $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1] = $y;
+        for($i = $pos->y - 1; $i >= $y; --$i){
+            $this->mapCache["{$pos->x}:{$i}:{$pos->z}"][1] = $y;
+        }
         return $y;
     }
 
