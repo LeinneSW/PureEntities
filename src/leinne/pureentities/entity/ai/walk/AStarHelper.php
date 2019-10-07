@@ -70,16 +70,14 @@ class AStarHelper implements Helper{
         $end = $this->navigator->getEnd();
         $end->y = $this->calculateYPos($end);
         if($this->findTick === -1){
-            ++$this->findTick;
+            $this->reset();
+            $this->findTick = 0;
+            $this->findCount = 1;
+
             $pos = $this->navigator->getHolder()->getPosition();
             $pos->x = Math::floorFloat($pos->x) + 0.5;
             $pos->z = Math::floorFloat($pos->z) + 0.5;
-
-            $start = Node::create($pos, $end);
-            $this->mapCache = [];
-            $this->openHash = [];
-            $this->closeNode = [];
-            $this->openNode = [$start];
+            $this->openNode[] = Node::create($pos, $end);
         }
 
         $valid = null;
