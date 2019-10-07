@@ -116,6 +116,7 @@ abstract class EntityNavigator{
     public function setEnd(Position $pos) : void{
         $this->end = $pos;
         $this->goal = [];
+        $this->stopDelay = 0;
         $this->goalIndex = -1;
     }
 

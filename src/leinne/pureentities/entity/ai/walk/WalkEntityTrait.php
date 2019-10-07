@@ -33,13 +33,6 @@ trait WalkEntityTrait{
      */
     private $checkDoorState = false;
 
-    /**
-     * 가야할 블럭이 반블럭인지 확인합니다
-     *
-     * @var bool
-     */
-    private $needSlabJump = false;
-
     /** @var EntityNavigator */
     protected $navigator = null;
 
@@ -90,7 +83,6 @@ trait WalkEntityTrait{
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
 
-        $this->needSlabJump = false;
         $this->checkDoorState = false;
         if($hasUpdate && $this->onGround){
             switch(EntityAI::checkPassablity($pos = new Position(
@@ -102,10 +94,6 @@ trait WalkEntityTrait{
                 case EntityAI::BLOCK:
                     $hasUpdate = true;
                     $this->motion->y += 0.52;
-                    break;
-                case EntityAI::SLAB:
-                //case EntityAI::STAIR:
-                    $this->needSlabJump = true;
                     break;
                 case EntityAI::DOOR:
                     $this->checkDoorState = true;
@@ -143,7 +131,21 @@ trait WalkEntityTrait{
         }else{
             /** @var Entity $this */
             $list = $this->getWorld()->getCollisionBoxes($this, $aabb->addCoord($dx, $dy, $dz));
-
+            if($this->onGround){ //반블럭류 자동 점프 기능
+                $x = ($dy > 0 ? $aabb->maxX : $aabb->minX) + $dx;
+                $y = $aabb->minY;
+                $z = ($dz > 0 ? $aabb->maxZ : $aabb->minZ) + $dz;
+                foreach($list as $k => $bb){
+                    if(
+                        $bb->maxY - $y <= 0.5
+                        && $x >= $bb->minX && $x <= $bb->maxX
+                        && $y >= $bb->minY && $y < $bb->maxY
+                        && $z >= $bb->minZ && $z <= $bb->maxZ
+                    ){
+                        $dy = $bb->maxY - $aabb->minY;
+                    }
+                }
+            }
             foreach($list as $k => $bb){
                 $dy = $bb->calculateYOffset($aabb, $dy);
             }
@@ -157,7 +159,7 @@ trait WalkEntityTrait{
 
             $delay = ($movX != $dx) + ($movZ != $dz);
             if($delay >= 1){
-                if($this->needSlabJump){
+                /*if($this->needSlabJump){
                     $aabb = clone $this->boundingBox;
 
                     $dx = $movX;
@@ -173,7 +175,7 @@ trait WalkEntityTrait{
                         $dz = $bb->calculateZOffset($aabb, $dz);
                     }
                     $aabb->offset($dx, 0, $dz);
-                }elseif($this->checkDoorState){
+                }else*/if($this->checkDoorState){
                     $delay = -1;
                     /** @var World $world */
                     $world = $this->getWorld();

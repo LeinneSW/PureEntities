@@ -7,26 +7,47 @@ namespace leinne\pureentities\tile;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\network\mcpe\protocol\AddActorPacket;
 use pocketmine\world\World;
 
-class MobSpawner extends Spawnable {
+class MonsterSpawner extends Spawnable{
 
-    protected $entityId = -1;
+    /** @var string */
+    protected $entityTypeId;
+
+    /** @var int */
     protected $spawnRange;
+
+    /** @var int */
+    protected $minSpawnDelay;
+
+    /** @var int */
+    protected $maxSpawnDelay;
+
+    /** @var int */
     protected $maxNearbyEntities;
+
+    /** @var int */
     protected $requiredPlayerRange;
 
+    /** @var int */
     public $delay = 0;
-
-    protected $minSpawnDelay;
-    protected $maxSpawnDelay;
 
     public function __construct(World $world, Vector3 $pos){
         parent::__construct($world, $pos);
     }
 
     public function readSaveData(CompoundTag $nbt) : void{
-        $this->entityId = $nbt->getInt('EntityId', -1);
+        if($nbt->hasTag("EntityId", IntTag::class)){
+            $this->entityTypeId = AddActorPacket::LEGACY_ID_MAP_BC[$nbt->getInt("EntityId")] ?? ":";
+        }elseif($nbt->hasTag("EntityIdentifier", StringTag::class)){
+            $this->entityTypeId = $nbt->getString("EntityIdentifier");
+        }else{
+            $this->entityTypeId = ":";
+        }
+
         $this->spawnRange = $nbt->getShort('SpawnRange', 8);
         $this->minSpawnDelay = $nbt->getInt('MinSpawnDelay', 200);
         $this->maxSpawnDelay = $nbt->getInt('MaxSpawnDelay', 8000);
@@ -35,23 +56,23 @@ class MobSpawner extends Spawnable {
     }
 
     public function hasValidEntityId() : bool{
-        return $this->entityId > 0;
+        return $this->entityTypeId > 0;
     }
 
     public function getMinSpawnDelay() : int{
-        return min($this->minSpawnDelay, $this->maxSpawnDelay);
+        return $this->minSpawnDelay;
     }
 
     public function getMaxSpawnDelay() : int{
-        return max($this->minSpawnDelay, $this->maxSpawnDelay);
+        return $this->minSpawnDelay;
     }
 
     public function addAdditionalSpawnData(CompoundTag $tag) : void{
-        $tag->setInt('EntityId', $this->entityId);
+        $tag->setString("EntityIdentifier", $this->entityTypeId);
     }
 
     public function setSpawnEntityType(int $entityId) : void{
-        $this->entityId = $entityId;
+        $this->entityTypeId = $entityId;
     }
 
     public function setMinSpawnDelay(int $minDelay) : void{
@@ -75,10 +96,7 @@ class MobSpawner extends Spawnable {
         $this->requiredPlayerRange = $range;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getRequiredPlayerRange() {
+    public function getRequiredPlayerRange() : int{
         return $this->requiredPlayerRange;
     }
 
@@ -86,33 +104,25 @@ class MobSpawner extends Spawnable {
         $this->maxNearbyEntities = $count;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getMaxNearbyEntities() {
+    public function getMaxNearbyEntities() : int{
         return $this->maxNearbyEntities;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getSpawnRange() {
+    public function getSpawnRange() : int{
         return $this->spawnRange;
     }
 
-    /**
-     * @return int
-     */
-    public function getEntityId(): int {
-        return $this->entityId;
+    public function getEntityId() : string{
+        return $this->entityTypeId;
     }
 
     protected function writeSaveData(CompoundTag $nbt) : void{
-        $nbt->setInt('EntityId', $this->entityId);
+        $nbt->setString('EntityIdentifier', $this->entityTypeId);
         $nbt->setShort('SpawnRange', $this->spawnRange);
         $nbt->setInt('MinSpawnDelay', $this->minSpawnDelay);
         $nbt->setInt('MaxSpawnDelay', $this->maxSpawnDelay);
         $nbt->setShort('MaxNearbyEntities', $this->maxNearbyEntities);
         $nbt->setShort('RequiredPlayerRange', $this->requiredPlayerRange);
     }
+
 }

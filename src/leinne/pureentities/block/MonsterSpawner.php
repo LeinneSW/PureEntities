@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
 
 namespace leinne\pureentities\block;
 
-
-use pocketmine\block\MonsterSpawner;
+use pocketmine\block\MonsterSpawner as PMMonsterSpawner;
 use pocketmine\entity\EntityFactory;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 
-class MobSpawner extends MonsterSpawner{
+class MonsterSpawner extends PMMonsterSpawner{
 
     public function onScheduledUpdate(): void {
         $spawner = $this->getPos()->getWorld()->getTile($this->getPos());
-        if (!$spawner instanceof \leinne\pureentities\tile\MobSpawner) {
+        if (!$spawner instanceof \leinne\pureentities\tile\MonsterSpawner) {
             return;
         }
         if(!$spawner->hasValidEntityId()){
@@ -29,11 +29,11 @@ class MobSpawner extends MonsterSpawner{
             $spawner->delay = 0;
 
             $list = [];
-            $isValid = \false;
+            $isValid = false;
             foreach($spawner->getPos()->getWorld()->getEntities() as $k => $entity){
                 if($entity->getPosition()->distance($spawner->getPos()) <= $spawner->getRequiredPlayerRange()){
                     if($entity instanceof Player){
-                        $isValid = \true;
+                        $isValid = true;
                     }
                     $list[] = $entity;
                     break;
@@ -47,9 +47,9 @@ class MobSpawner extends MonsterSpawner{
                     $spawner->getPos()->getZ() + mt_rand(-$spawner->getSpawnRange(), $spawner->getSpawnRange()),
                     $spawner->getPos()->getWorld()
                 ));
-                $nbt->setInt("id", $spawner->getEntityId());
+                $nbt->setString("identifier", $spawner->getEntityId());
                 $entity = EntityFactory::createFromData($spawner->getPos()->getWorld(), $nbt);
-                if($entity !== \null){
+                if($entity !== null){
                     $entity->spawnToAll();
                 }
             }

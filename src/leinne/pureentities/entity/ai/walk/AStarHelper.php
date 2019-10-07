@@ -69,7 +69,6 @@ class AStarHelper implements Helper{
         $end = $this->navigator->getEnd();
         $end->y = $this->calculateYPos($end);
         if($this->findTick === -1){
-            //echo "탐색 시작\n";
             ++$this->findTick;
             $pos = $this->navigator->getHolder()->getPosition();
             $pos->x = Math::floorFloat($pos->x) + 0.5;
@@ -136,7 +135,6 @@ class AStarHelper implements Helper{
         }
 
         if($valid){
-            //echo "탐색 끝\n";
             $last = array_pop($this->closeNode);
             $result = [$last];
             while(($node = array_pop($this->closeNode)) !== null){
@@ -149,7 +147,6 @@ class AStarHelper implements Helper{
             }
             return $result;
         }elseif($valid === false){
-            //echo "경로 없음\n";
             return null;
         }
 
@@ -170,7 +167,7 @@ class AStarHelper implements Helper{
         $facing = [Facing::EAST, Facing::WEST, Facing::SOUTH, Facing::NORTH];
         foreach($facing as $_ => $f){
             $near = $pos->getSide($f);
-            $state = $this->getBlockState($near);
+            $state = $this->getBlockPassablity($near);
             if($state !== EntityAI::WALL){
                 $y = $this->calculateYPos($near);
                 if($near->y - $y <= 3){
@@ -181,7 +178,7 @@ class AStarHelper implements Helper{
         return $result;
     }
 
-    public function getBlockState(Position $pos) : int{
+    public function getBlockPassablity(Position $pos) : int{
         if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"])){
             $state = $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0];
         }else{
@@ -196,7 +193,7 @@ class AStarHelper implements Helper{
             return $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1];
         }
         $y = $pos->y;
-        switch($this->getBlockState($pos)){
+        switch($this->getBlockPassablity($pos)){
             //case EntityAI::STAIR:
             case EntityAI::BLOCK:
                 $y += 1;
@@ -207,12 +204,14 @@ class AStarHelper implements Helper{
             case EntityAI::PASS:
                 $blockPos = $pos->floor();
                 for(; $blockPos->y >= 0; --$blockPos->y){
-                    $state = EntityAI::checkBlockState($pos->world->getBlockAt($blockPos->x, $blockPos->y, $blockPos->z));
-                    if($state === EntityAI::UP_SLAB || $state === EntityAI::BLOCK){
-                        ++$blockPos->y;
-                        break;
-                    }elseif($state === EntityAI::SLAB){
-                        $blockPos->y += 0.5;
+                    $block = $pos->world->getBlockAt($blockPos->x, $blockPos->y, $blockPos->z);
+                    $state = EntityAI::checkBlockState($block);
+                    if($state === EntityAI::UP_SLAB || $state === EntityAI::BLOCK || $state === EntityAI::SLAB){
+                        foreach($block->getCollisionBoxes() as $_ => $bb){
+                            if($blockPos->y < $bb->maxY){
+                                $blockPos->y = $bb->maxY;
+                            }
+                        }
                         break;
                     }
                 }

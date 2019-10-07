@@ -19,13 +19,11 @@ use leinne\pureentities\entity\hostile\Zombie;
 use leinne\pureentities\entity\utility\IronGolem;
 use leinne\pureentities\entity\utility\SnowGolem;
 use leinne\pureentities\task\AutoSpawnTask;
-use leinne\pureentities\tile\MobSpawner;
+use leinne\pureentities\tile\MonsterSpawner;
 
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockIdentifier as BID;
 use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\BlockLegacyIds as Ids;
-use pocketmine\block\tile\MonsterSpawner as TileMonsterSpawner;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -83,8 +81,7 @@ class PureEntities extends PluginBase implements Listener{
 //        EntityFactory::register(SmallFireBall::class, ['minecraft:smallfireball']);
 //        EntityFactory::register(LargeFireBall::class, ['minecraft:largefireball']);
 
-        TileFactory::register(MobSpawner::class, ["MobSpanwer", 'minecraft:mob_spawner']);
-        BlockFactory::register(new block\MobSpawner(new BID(Ids::MOB_SPAWNER, 0, null, TileMonsterSpawner::class), "Monster Spawner"), true);
+        BlockFactory::register(new block\MonsterSpawner(new BID(BlockLegacyIds::MOB_SPAWNER, 0, null, MonsterSpawner::class), "Monster Spawner"), true);
 
         foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var Living|string $className */
@@ -107,7 +104,17 @@ class PureEntities extends PluginBase implements Listener{
 
         $astar = $this->data["astar"] ?? [];
         AStarHelper::init((int) $astar["maximum-tick"] ?? 80, (int) $astar["block-per-tick"] ?? 220);
-        $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been enabled');
+        $this->getServer()->getLogger()->info(
+            TextFormat::AQUA . "\n" .
+            "------------------------------------------------------\n" .
+            " _____                ______       _   _ _   _\n" .
+            "|  __ \              |  ____|     | | (_) | (_)\n" .
+            "| |__) |   _ _ __ ___| |__   _ __ | |_ _| |_ _  ___  ___ \n" .
+            "|  ___/ | | | '__/ _ \  __| | '_ \| __| | __| |/ _ \/ __|\n" .
+            "| |   | |_| | | |  __/ |____| | | | |_| | |_| |  __/\__ \\\n" .
+            "|_|    \__,_|_|  \___|______|_| |_|\__|_|\__|_|\___||___/\n" .
+            "------------------------------------------------------\n"
+        );
     }
 
     public function onDisable() : void{
@@ -125,7 +132,7 @@ class PureEntities extends PluginBase implements Listener{
             $ev->setCancelled();
 
             $tile = $block->getPos()->getWorld()->getTile($block->getPos());
-            if($tile instanceof MobSpawner){
+            if($tile instanceof MonsterSpawner){
                 $tile->setSpawnEntityType($item->getMeta());
             }else{
                 if($tile !== null){
@@ -190,10 +197,9 @@ class PureEntities extends PluginBase implements Listener{
                     $player->getInventory()->setItemInHand($item);
                 }
             }elseif(
-                $block->getSide(Facing::DOWN)->getId() === BlockLegacyIds::IRON_BLOCK
+                ($down = $block->getSide(Facing::DOWN))->getId() === BlockLegacyIds::IRON_BLOCK
                 && $block->getSide(Facing::DOWN, 2)->getId() === BlockLegacyIds::IRON_BLOCK
             ){
-                $down = $block->getSide(Facing::DOWN);
                 if(($first = $down->getSide(Facing::EAST))->getId() === BlockLegacyIds::IRON_BLOCK){
                     $second = $down->getSide(Facing::WEST);
                 }
@@ -211,7 +217,7 @@ class PureEntities extends PluginBase implements Listener{
                 try{
                     $entity = EntityFactory::create(IronGolem::class, $block->getPos()->getWorld(), $nbt);
                 }catch(\Exception $e){
-                    $player->sendMessage(TextFormat::RED . 'Error');
+                    $player->sendMessage('[PureEntities] 골렘 소환중 오류 발생');
                     return;
                 }
                 $ev->setCancelled();

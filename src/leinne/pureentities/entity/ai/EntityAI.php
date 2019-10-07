@@ -18,16 +18,22 @@ class EntityAI{
     const SLAB = 3;
     const UP_SLAB = 4;
     const DOOR = 5;
-    //const STAIR = 6;
+
+    /** @var int[] */
+    private static $cache = [];
 
     /**
      * 특정 블럭이 어떤 상태인지를 확인해주는 메서드
      *
-     * @param Block $block
+     * @param Block|Position $block
      *
      * @return int
      */
-    public static function checkBlockState(Block $block) : int{
+    public static function checkBlockState($block) : int{
+        if($block instanceof Position){
+            $block = $block->world->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ());
+        }
+
         if(count($blocks = $block->getAffectedBlocks()) > 1){ //이웃된 블럭이 있을 때
             $blockA = $blocks[0]->getCollisionBoxes()[0] ?? null;
             $blockB = $blocks[1]->getCollisionBoxes()[0] ?? null;
@@ -49,12 +55,10 @@ class EntityAI{
             return EntityAI::PASS;
         }elseif($boxDiff > 1){ //울타리라면
             return EntityAI::WALL;
-        }elseif($boxDiff == 1){ //블럭이라면
-            return EntityAI::BLOCK;
-        }elseif($boxDiff === 0.5){ //반블럭이라면
-            return $blockBox->minY - (int) $blockBox->minY === 0.5 ? EntityAI::UP_SLAB : EntityAI::SLAB;
+        }elseif($boxDiff <= 0.5){ //반블럭/카펫/트랩도어 등등
+            return $blockBox->minY == (int) $blockBox->minY ? EntityAI::SLAB : EntityAI::UP_SLAB;
         }
-        return $boxDiff > 0 ? EntityAI::BLOCK : EntityAI::PASS;
+        return EntityAI::BLOCK;
     }
 
     /**
@@ -83,9 +87,13 @@ class EntityAI{
                 return (
                     self::checkBlockState($block->getSide(Facing::UP)) === EntityAI::PASS //y + 1이 통과가능하고
                     && (($up = self::checkBlockState($block->getSide(Facing::UP, 2))) === EntityAI::PASS || $up === EntityAI::UP_SLAB) //y + 2을 통과가능(반블럭 포함)하면
-                ) ? ($pos->y - (int) $pos->y === 0.5 ? EntityAI::SLAB : EntityAI::BLOCK) : EntityAI::WALL;
+                ) ? EntityAI::SLAB : EntityAI::WALL;
         }
         return EntityAI::WALL;
+    }
+
+    public static function updateBlockState(Block $block) : void{
+        //TODO: 속도 개선을 위해 캐시데이터 추가
     }
 
 }
