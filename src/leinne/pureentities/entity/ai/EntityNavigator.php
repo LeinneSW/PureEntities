@@ -65,12 +65,11 @@ abstract class EntityNavigator{
 
         if(!empty($this->goal)){
             $next = $this->next();
-            if($next !== null && (abs($next->x - $pos->x) < 0.2 && abs($next->y - $pos->y) < 1 && abs($next->z - $pos->z) < 0.2)){
+            if($next !== null && (abs($next->x - $pos->x) < 0.3 && abs($next->y - $pos->y) < 1 && abs($next->z - $pos->z) < 0.3)){
                 --$this->goalIndex;
             }
 
             if($this->goalIndex < 0){
-                //$this->end = null;
                 $this->setEnd($this->makeRandomGoal());
             }
         }
@@ -79,14 +78,9 @@ abstract class EntityNavigator{
             $this->setEnd($this->makeRandomGoal());
         }
 
-        /*if($this->end === null){
-            return;
-        }*/
-
         if($this->goalIndex < 0 || empty($this->goal)) {
             $this->goal = $this->getHelper()->calculate();
             if($this->goal === null){
-                //$this->end = null;
                 $this->setEnd($this->makeRandomGoal());
             }else{
                 $this->goalIndex = count($this->goal) - 1;

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\ai;
 
 use pocketmine\block\Block;
+use pocketmine\block\Door;
 use pocketmine\block\Lava;
 use pocketmine\block\Stair;
 use pocketmine\math\Facing;
+use pocketmine\math\Vector3;
 use pocketmine\world\Position;
 
 class EntityAI{
@@ -22,28 +24,35 @@ class EntityAI{
     /** @var int[] */
     private static $cache = [];
 
+    public static function getHash(Vector3 $pos) : string{
+        return "{$pos->x}:{$pos->y}:{$pos->z}";
+    }
+
     /**
      * 특정 블럭이 어떤 상태인지를 확인해주는 메서드
      *
-     * @param Block|Position $block
+     * @param Block|Position $data
      *
      * @return int
+     * @throws \RuntimeException
      */
-    public static function checkBlockState($block) : int{
-        if($block instanceof Position){
-            $block = $block->world->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ());
+    public static function checkBlockState($data) : int{
+        if($data instanceof Position){
+            $block = $data->world->getBlockAt($data->getFloorX(), $data->getFloorY(), $data->getFloorZ());
+        }elseif($data instanceof Block){
+            $block = $data;
+        }else{
+            throw new \RuntimeException("$data is not Block|Position class");
         }
 
-        if(count($blocks = $block->getAffectedBlocks()) > 1){ //이웃된 블럭이 있을 때
-            $blockA = $blocks[0]->getCollisionBoxes()[0] ?? null;
-            $blockB = $blocks[1]->getCollisionBoxes()[0] ?? null;
-            if($blockA !== null && $blockB !== null && max($blockA->maxY, $blockB->maxY) - min($blockA->minY, $blockB->minY) == 2){ //그 블럭이 문이라면
-                return EntityAI::DOOR;
-            }
+        if(isset(self::$cache[$hash = self::getHash($block->getPos())])){
+            return self::$cache[$hash];
         }
 
-        if($block instanceof Stair){
-            return EntityAI::BLOCK; //TODO: 계단은 확인하기 어려움
+        if($block instanceof Door && count($block->getAffectedBlocks()) > 1){ //이웃된 블럭이 있을 때
+            return EntityAI::DOOR;
+        }elseif($block instanceof Stair){
+            return EntityAI::BLOCK;
         }
 
         $blockBox = $block->getCollisionBoxes()[0] ?? null;
@@ -58,7 +67,7 @@ class EntityAI{
         }elseif($boxDiff <= 0.5){ //반블럭/카펫/트랩도어 등등
             return $blockBox->minY == (int) $blockBox->minY ? EntityAI::SLAB : EntityAI::UP_SLAB;
         }
-        return EntityAI::BLOCK;
+        return EntityAI::BLOCK; //TODO: 트랩도어
     }
 
     /**
@@ -79,10 +88,16 @@ class EntityAI{
                 return self::checkBlockState($block->getSide(Facing::UP)) === EntityAI::PASS ? EntityAI::PASS : EntityAI::WALL;
             case EntityAI::BLOCK:
             case EntityAI::UP_SLAB: //블럭이거나 위에 설치된 반블럭일경우
-                return (
-                    self::checkBlockState($block->getSide(Facing::UP)) === EntityAI::PASS //y + 1이 통과가능하고
-                    && self::checkBlockState($block->getSide(Facing::UP, 2)) === EntityAI::PASS //y + 2도 통과가능하면
-                ) ? ($pos->y - (int) $pos->y === 0.5 ? EntityAI::SLAB : EntityAI::BLOCK) : EntityAI::WALL; //현재위치에 따라 반블럭/블럭 으로 구분
+                $up = self::checkBlockState($upBlock = $block->getSide(Facing::UP));
+                if($up !== EntityAI::PASS && $up !== EntityAI::SLAB){
+                    return EntityAI::WALL;
+                }
+
+                $up2 = self::checkBlockState($block->getSide(Facing::UP, 2));
+                if($up === EntityAI::SLAB && $upBlock->getCollisionBoxes()[0]->maxY - $pos->y <= 1){
+                    return $up2 === EntityAI::PASS ? EntityAI::BLOCK : EntityAI::WALL;
+                }
+                return ($up === EntityAI::PASS && $up2 === EntityAI::PASS) ? ($pos->y - (int) $pos->y >= 0.5 ? EntityAI::SLAB : EntityAI::BLOCK) : EntityAI::WALL; //현재위치에 따라 반블럭/블럭 으로 구분
             case EntityAI::SLAB:
                 return (
                     self::checkBlockState($block->getSide(Facing::UP)) === EntityAI::PASS //y + 1이 통과가능하고

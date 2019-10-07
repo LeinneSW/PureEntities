@@ -27,7 +27,7 @@ class AStarHelper implements Helper{
     private $closeNode = [];
 
     /** @var array */
-    private $onChange = [];
+    //private $onChange = [];
 
     /** @var int[][] */
     private $mapCache = [];
@@ -80,22 +80,26 @@ class AStarHelper implements Helper{
             $this->openNode[] = Node::create($pos, $end);
         }
 
-        $valid = null;
+        $result = -1;
         while(++$this->findTick <= self::$blockPerTick){
             if(empty($this->openNode)){
-                $valid = false;
+                $result = 0;
                 break;
             }
 
             $this->sortOpenNode(0, count($this->openNode) - 1);
             $parent = array_shift($this->openNode);
-            unset($this->openHash[$parent->getHash()]);
+            unset($this->openHash[EntityAI::getHash($parent)]);
 
             $beforeY = $parent->y;
             $parent->y = $this->calculateYPos($parent);
-            $hash = $parent->getHash();
+            $hash = EntityAI::getHash($parent);
             if($parent->y !== $beforeY){
-                $this->onChange[$hash] = true;
+                $p = $parent->getParentNode();
+                if($p !== null){
+                    $parent->setGoal($p->getGoal() + $p->distanceSquared($parent));
+                }
+                //$this->onChange[$hash] = true;
             }
 
             if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ //다른 Y값으로 이미 최적 경로에 도달했을 경우
@@ -104,14 +108,14 @@ class AStarHelper implements Helper{
 
             $this->closeNode[$hash] = $parent;
             if($parent->getFloorX() === $end->getFloorX() && $parent->getFloorZ() === $end->getFloorZ() && $parent->getFloorY() === $end->getFloorY()){
-                $valid = true;
+                $result = 1;
                 break;
             }
 
             $near = $this->getNear($parent);
-            if(count($near) < 4){
+            /*if(count($near) < 4){
                 $this->onChange[$hash] = true;
-            }
+            }*/
             foreach($near as $_ => $pos){
                 ++$this->findTick;
                 $key = "{$pos->x}:{$pos->y}:{$pos->z}";
@@ -133,19 +137,19 @@ class AStarHelper implements Helper{
             }
         }
 
-        if($valid){
+        if($result === 1){
             $last = array_pop($this->closeNode);
             $result = [$last];
             while(($node = array_pop($this->closeNode)) !== null){
-                if($last->getParentNode() === $node->getId()){
+                if($last->getParentNode()->getId() === $node->getId()){
                     $last = $node;
-                    if(isset($this->onChange[$node->getHash()])){
+                    //if(isset($this->onChange[EntityAI::getHash($node)])){
                         $result[] = $node;
-                    }
+                    //}
                 }
             }
             return $result;
-        }elseif($valid === false){
+        }elseif($result === 0){
             return null;
         }
 
@@ -191,14 +195,13 @@ class AStarHelper implements Helper{
         if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1])){
             return $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1];
         }
-        $y = $pos->y;
+        $newY = $pos->y;
         switch($this->getBlockPassablity($pos)){
-            //case EntityAI::STAIR:
             case EntityAI::BLOCK:
-                $y += 1;
+                $newY += 1;
                 break;
             case EntityAI::SLAB:
-                $y += 0.5;
+                $newY += 0.5;
                 break;
             case EntityAI::PASS:
                 $blockPos = $pos->floor();
@@ -214,14 +217,14 @@ class AStarHelper implements Helper{
                         break;
                     }
                 }
-                $y = $blockPos->y;
+                $newY = $blockPos->y;
                 break;
         }
-        $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1] = $y;
-        for($i = $pos->y - 1; $i >= $y; --$i){
-            $this->mapCache["{$pos->x}:{$i}:{$pos->z}"][1] = $y;
+        $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1] = $newY;
+        for($y = $pos->y - 1; $y >= $newY; --$y){
+            $this->mapCache["{$pos->x}:{$y}:{$pos->z}"][1] = $newY;
         }
-        return $y;
+        return $newY;
     }
 
     /**

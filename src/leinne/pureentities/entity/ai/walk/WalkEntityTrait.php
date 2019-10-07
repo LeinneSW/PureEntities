@@ -8,9 +8,9 @@ use leinne\pureentities\entity\ai\EntityAI;
 use leinne\pureentities\entity\ai\EntityNavigator;
 use leinne\pureentities\entity\EntityBase;
 
-use pocketmine\block\Door;
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 
@@ -83,9 +83,12 @@ trait WalkEntityTrait{
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
 
+        if(!$this->checkDoorState){
+            $this->doorBreakTick = 0;
+        }
         $this->checkDoorState = false;
         if($hasUpdate && $this->onGround){
-            switch(EntityAI::checkPassablity($pos = new Position(
+            switch(EntityAI::checkPassablity(new Position(
                 ($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x,
                 $this->boundingBox->minY,
                 ($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z,
@@ -131,7 +134,7 @@ trait WalkEntityTrait{
         }else{
             /** @var Entity $this */
             $list = $this->getWorld()->getCollisionBoxes($this, $aabb->addCoord($dx, $dy, $dz));
-            if($this->onGround){ //반블럭류 자동 점프 기능
+            if($this->onGround && $movY <= 0){ //반블럭류 자동 점프 기능
                 $x = ($dy > 0 ? $aabb->maxX : $aabb->minX) + $dx;
                 $y = $aabb->minY;
                 $z = ($dz > 0 ? $aabb->maxZ : $aabb->minZ) + $dz;
@@ -161,15 +164,10 @@ trait WalkEntityTrait{
             if($delay >= 1 && $this->checkDoorState){
                 $delay = -1;
                 /** @var World $world */
-                $world = $this->getWorld();
-                if($world->getBlock($this->getPosition()) instanceof Door){
-                    if(++$this->doorBreakTick >= 20){
-                        $this->doorBreakTick = 0;
-                        $item = $this->getInventory()->getItemInHand();
-                        $world->useBreakOn($this->getPosition(), $item, null, true);
-                    }
-                }else{
+                if(++$this->doorBreakTick >= 25){
                     $this->doorBreakTick = 0;
+                    $item = $this->getInventory()->getItemInHand();
+                    $this->getWorld()->useBreakOn(new Vector3(($movX > 0 ? $aabb->maxX : $aabb->minX) + $movX, $aabb->minY, ($movZ > 0 ? $aabb->maxZ : $aabb->minZ) + $movZ), $item, null, true);
                 }
             }
 

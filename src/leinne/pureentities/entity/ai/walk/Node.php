@@ -25,7 +25,7 @@ class Node extends Position{
      */
     private $heuristic = 0.0;
     
-    /** @var ?int */
+    /** @var Node|null */
     private $parentNode = null;
 
     public static function create(Position $pos, Position $end, ?Node $parent = null) : self{
@@ -37,14 +37,10 @@ class Node extends Position{
         $node->world = $pos->world;
         $node->heuristic = $pos->distanceSquared($end);
         if($parent !== null){
-            $node->parentNode = $parent->id;
+            $node->parentNode = $parent;
             $node->goal = $parent->goal + $pos->distanceSquared($parent);
         }
         return $node;
-    }
-
-    public function getHash() : string{
-        return "{$this->x}:{$this->y}:{$this->z}";
     }
 
     public function getId() : int{
@@ -59,7 +55,7 @@ class Node extends Position{
         return $this->heuristic + $this->goal;
     }
 
-    public function getParentNode() : ?int{
+    public function getParentNode() : ?Node{
         return $this->parentNode;
     }
 
@@ -67,7 +63,7 @@ class Node extends Position{
         $this->goal = $score;
     }
 
-    public function setParentNode(int $id) : void{
-        $this->parentNode = $id;
+    public function setParentNode(Node $node) : void{
+        $this->parentNode = $node;
     }
 }
