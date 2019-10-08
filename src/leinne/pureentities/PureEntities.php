@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
+use leinne\pureentities\entity\ai\EntityAI;
 use leinne\pureentities\entity\ai\walk\AStarHelper;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\neutral\ZombiePigman;
@@ -143,6 +144,10 @@ class PureEntities extends PluginBase implements Listener{
                 $tile->getPos()->getWorld()->addTile($tile);
             }
         }
+
+        $newPos = $block->getPos()->asPosition();
+        $newPos->y += 0.5;
+        $ev->getPlayer()->sendMessage("블록: $block\n" . $block->getPos() . "\n" . EntityAI::checkPassablity($newPos));
     }
 
     public function onBlockPlaceEvent(BlockPlaceEvent $ev) : void{

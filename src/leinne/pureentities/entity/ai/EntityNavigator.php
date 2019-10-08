@@ -61,20 +61,13 @@ abstract class EntityNavigator{
 
         if($target !== null && $this->getEnd()->distanceSquared($target->getPosition())){
             $this->setEnd($target->getPosition());
+            return;
         }
 
-        if(!empty($this->goal)){
-            $next = $this->next();
-            if($next !== null && (abs($next->x - $pos->x) < 0.3 && abs($next->y - $pos->y) < 1 && abs($next->z - $pos->z) < 0.3)){
-                --$this->goalIndex;
-            }
-
-            if($this->goalIndex < 0){
-                $this->setEnd($this->makeRandomGoal());
-            }
-        }
-
-        if($this->stopDelay >= 90){
+        if(
+            $this->stopDelay >= 90
+            || (!empty($this->goal) && $this->goalIndex < 0)
+        ){
             $this->setEnd($this->makeRandomGoal());
         }
 
@@ -89,6 +82,16 @@ abstract class EntityNavigator{
     }
 
     public function next() : ?Position{
+        if($this->goalIndex >= 0){
+            $next = $this->goal[$this->goalIndex];
+            if($this->holder->getPosition()->distanceSquared($next) < 0.16){
+                --$this->goalIndex;
+            }
+
+            if($this->goalIndex < 0){
+                return null;
+            }
+        }
         return $this->goalIndex >= 0 ? $this->goal[$this->goalIndex] : null;
     }
 

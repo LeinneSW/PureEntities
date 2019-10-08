@@ -8,11 +8,12 @@ use leinne\pureentities\entity\ai\EntityAI;
 use leinne\pureentities\entity\ai\EntityNavigator;
 use leinne\pureentities\entity\EntityBase;
 
+use leinne\pureentities\entity\Monster;
 use pocketmine\entity\Entity;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\world\Position;
-use pocketmine\world\World;
 
 /**
  * This trait override most methods in the {@link EntityBase} abstract class.
@@ -24,7 +25,7 @@ trait WalkEntityTrait{
      *
      * @var int
      */
-    private $doorBreakTick = 0;
+    private $doorBreakTick = -1;
 
     /**
      * 가야할 블럭이 문인지 확인합니다
@@ -32,6 +33,9 @@ trait WalkEntityTrait{
      * @var bool
      */
     private $checkDoorState = false;
+
+    /** @var Position */
+    private $doorPos = null;
 
     /** @var EntityNavigator */
     protected $navigator = null;
@@ -64,7 +68,7 @@ trait WalkEntityTrait{
         $this->getNavigator()->update();
 
         /** @var Position $me */
-        $me = $this->getPosition();
+        $me = $this->location;
         /** @var Entity $target */
         $target = $this->getTargetEntity();
 
@@ -72,23 +76,23 @@ trait WalkEntityTrait{
         if($goal === null){
             return $hasUpdate;
         }
-        $x = $goal->x - $me->getX();
-        $y = $goal->y - $me->getY();
-        $z = $goal->z - $me->getZ();
+        $x = $goal->x - $me->x;
+        $z = $goal->z - $me->z;
         $diff = abs($x) + abs($z);
-        if(!$this->interactTarget() && $diff !== 0.0){
+        if(!$this->interactTarget() && $diff != 0){
             $hasUpdate = true;
-            $ground = $this->onGround ? 0.125 : 0.0025;
+            $ground = $this->onGround ? 0.125 : 0.002;
             $this->motion->x += $this->getSpeed() * $ground * $x / $diff;
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
 
-        if(!$this->checkDoorState){
-            $this->doorBreakTick = 0;
+        $door = $this->checkDoorState;
+        if(!$door && $this->doorBreakTick > 0){
+            $this->doorBreakTick = -1;
         }
         $this->checkDoorState = false;
         if($hasUpdate && $this->onGround){
-            switch(EntityAI::checkPassablity(new Position(
+            switch(EntityAI::checkPassablity($pos = new Position(
                 ($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x,
                 $this->boundingBox->minY,
                 ($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z,
@@ -100,13 +104,23 @@ trait WalkEntityTrait{
                     break;
                 case EntityAI::DOOR:
                     $this->checkDoorState = true;
+                    if($this->doorBreakTick === -1){
+                        $this->doorPos = $pos;
+                        $this->doorBreakTick = ceil($pos->world->getBlock($pos)->getBreakInfo()->getBreakTime($this->inventory->getItemInHand()) * 20);
+                        $pos->world->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_START_BREAK, (int) (65535 / $this->doorBreakTick));
+                    }
                     break;
             }
         }
 
+        if($door && !$this->checkDoorState){
+            $this->doorPos = null;
+            $this->doorPos->world->broadcastLevelEvent($this->doorPos, LevelEventPacket::EVENT_BLOCK_STOP_BREAK);
+        }
+
         $this->setRotation(
             rad2deg(atan2($z, $x)) - 90.0,
-            $target === null ? 0.0 : rad2deg(-atan2($y, sqrt($x ** 2 + $z ** 2)))
+            $target === null ? 0.0 : rad2deg(-atan2($target->location->y - $me->y, sqrt(($target->location->x - $me->x) ** 2 + ($target->location->z - $me->z) ** 2)))
         );
 
         return $hasUpdate;
@@ -132,20 +146,21 @@ trait WalkEntityTrait{
         if($this->keepMovement){
             $aabb->offset($dx, $dy, $dz);
         }else{
+            $checkStep = false;
             /** @var Entity $this */
             $list = $this->getWorld()->getCollisionBoxes($this, $aabb->addCoord($dx, $dy, $dz));
-            if($this->onGround && $movY <= 0){ //반블럭류 자동 점프 기능
+            if($this->onGround && $dy <= 0){ //스텝 기능
+                $checkStep = true;
                 $x = ($dy > 0 ? $aabb->maxX : $aabb->minX) + $dx;
-                $y = $aabb->minY;
                 $z = ($dz > 0 ? $aabb->maxZ : $aabb->minZ) + $dz;
                 foreach($list as $k => $bb){
                     if(
-                        ($diff = $bb->maxY - $y) <= 0.5
+                        ($diff = $bb->maxY - $aabb->minY) <= 0.5
                         && $x >= $bb->minX && $x <= $bb->maxX
-                        && $y >= $bb->minY && $y < $bb->maxY
                         && $z >= $bb->minZ && $z <= $bb->maxZ
+                        && $aabb->minY >= $bb->minY && $aabb->minY < $bb->maxY
                     ){
-                        $dy = $diff;
+                        $dy = $diff + 0.05;
                     }
                 }
             }
@@ -161,16 +176,33 @@ trait WalkEntityTrait{
             $aabb->offset($dx, 0, $dz);
 
             $delay = ($movX != $dx) + ($movZ != $dz);
-            if($delay >= 1 && $this->checkDoorState){
-                $delay = -1;
-                /** @var World $world */
-                if(++$this->doorBreakTick >= 25){
-                    $this->doorBreakTick = 0;
-                    $item = $this->getInventory()->getItemInHand();
-                    $this->getWorld()->useBreakOn(new Vector3(($movX > 0 ? $aabb->maxX : $aabb->minX) + $movX, $aabb->minY, ($movZ > 0 ? $aabb->maxZ : $aabb->minZ) + $movZ), $item, null, true);
+            if($delay > 0){
+                if($checkStep){ //스텝 블럭 시도했으나 실패했을 시
+                    $aabb = clone $this->boundingBox;
+                    $dx = $movX;
+                    $dy = $movY;
+                    $dz = $movZ;
+                    foreach($list as $k => $bb){
+                        $dy = $bb->calculateYOffset($aabb, $dy);
+                    }
+                    $aabb->offset(0, $dy, 0);
+
+                    foreach($list as $k => $bb){
+                        $dx = $bb->calculateXOffset($aabb, $dx);
+                        $dz = $bb->calculateZOffset($aabb, $dz);
+                    }
+                    $aabb->offset($dx, 0, $dz);
+                }
+
+                if($this instanceof Monster && $this->checkDoorState){
+                    $delay = -1;
+                    if(--$this->doorBreakTick <= 0){
+                        $this->doorBreakTick = -1;
+                        $item = $this->inventory->getItemInHand();
+                        $this->getWorld()->useBreakOn(new Vector3(($movX > 0 ? $aabb->maxX : $aabb->minX) + $movX, $aabb->minY, ($movZ > 0 ? $aabb->maxZ : $aabb->minZ) + $movZ), $item, null, true);
+                    }
                 }
             }
-
             $this->getNavigator()->addStopDelay($delay);
         }
 

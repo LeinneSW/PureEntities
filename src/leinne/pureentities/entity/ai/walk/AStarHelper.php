@@ -9,6 +9,7 @@ use leinne\pureentities\entity\ai\Helper;
 
 use pocketmine\math\Facing;
 use pocketmine\math\Math;
+use pocketmine\math\Vector3;
 use pocketmine\world\Position;
 
 class AStarHelper implements Helper{
@@ -29,8 +30,11 @@ class AStarHelper implements Helper{
     /** @var array */
     //private $onChange = [];
 
-    /** @var int[][] */
-    private $mapCache = [];
+    /** @var int[] */
+    private $yCache = [];
+
+    /** @var int[] */
+    private $passablity = [];
 
     private $findTick = -1;
     private $findCount = 0;
@@ -47,11 +51,16 @@ class AStarHelper implements Helper{
         $this->navigator = $navigator;
     }
 
-    public function reset() : void{
-        $this->findTick = -1;
-        $this->findCount = 0;
+    public function reset(bool $full = true) : void{
+        if($full){
+            $this->findTick = -1;
+            $this->findCount = 0;
+        }
 
-        $this->mapCache = [];
+        $this->yCache = [];
+        $this->passablity = [];
+
+        //$this->onChange = [];
         $this->openNode = [];
         $this->openHash = [];
         $this->closeNode = [];
@@ -70,10 +79,7 @@ class AStarHelper implements Helper{
         $end = $this->navigator->getEnd();
         $end->y = $this->calculateYPos($end);
         if($this->findTick === -1){
-            $this->reset();
-            $this->findTick = 0;
-            $this->findCount = 1;
-
+            $this->reset(false);
             $pos = $this->navigator->getHolder()->getPosition();
             $pos->x = Math::floorFloat($pos->x) + 0.5;
             $pos->z = Math::floorFloat($pos->z) + 0.5;
@@ -112,13 +118,14 @@ class AStarHelper implements Helper{
                 break;
             }
 
-            $near = $this->getNear($parent);
-            /*if(count($near) < 4){
+            /*$near = $this->getNear($parent);
+            if(count($near) < 4){
                 $this->onChange[$hash] = true;
-            }*/
-            foreach($near as $_ => $pos){
+            }
+            foreach($near as $_ => $pos){*/
+            foreach($this->getNear($parent) as $_ => $pos){
                 ++$this->findTick;
-                $key = "{$pos->x}:{$pos->y}:{$pos->z}";
+                $key = EntityAI::getHash($pos);
                 if(isset($this->closeNode[$key])){ /** 이미 최적 경로를 찾은 경우 */
                     continue;
                 }
@@ -182,21 +189,19 @@ class AStarHelper implements Helper{
     }
 
     public function getBlockPassablity(Position $pos) : int{
-        if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0])){
-            $state = $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0];
-        }else{
-            $state = EntityAI::checkPassablity($pos);
-            $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][0] = $state;
+        if(!isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"])){
+            $this->passablity["{$pos->x}:{$pos->y}:{$pos->z}"] = EntityAI::checkPassablity($pos);
         }
-        return $state;
+        return $this->passablity["{$pos->x}:{$pos->y}:{$pos->z}"];
     }
 
     public function calculateYPos(Position $pos) : float{
-        if(isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1])){
-            return $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1];
+        if(isset($this->yCache[$hash = EntityAI::getHash($pos)])){
+            return $this->yCache[$hash];
         }
-        $newY = $pos->y;
-        switch($this->getBlockPassablity($pos)){
+
+        $newY = (int) $pos->y;
+        switch(EntityAI::checkBlockState($pos)){
             case EntityAI::BLOCK:
                 $newY += 1;
                 break;
@@ -204,25 +209,25 @@ class AStarHelper implements Helper{
                 $newY += 0.5;
                 break;
             case EntityAI::PASS:
-                $blockPos = $pos->floor();
-                for(; $blockPos->y >= 0; --$blockPos->y){
-                    $block = $pos->world->getBlockAt($blockPos->x, $blockPos->y, $blockPos->z);
+                $newPos = new Vector3(Math::floorFloat($pos->x), $pos->getFloorY(), Math::floorFloat($pos->z));
+                for(; $newPos->y >= 0; $newPos->y -= 1){
+                    $block = $pos->world->getBlockAt($newPos->x, $newPos->y, $newPos->z);
                     $state = EntityAI::checkBlockState($block);
                     if($state === EntityAI::UP_SLAB || $state === EntityAI::BLOCK || $state === EntityAI::SLAB){
                         foreach($block->getCollisionBoxes() as $_ => $bb){
-                            if($blockPos->y < $bb->maxY){
-                                $blockPos->y = $bb->maxY;
+                            if($newPos->y < $bb->maxY){
+                                $newPos->y = $bb->maxY;
                             }
                         }
                         break;
                     }
                 }
-                $newY = $blockPos->y;
+                $newY = $newPos->y;
                 break;
         }
-        $this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"][1] = $newY;
-        for($y = $pos->y - 1; $y >= $newY; --$y){
-            $this->mapCache["{$pos->x}:{$y}:{$pos->z}"][1] = $newY;
+        $this->yCache[$hash] = $newY;
+        for($y = $pos->getFloorY() - 1; $y >= (int) $newY; --$y){
+            $this->yCache[Math::floorFloat($pos->x) . ":$y:" . Math::floorFloat($pos->z)] = $newY;
         }
         return $newY;
     }
