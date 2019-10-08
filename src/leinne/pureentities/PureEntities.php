@@ -144,10 +144,6 @@ class PureEntities extends PluginBase implements Listener{
                 $tile->getPos()->getWorld()->addTile($tile);
             }
         }
-
-        $newPos = $block->getPos()->asPosition();
-        $newPos->y += 0.5;
-        $ev->getPlayer()->sendMessage("블록: $block\n" . $block->getPos() . "\n" . EntityAI::checkPassablity($newPos));
     }
 
     public function onBlockPlaceEvent(BlockPlaceEvent $ev) : void{
