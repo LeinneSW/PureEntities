@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
-use leinne\pureentities\entity\ai\EntityAI;
 use leinne\pureentities\entity\ai\walk\AStarHelper;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\neutral\ZombiePigman;

@@ -23,11 +23,16 @@ class EntityAI{
     const DOOR = 5;
 
     /** @var int[] */
-    //private static $cache = [];
+    private static $cache = [];
 
     public static function getHash(Vector3 $pos) : string{
         return Math::floorFloat($pos->x) . ":{$pos->getFloorY()}:" . Math::floorFloat($pos->z);
         //return "{$pos->getFloorX()}:{$pos->getFloorY()}:{$pos->getFloorZ()}";
+    }
+
+    public static function updateBlockState(Block $block) : void{
+        unset(self::$cache[self::getHash($block->getPos())]);
+        self::checkBlockState($block);
     }
 
     /**
@@ -97,15 +102,14 @@ class EntityAI{
             case EntityAI::BLOCK:
             case EntityAI::UP_SLAB: //블럭이거나 위에 설치된 반블럭일경우
                 $up = self::checkBlockState($upBlock = $block->getSide(Facing::UP)); //y+1의 블럭이
-                if($up === EntityAI::SLAB){ //반블럭 이라면
+                if($up === EntityAI::SLAB){ //반블럭 이고
                     $up2 = self::checkBlockState($block->getSide(Facing::UP, 2));
-                    if($upBlock->getCollisionBoxes()[0]->maxY - $pos->y <= 1){
-                        return $up2 === EntityAI::PASS ? EntityAI::BLOCK : EntityAI::WALL;
-                    }
+                    //그 위가 통과 가능하며 블럭의 최고점과 자신의 위치의 차가 블럭 이하라면 블럭 판정
+                    return $up2 === EntityAI::PASS && $upBlock->getCollisionBoxes()[0]->maxY - $pos->y <= 1 ? EntityAI::BLOCK : EntityAI::WALL;
                 }elseif($up === EntityAI::PASS){ //통과가능시에
                     //y+ 2도 통과 가능이라면
                     return self::checkBlockState($block->getSide(Facing::UP, 2)) === EntityAI::PASS ?
-                        //점프 대상 블럭의 최대 y값과 자신의 위치의 차가 반블럭 이하라면 반블럭 판정 아니라면 블럭 판정
+                        //블럭의 최고점과 자신의 위치의 차가 반블럭 이하라면 반블럭 판정 아니라면 블럭 판정
                         ($block->getCollisionBoxes()[0]->maxY - $pos->y <= 0.5 ? EntityAI::SLAB : EntityAI::BLOCK) : EntityAI::WALL;
                 }
                 return EntityAI::WALL;
@@ -116,10 +120,6 @@ class EntityAI{
                 ) ? EntityAI::SLAB : EntityAI::WALL;
         }
         return EntityAI::WALL;
-    }
-
-    public static function updateBlockState(Block $block) : void{
-        //TODO: 속도 개선을 위해 캐시데이터 추가
     }
 
 }

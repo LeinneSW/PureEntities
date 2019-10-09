@@ -114,8 +114,8 @@ trait WalkEntityTrait{
         }
 
         if($door && !$this->checkDoorState){
-            $this->doorPos = null;
             $this->doorPos->world->broadcastLevelEvent($this->doorPos, LevelEventPacket::EVENT_BLOCK_STOP_BREAK);
+            $this->doorPos = null;
         }
 
         $this->setRotation(
