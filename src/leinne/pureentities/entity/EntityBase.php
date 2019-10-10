@@ -12,6 +12,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\timings\Timings;
+use pocketmine\world\World;
 
 abstract class EntityBase extends Living{
 
@@ -95,7 +96,24 @@ abstract class EntityBase extends Living{
         return $nbt;
     }
 
+    protected function entityBaseTick(int $tickDiff = 1) : bool{
+        if(!$this->canSpawnPeaceful() && $this->getWorld()->getDifficulty() === World::DIFFICULTY_PEACEFUL){
+            $this->close();
+            return false;
+        }
+
+        return parent::entityBaseTick($tickDiff);
+    }
+
     public function isMovable() : bool{
+        return true;
+    }
+
+    public function canBreakDoor() : bool{
+        return false;
+    }
+
+    public function canSpawnPeaceful() : bool{
         return true;
     }
 

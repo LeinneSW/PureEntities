@@ -22,8 +22,8 @@ class WalkEntityNavigator extends EntityNavigator{
     }
 
     public function makeRandomGoal() : Position{
-        $x = mt_rand(8, 25);
-        $z = mt_rand(8, 25);
+        $x = mt_rand(10, 30);
+        $z = mt_rand(10, 30);
 
         $pos = $this->holder->getPosition();
         $pos->x = Math::floorFloat($pos->x) + 0.5 + (mt_rand(0, 1) ? $x : -$x);

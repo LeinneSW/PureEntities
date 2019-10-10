@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
-interface Helper{
+abstract class Helper{
 
-    public function calculate() : ?array;
+    /** @var EntityNavigator */
+    protected $navigator;
+
+    public function __construct(EntityNavigator $navigator){
+        $this->navigator = $navigator;
+    }
+
+    public abstract function calculate() : ?array;
 
 }

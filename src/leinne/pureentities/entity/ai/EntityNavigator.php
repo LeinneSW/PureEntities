@@ -65,7 +65,7 @@ abstract class EntityNavigator{
         }
 
         if(
-            $this->stopDelay >= 90
+            $this->stopDelay >= 80
             || (!empty($this->goal) && $this->goalIndex < 0)
         ){
             $this->setEnd($this->makeRandomGoal());
@@ -84,7 +84,7 @@ abstract class EntityNavigator{
     public function next() : ?Position{
         if($this->goalIndex >= 0){
             $next = $this->goal[$this->goalIndex];
-            if($this->holder->getPosition()->distanceSquared($next) < 0.16){
+            if($this->canGoNextNode($next)){
                 --$this->goalIndex;
             }
 
@@ -100,6 +100,10 @@ abstract class EntityNavigator{
         if($this->stopDelay < 0){
             $this->stopDelay = 0;
         }
+    }
+
+    public function canGoNextNode(Position $pos) : bool{
+        return $this->holder->getPosition()->distanceSquared($pos) < 0.25;
     }
 
     public function getHolder() : EntityBase{

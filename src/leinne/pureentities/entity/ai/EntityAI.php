@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai;
 
+use leinne\pureentities\entity\EntityBase;
+
 use pocketmine\block\Block;
 use pocketmine\block\Door;
 use pocketmine\block\Lava;
@@ -26,28 +28,29 @@ class EntityAI{
     private static $cache = [];
 
     public static function getHash(Vector3 $pos) : string{
-        return Math::floorFloat($pos->x) . ":{$pos->getFloorY()}:" . Math::floorFloat($pos->z);
-        //return "{$pos->getFloorX()}:{$pos->getFloorY()}:{$pos->getFloorZ()}";
+        $pos = self::getFloorPos($pos);
+        return "{$pos->x}:{$pos->y}:{$pos->z}";
     }
 
-    public static function updateBlockState(Block $block) : void{
-        unset(self::$cache[self::getHash($block->getPos())]);
-        self::checkBlockState($block);
+    public static function getFloorPos(Vector3 $pos) : Vector3{
+        return new Vector3(Math::floorFloat($pos->x), $pos->getFloorY(), Math::floorFloat($pos->z));
     }
 
     /**
      * 특정 블럭이 어떤 상태인지를 확인해주는 메서드
      *
      * @param Block|Position $data
+     * @param EntityBase|null $entity
      *
      * @return int
      */
-    public static function checkBlockState($data) : int{
+    public static function checkBlockState($data, ?EntityBase $entity = null) : int{
         if($data instanceof Position){
             /*if(isset(self::$cache[$hash = self::getHash($data)])){
                 return self::$cache[$hash];
             }*/
-            $block = $data->world->getBlockAt(Math::floorFloat($data->x), $data->getFloorY(), Math::floorFloat($data->z));
+            $floor = self::getFloorPos($data);
+            $block = $data->world->getBlockAt($floor->x, $floor->y, $floor->z);
         }elseif($data instanceof Block){
             /*if(isset(self::$cache[$hash = self::getHash($data->getPos())])){
                 return self::$cache[$hash];
@@ -86,11 +89,13 @@ class EntityAI{
      * 블럭이 통과 가능한 위치인지를 판단하는 메서드
      *
      * @param Position $pos
+     * @param EntityBase|null $entity
      *
      * @return int
      */
-    public static function checkPassablity(Position $pos) : int{
-        $block = $pos->world->getBlockAt(Math::floorFloat($pos->x), $pos->getFloorY(), Math::floorFloat($pos->z));
+    public static function checkPassablity(Position $pos, ?EntityBase $entity = null) : int{
+        $floor = self::getFloorPos($pos);
+        $block = $pos->world->getBlockAt($floor->x, $floor->y, $floor->z);
         $state = self::checkBlockState($block); //현재 위치에서의 블럭 상태가
         switch($state){
             case EntityAI::WALL:
@@ -120,6 +125,43 @@ class EntityAI{
                 ) ? EntityAI::SLAB : EntityAI::WALL;
         }
         return EntityAI::WALL;
+    }
+
+    /**
+     * 현재 위치에서 도달하게 될 최종 Y좌표를 계산합니다
+     *
+     * @param Position $pos
+     *
+     * @return float
+     */
+    public static function calculateYOffset(Position $pos) : float{
+        $newY = (int) $pos->y;
+        switch(EntityAI::checkBlockState($pos)){
+            case EntityAI::BLOCK:
+                $newY += 1;
+                break;
+            case EntityAI::SLAB:
+                $newY += 0.5;
+                break;
+            case EntityAI::PASS:
+                $newPos = self::getFloorPos($pos);
+                $newPos->y -= 1;
+                for(; $newPos->y >= 0; $newPos->y -= 1){
+                    $block = $pos->world->getBlockAt($newPos->x, $newPos->y, $newPos->z);
+                    $state = EntityAI::checkBlockState($block);
+                    if($state === EntityAI::UP_SLAB || $state === EntityAI::BLOCK || $state === EntityAI::SLAB){
+                        foreach($block->getCollisionBoxes() as $_ => $bb){
+                            if($newPos->y < $bb->maxY){
+                                $newPos->y = $bb->maxY;
+                            }
+                        }
+                        break;
+                    }
+                }
+                $newY = $newPos->y;
+                break;
+        }
+        return $newY;
     }
 
 }

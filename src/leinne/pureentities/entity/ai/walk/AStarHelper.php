@@ -9,10 +9,9 @@ use leinne\pureentities\entity\ai\Helper;
 
 use pocketmine\math\Facing;
 use pocketmine\math\Math;
-use pocketmine\math\Vector3;
 use pocketmine\world\Position;
 
-class AStarHelper implements Helper{
+class AStarHelper extends Helper{
 
     /** @var int */
     private static $maximumTick = 0;
@@ -39,16 +38,9 @@ class AStarHelper implements Helper{
     private $findTick = -1;
     private $findCount = 0;
 
-    /** @var WalkEntityNavigator */
-    private $navigator;
-
-    public static function init(int $tick, int $block) : void{
+    public static function setData(int $tick, int $block) : void{
         self::$maximumTick = $tick;
         self::$blockPerTick = $block;
-    }
-
-    public function __construct(WalkEntityNavigator $navigator){
-        $this->navigator = $navigator;
     }
 
     public function reset(bool $full = true) : void{
@@ -77,7 +69,7 @@ class AStarHelper implements Helper{
         }
 
         $end = $this->navigator->getEnd();
-        $end->y = $this->calculateYPos($end);
+        $end->y = $this->calculateYOffset($end);
         if($this->findTick === -1){
             $this->reset(false);
             $pos = $this->navigator->getHolder()->getPosition();
@@ -86,10 +78,10 @@ class AStarHelper implements Helper{
             $this->openNode[] = Node::create($pos, $end);
         }
 
-        $result = -1;
+        $finish = false;
         while(++$this->findTick <= self::$blockPerTick){
             if(empty($this->openNode)){
-                $result = 0;
+                $finish = true;
                 break;
             }
 
@@ -98,7 +90,7 @@ class AStarHelper implements Helper{
             unset($this->openHash[EntityAI::getHash($parent)]);
 
             $beforeY = $parent->y;
-            $parent->y = $this->calculateYPos($parent);
+            $parent->y = $this->calculateYOffset($parent);
             $hash = EntityAI::getHash($parent);
             if($parent->y !== $beforeY){
                 $p = $parent->getParentNode();
@@ -108,13 +100,13 @@ class AStarHelper implements Helper{
                 //$this->onChange[$hash] = true;
             }
 
-            if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ //다른 Y값으로 이미 최적 경로에 도달했을 경우
+            if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ /** 이미 최적 경로를 찾은 경우 */
                 continue;
             }
 
             $this->closeNode[$hash] = $parent;
             if($parent->getFloorX() === $end->getFloorX() && $parent->getFloorZ() === $end->getFloorZ() && $parent->getFloorY() === $end->getFloorY()){
-                $result = 1;
+                $finish = true;
                 break;
             }
 
@@ -144,20 +136,18 @@ class AStarHelper implements Helper{
             }
         }
 
-        if($result === 1){
+        if($finish){
             $last = array_pop($this->closeNode);
-            $result = [$last];
+            $finish = [$last];
             while(($node = array_pop($this->closeNode)) !== null){
                 if($last->getParentNode()->getId() === $node->getId()){
                     $last = $node;
                     //if(isset($this->onChange[EntityAI::getHash($node)])){
-                        $result[] = $node;
+                        $finish[] = $node;
                     //}
                 }
             }
-            return $result;
-        }elseif($result === 0){
-            return null;
+            return $finish;
         }
 
         $this->findTick = 0;
@@ -177,9 +167,13 @@ class AStarHelper implements Helper{
         $facing = [Facing::EAST, Facing::WEST, Facing::SOUTH, Facing::NORTH];
         foreach($facing as $_ => $f){
             $near = $pos->getSide($f);
-            $state = $this->getBlockPassablity($near);
-            if($state !== EntityAI::WALL){
-                $y = $this->calculateYPos($near);
+            $state = $this->checkBlockPassablity($near);
+            if($state === EntityAI::DOOR){
+                if($this->navigator->getHolder()->canBreakDoor()){
+                    $result[] = $near;
+                }
+            }elseif($state !== EntityAI::WALL){
+                $y = $this->calculateYOffset($near);
                 if($near->y - $y <= 3){
                     $result[] = $near;
                 }
@@ -188,43 +182,20 @@ class AStarHelper implements Helper{
         return $result;
     }
 
-    public function getBlockPassablity(Position $pos) : int{
-        if(!isset($this->mapCache["{$pos->x}:{$pos->y}:{$pos->z}"])){
-            $this->passablity["{$pos->x}:{$pos->y}:{$pos->z}"] = EntityAI::checkPassablity($pos);
+    public function checkBlockPassablity(Position $pos) : int{
+        $hash = EntityAI::getHash($pos);
+        if(!isset($this->mapCache[$hash])){
+            $this->passablity[$hash] = EntityAI::checkPassablity($pos);
         }
-        return $this->passablity["{$pos->x}:{$pos->y}:{$pos->z}"];
+        return $this->passablity[$hash];
     }
 
-    public function calculateYPos(Position $pos) : float{
+    public function calculateYOffset(Position $pos) : float{
         if(isset($this->yCache[$hash = EntityAI::getHash($pos)])){
             return $this->yCache[$hash];
         }
 
-        $newY = (int) $pos->y;
-        switch(EntityAI::checkBlockState($pos)){
-            case EntityAI::BLOCK:
-                $newY += 1;
-                break;
-            case EntityAI::SLAB:
-                $newY += 0.5;
-                break;
-            case EntityAI::PASS:
-                $newPos = new Vector3(Math::floorFloat($pos->x), $pos->getFloorY(), Math::floorFloat($pos->z));
-                for(; $newPos->y >= 0; $newPos->y -= 1){
-                    $block = $pos->world->getBlockAt($newPos->x, $newPos->y, $newPos->z);
-                    $state = EntityAI::checkBlockState($block);
-                    if($state === EntityAI::UP_SLAB || $state === EntityAI::BLOCK || $state === EntityAI::SLAB){
-                        foreach($block->getCollisionBoxes() as $_ => $bb){
-                            if($newPos->y < $bb->maxY){
-                                $newPos->y = $bb->maxY;
-                            }
-                        }
-                        break;
-                    }
-                }
-                $newY = $newPos->y;
-                break;
-        }
+        $newY = EntityAI::calculateYOffset($pos);
         $this->yCache[$hash] = $newY;
         for($y = $pos->getFloorY() - 1; $y >= (int) $newY; --$y){
             $this->yCache[Math::floorFloat($pos->x) . ":$y:" . Math::floorFloat($pos->z)] = $newY;
