@@ -8,6 +8,7 @@ use leinne\pureentities\entity\ai\EntityAI;
 use leinne\pureentities\entity\ai\EntityNavigator;
 use leinne\pureentities\entity\EntityBase;
 
+use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -44,8 +45,8 @@ trait WalkEntityTrait{
      */
     private $checkDoorState = false;
 
-    /** @var Position */
-    private $doorPos = null;
+    /** @var Block */
+    private $doorBlock = null;
 
     /** @var EntityNavigator */
     protected $navigator = null;
@@ -91,7 +92,7 @@ trait WalkEntityTrait{
         $diff = abs($x) + abs($z);
         if(!$this->interactTarget() && $diff != 0){
             $hasUpdate = true;
-            $ground = $this->onGround ? 0.125 : 0.002;
+            $ground = $this->onGround ? 0.125 : 0.001;
             $this->motion->x += $this->getSpeed() * $ground * $x / $diff;
             $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
         }
@@ -103,32 +104,34 @@ trait WalkEntityTrait{
         }
         $this->checkDoorState = false;
         if($hasUpdate && $this->onGround){
-            switch(EntityAI::checkPassablity($pos = new Position(
-                ($this->motion->x > 0 ? $this->boundingBox->maxX : $this->boundingBox->minX) + $this->motion->x,
-                $this->boundingBox->minY,
-                ($this->motion->z > 0 ? $this->boundingBox->maxZ : $this->boundingBox->minZ) + $this->motion->z,
-                $this->getWorld()
-            ))){
-                case EntityAI::BLOCK:
-                    $hasUpdate = true;
-                    $this->motion->y += 0.52;
-                    break;
-                case EntityAI::DOOR:
-                    if($this->canBreakDoor()){
-                        $this->checkDoorState = true;
-                        if($this->doorBreakTime <= 0 && ++$this->doorBreakDelay > 20){
-                            $this->doorPos = $pos;
-                            $this->doorBreakTime = 180;
-                            //$this->doorBreakTime = ceil($pos->world->getBlock($pos)->getBreakInfo()->getBreakTime($this->inventory->getItemInHand()) * 20);
+            /** @var EntityBase $this */
+            foreach($this->getWorld()->getCollisionBlocks($this->boundingBox->addCoord($this->motion->x, $this->motion->y, $this->motion->z)) as $_ => $block){
+                if($block->getCollisionBoxes()[0]->maxY - $this->boundingBox->minY > 1){
+                    continue;
+                }
+
+                switch(EntityAI::checkPassablity($this->location, $block)){
+                    case EntityAI::BLOCK:
+                        $hasUpdate = true;
+                        $this->motion->y += 0.52;
+                        break;
+                    case EntityAI::DOOR:
+                        if($this->canBreakDoor()){
+                            $this->checkDoorState = true;
+                            if($this->doorBreakTime <= 0 && ++$this->doorBreakDelay > 20){
+                                $this->doorBlock = $block;
+                                $this->doorBreakTime = 180;
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
         }
 
-        if($door && !$this->checkDoorState && $this->doorPos !== null){
-            $this->doorPos->world->broadcastLevelEvent($this->doorPos, LevelEventPacket::EVENT_BLOCK_STOP_BREAK);
-            $this->doorPos = null;
+        if($door && !$this->checkDoorState && $this->doorBlock !== null){
+            $pos = $this->doorBlock->getPos();
+            $pos->world->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_STOP_BREAK);
+            $this->doorBlock = null;
         }
 
         $this->setRotation(
@@ -192,21 +195,20 @@ trait WalkEntityTrait{
             if($delay > 0){
                 if($this->checkDoorState){
                     $delay = -1;
-                    if($this->doorBreakTime === 180){
-                        $this->doorPos->world->broadcastLevelEvent($this->doorPos, LevelEventPacket::EVENT_BLOCK_START_BREAK, (int) (65535 / $this->doorBreakTime));
-                    }
-
                     if($this->doorBreakTime > 0){
-                        $world = $this->doorPos->world;
-                        if($this->doorBreakTime % mt_rand(15, 20) === 0){
-                            $world->addSound($this->doorPos, new DoorBumpSound());
+                        $pos = $this->doorBlock->getPos();
+                        if($this->doorBreakTime === 180){
+                            $pos->world->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_START_BREAK, 364);
+                        }
+
+                        if($this->doorBreakTime % mt_rand(3, 20) === 0){
+                            $pos->world->addSound($pos, new DoorBumpSound());
                         }
 
                         if(--$this->doorBreakTime <= 0){
-                            $target = $world->getBlock($this->doorPos);
-                            $target->onBreak(ItemFactory::get(ItemIds::AIR));
-                            $world->addSound($this->doorPos, new DoorCrashSound());
-                            $world->addParticle($this->doorPos->add(0.5, 0.5, 0.5), new DestroyBlockParticle($target));
+                            $this->doorBlock->onBreak(ItemFactory::get(ItemIds::AIR));
+                            $pos->world->addSound($pos, new DoorCrashSound());
+                            $pos->world->addParticle($pos->add(0.5, 0.5, 0.5), new DestroyBlockParticle($this->doorBlock));
                         }
                     }
                 }

@@ -27,7 +27,7 @@ class AStarHelper extends Helper{
     private $closeNode = [];
 
     /** @var array */
-    //private $onChange = [];
+    private $onChange = [];
 
     /** @var int[] */
     private $yCache = [];
@@ -52,7 +52,7 @@ class AStarHelper extends Helper{
         $this->yCache = [];
         $this->passablity = [];
 
-        //$this->onChange = [];
+        $this->onChange = [];
         $this->openNode = [];
         $this->openHash = [];
         $this->closeNode = [];
@@ -85,7 +85,7 @@ class AStarHelper extends Helper{
                 break;
             }
 
-            $this->sortOpenNode(0, count($this->openNode) - 1);
+            $this->sortOpenNode();
             $parent = array_shift($this->openNode);
             unset($this->openHash[EntityAI::getHash($parent)]);
 
@@ -97,7 +97,7 @@ class AStarHelper extends Helper{
                 if($p !== null){
                     $parent->setGoal($p->getGoal() + $p->distanceSquared($parent));
                 }
-                //$this->onChange[$hash] = true;
+                $this->onChange[$hash] = true;
             }
 
             if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ /** 이미 최적 경로를 찾은 경우 */
@@ -110,12 +110,11 @@ class AStarHelper extends Helper{
                 break;
             }
 
-            /*$near = $this->getNear($parent);
-            if(count($near) < 4){
+            $near = $this->getNear($parent);
+            if(count($near) < 8){
                 $this->onChange[$hash] = true;
             }
-            foreach($near as $_ => $pos){*/
-            foreach($this->getNear($parent) as $_ => $pos){
+            foreach($near as $_ => $pos){
                 ++$this->findTick;
                 $key = EntityAI::getHash($pos);
                 if(isset($this->closeNode[$key])){ /** 이미 최적 경로를 찾은 경우 */
@@ -142,9 +141,9 @@ class AStarHelper extends Helper{
             while(($node = array_pop($this->closeNode)) !== null){
                 if($last->getParentNode()->getId() === $node->getId()){
                     $last = $node;
-                    //if(isset($this->onChange[EntityAI::getHash($node)])){
+                    if(isset($this->onChange[EntityAI::getHash($node)])){
                         $finish[] = $node;
-                    //}
+                    }
                 }
             }
             return $finish;
@@ -165,24 +164,62 @@ class AStarHelper extends Helper{
     public function getNear(Position $pos) : array{
         $result = [];
         $facing = [Facing::EAST, Facing::WEST, Facing::SOUTH, Facing::NORTH];
+        $diagonal = ["1:1" => false, "1:-1" => false, "-1:1" => false, "-1:-1" => false];
         foreach($facing as $_ => $f){
             $near = $pos->getSide($f);
-            $state = $this->checkBlockPassablity($near);
+            $state = $this->checkPassablity($near);
+            if($state === EntityAI::WALL){
+                switch($f){
+                    case Facing::EAST:
+                        $diagonal["1:1"] = true;
+                        $diagonal["1:-1"] = true;
+                        break;
+                    case Facing::WEST:
+                        $diagonal["-1:1"] = true;
+                        $diagonal["-1:-1"] = true;
+                        break;
+                    case Facing::SOUTH:
+                        $diagonal["1:1"] = true;
+                        $diagonal["-1:1"] = true;
+                        break;
+                    case Facing::NORTH:
+                        $diagonal["1:-1"] = true;
+                        $diagonal["-1:-1"] = true;
+                        break;
+                }
+            }else{
+                if($state === EntityAI::DOOR){
+                    if($this->navigator->getHolder()->canBreakDoor()){
+                        $result[] = $near;
+                    }
+                }elseif($near->y - $this->calculateYOffset($near) <= 3){
+                    $result[] = $near;
+                }
+            }
+        }
+
+        foreach($diagonal as $index => $isWall){
+            $i = explode(":", $index);
+            $near = $pos->asPosition();
+            $near->x += (int) $i[0];
+            $near->z += (int) $i[1];
+            $state = $this->checkPassablity($near);
+            if($isWall || $state === EntityAI::WALL){
+                continue;
+            }
+
             if($state === EntityAI::DOOR){
                 if($this->navigator->getHolder()->canBreakDoor()){
                     $result[] = $near;
                 }
-            }elseif($state !== EntityAI::WALL){
-                $y = $this->calculateYOffset($near);
-                if($near->y - $y <= 3){
-                    $result[] = $near;
-                }
+            }elseif($near->y - $this->calculateYOffset($near) <= 3){
+                $result[] = $near;
             }
         }
         return $result;
     }
 
-    public function checkBlockPassablity(Position $pos) : int{
+    public function checkPassablity(Position $pos) : int{
         $hash = EntityAI::getHash($pos);
         if(!isset($this->mapCache[$hash])){
             $this->passablity[$hash] = EntityAI::checkPassablity($pos);
@@ -205,9 +242,10 @@ class AStarHelper extends Helper{
 
     /**
      * @param int $left
-     * @param int $right
+     * @param int|null $right
      */
-    protected function sortOpenNode(int $left, int $right) : void{
+    protected function sortOpenNode(int $left = 0, ?int $right = null) : void{
+        $right = $right ?? count($this->openNode) - 1;
         if($left >= $right){
             return;
         }

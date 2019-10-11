@@ -21,6 +21,11 @@ class WalkEntityNavigator extends EntityNavigator{
         $this->getHelper()->reset();
     }
 
+    public function canGoNextNode(Position $next) : bool{
+        $pos = $this->holder->getPosition();
+        return abs($pos->x - $next->x) < 0.1 && abs($pos->z - $next->z) < 0.1 && $pos->getFloorY() === $next->getFloorY();
+    }
+
     public function makeRandomGoal() : Position{
         $x = mt_rand(10, 30);
         $z = mt_rand(10, 30);
@@ -28,6 +33,7 @@ class WalkEntityNavigator extends EntityNavigator{
         $pos = $this->holder->getPosition();
         $pos->x = Math::floorFloat($pos->x) + 0.5 + (mt_rand(0, 1) ? $x : -$x);
         $pos->z = Math::floorFloat($pos->z) + 0.5 + (mt_rand(0, 1) ? $z : -$z);
+        //$pos->y = $pos->world->getHighestBlockAt((int) $pos->x, (int) $pos->z);
         return $pos;
     }
 

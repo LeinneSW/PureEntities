@@ -103,7 +103,7 @@ abstract class EntityNavigator{
     }
 
     public function canGoNextNode(Position $pos) : bool{
-        return $this->holder->getPosition()->distanceSquared($pos) < 0.25;
+        return $this->holder->getPosition()->distanceSquared($pos) < 0.04;
     }
 
     public function getHolder() : EntityBase{
