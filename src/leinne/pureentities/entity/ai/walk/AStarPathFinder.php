@@ -5,18 +5,13 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\ai\walk;
 
 use leinne\pureentities\entity\ai\EntityAI;
-use leinne\pureentities\entity\ai\Helper;
+use leinne\pureentities\entity\ai\PathFinder;
 
 use pocketmine\math\Facing;
 use pocketmine\math\Math;
 use pocketmine\world\Position;
 
-class AStarHelper extends Helper{
-
-    /** @var int */
-    private static $maximumTick = 0;
-    /** @var int */
-    private static $blockPerTick = 0;
+class AStarPathFinder extends PathFinder{
 
     /** @var Node[] */
     private $openNode = [];
@@ -38,9 +33,26 @@ class AStarHelper extends Helper{
     private $findTick = -1;
     private $findCount = 0;
 
-    public static function setData(int $tick, int $block) : void{
-        self::$maximumTick = $tick;
-        self::$blockPerTick = $block;
+    /**
+     * @param int $left
+     * @param int|null $right
+     */
+    protected function sortOpenNode(int $left = 0, ?int $right = null) : void{
+        $right = $right ?? count($this->openNode) - 1;
+        if($left >= $right){
+            return;
+        }
+
+        $j = $left;
+        for($i = $j + 1; $i <= $right; ++$i){
+            if($this->openNode[$i]->getFitness() < $this->openNode[$left]->getFitness()){
+                ++$j;
+                [$this->openNode[$j], $this->openNode[$i]] = [$this->openNode[$i], $this->openNode[$j]];
+            }
+        }
+        [$this->openNode[$left], $this->openNode[$j]] = [$this->openNode[$j], $this->openNode[$left]];
+        $this->sortOpenNode($left, $j - 1);
+        $this->sortOpenNode($j + 1, $right);
     }
 
     public function reset(bool $full = true) : void{
@@ -205,6 +217,7 @@ class AStarHelper extends Helper{
             $near->z += (int) $i[1];
             $state = $this->checkPassablity($near);
             if($isWall || $state === EntityAI::WALL){
+                $this->passablity[EntityAI::getHash($near)] = EntityAI::WALL;
                 continue;
             }
 
@@ -238,28 +251,6 @@ class AStarHelper extends Helper{
             $this->yCache[Math::floorFloat($pos->x) . ":$y:" . Math::floorFloat($pos->z)] = $newY;
         }
         return $newY;
-    }
-
-    /**
-     * @param int $left
-     * @param int|null $right
-     */
-    protected function sortOpenNode(int $left = 0, ?int $right = null) : void{
-        $right = $right ?? count($this->openNode) - 1;
-        if($left >= $right){
-            return;
-        }
-
-        $j = $left;
-        for($i = $j + 1; $i <= $right; ++$i){
-            if($this->openNode[$i]->getFitness() < $this->openNode[$left]->getFitness()){
-                ++$j;
-                [$this->openNode[$j], $this->openNode[$i]] = [$this->openNode[$i], $this->openNode[$j]];
-            }
-        }
-        [$this->openNode[$left], $this->openNode[$j]] = [$this->openNode[$j], $this->openNode[$left]];
-        $this->sortOpenNode($left, $j - 1);
-        $this->sortOpenNode($j + 1, $right);
     }
 
 }

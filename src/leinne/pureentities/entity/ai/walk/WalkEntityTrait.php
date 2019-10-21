@@ -52,13 +52,6 @@ trait WalkEntityTrait{
     protected $navigator = null;
 
     /**
-     * 타겟과의 상호작용
-     *
-     * @return bool
-     */
-    public abstract function interactTarget() : bool;
-
-    /**
      * @see EntityBase::entityBaseTick()
      *
      * @param int $tickDiff
@@ -156,87 +149,28 @@ trait WalkEntityTrait{
      * @return AxisAlignedBB
      */
     public function checkBoundingBoxState(float $movX, float $movY, float $movZ, float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
-        /** @var AxisAlignedBB $aabb */
-        $aabb = clone $this->boundingBox;
-
-        if($this->keepMovement){
-            $aabb->offset($dx, $dy, $dz);
-        }else{
-            $checkStep = false;
-            /** @var EntityBase $this */
-            $list = $this->getWorld()->getCollisionBoxes($this, $aabb->addCoord($dx, $dy, $dz));
-            if($this->onGround && $dy <= 0){ //스텝 기능
-                $checkStep = true;
-                $newAABB = $aabb->offsetCopy($dx, 0, $dz);
-                foreach($list as $k => $bb){
-                    $diff = $bb->maxY - $aabb->minY;
-                    if($diff <= 0.6 && $diff > 0 && $bb->intersectsWith($newAABB)){
-                        $dy = $diff;
-                        break;
-                    }
-                }
-            }
-            foreach($list as $k => $bb){
-                $dy = $bb->calculateYOffset($aabb, $dy);
-            }
-            $aabb->offset(0, $dy, 0);
-
-            foreach($list as $k => $bb){
-                $dx = $bb->calculateXOffset($aabb, $dx);
-            }
-            $aabb->offset($dx, 0, 0);
-
-            foreach($list as $k => $bb){
-                $dz = $bb->calculateZOffset($aabb, $dz);
-            }
-            $aabb->offset(0, 0, $dz);
-
-            $delay = (int) ($movX != $dx) + (int) ($movZ != $dz);
-            if($delay > 0){
-                if($this->checkDoorState){
-                    $delay = -1;
-                    if($this->doorBreakTime > 0){
-                        $pos = $this->doorBlock->getPos();
-                        if($this->doorBreakTime === 180){
-                            $pos->world->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_START_BREAK, 364);
-                        }
-
-                        if($this->doorBreakTime % mt_rand(3, 20) === 0){
-                            $pos->world->addSound($pos, new DoorBumpSound());
-                        }
-
-                        if(--$this->doorBreakTime <= 0){
-                            $this->doorBlock->onBreak(ItemFactory::get(ItemIds::AIR));
-                            $pos->world->addSound($pos, new DoorCrashSound());
-                            $pos->world->addParticle($pos->add(0.5, 0.5, 0.5), new DestroyBlockParticle($this->doorBlock));
-                        }
-                    }
+        $aabb = parent::checkBoundingBoxState($movX, $movY, $movZ, $dx, $dy, $dz);
+        $delay = (int) ($movX != $dx) + (int) ($movZ != $dz);
+        if($delay > 0 && $this->checkDoorState){
+            $delay = -1;
+            if($this->doorBlock !== null){
+                $pos = $this->doorBlock->getPos();
+                if($this->doorBreakTime === 180){
+                    $pos->world->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_START_BREAK, 364);
                 }
 
-                if($checkStep){ //스텝 블럭 시도했으나 실패했을 시
-                    $aabb = clone $this->boundingBox;
-                    $dx = $movX;
-                    $dy = $movY;
-                    $dz = $movZ;
-                    foreach($list as $k => $bb){
-                        $dy = $bb->calculateYOffset($aabb, $dy);
-                    }
-                    $aabb->offset(0, $dy, 0);
+                if($this->doorBreakTime % mt_rand(3, 20) === 0){
+                    $pos->world->addSound($pos, new DoorBumpSound());
+                }
 
-                    foreach($list as $k => $bb){
-                        $dx = $bb->calculateXOffset($aabb, $dx);
-                    }
-                    $aabb->offset($dx, 0, 0);
-
-                    foreach($list as $k => $bb){
-                        $dz = $bb->calculateZOffset($aabb, $dz);
-                    }
-                    $aabb->offset(0, 0, $dz);
+                if(--$this->doorBreakTime <= 0){
+                    $this->doorBlock->onBreak(ItemFactory::get(ItemIds::AIR));
+                    $pos->world->addSound($pos, new DoorCrashSound());
+                    $pos->world->addParticle($pos->add(0.5, 0.5, 0.5), new DestroyBlockParticle($this->doorBlock));
                 }
             }
-            $this->getNavigator()->addStopDelay($delay);
         }
-
+        $this->getNavigator()->addStopDelay($delay);
         return $aabb;
     }
 

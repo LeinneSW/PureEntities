@@ -62,9 +62,9 @@ class Creeper extends Monster implements Explosive{
     }
 
     public function interactTarget() : bool{
-        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
-            if($this->attackDelay > 0) {
-                --$this->attackDelay;
+        if(!$this->canInteractTarget()){
+            if($this->interactDelay > 0) {
+                --$this->interactDelay;
             }elseif($this->getSpeed() < 0.95){
                 $this->setSpeed(0.95);
             }
@@ -74,7 +74,7 @@ class Creeper extends Monster implements Explosive{
         //TODO: boom event
 
         $this->setSpeed(0.4);
-        if(++$this->attackDelay >= 32){
+        if(++$this->interactDelay >= 32){
             $this->flagForDespawn();
             $this->explode();
         }

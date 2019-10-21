@@ -53,8 +53,8 @@ class Skeleton extends Monster{
             return false;
         }
 
-        if(++$this->attackDelay >= 32 && mt_rand(1, 30) === 1){
-            $p = ($this->attackDelay - 20) / 20;
+        if(++$this->interactDelay >= 32 && mt_rand(1, 30) === 1){
+            $p = ($this->interactDelay - 20) / 20;
             $baseForce = min((($p ** 2) + $p * 2) / 3, 1);
 
             $nbt = EntityFactory::createBaseNBT(
@@ -80,6 +80,7 @@ class Skeleton extends Monster{
                 $arrow->setOnFire($arrow->getFireTicks() * 20 + 100);
             }
 
+            $this->interactDelay = 0;
             $ev = new EntityShootBowEvent($this, ItemFactory::get(ItemIds::ARROW, 0, 1), $arrow, $baseForce * 3);
             $ev->call();
 
@@ -95,7 +96,6 @@ class Skeleton extends Monster{
                     if($launch->isCancelled()){
                         $entity->flagForDespawn();
                     }else{
-                        $this->attackDelay = 0;
                         $entity->spawnToAll();
                         $this->getWorld()->addSound($this->getPosition(), new LaunchSound(), $this->getViewers());
                     }
@@ -112,17 +112,17 @@ class Skeleton extends Monster{
             return $this->interactTargetBow();
         }
 
-        ++$this->attackDelay;
-        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+        if(!parent::interactTarget()){
             return false;
         }
 
-        if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
-            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
+        if($this->interactDelay >= 20){
+            $target = $this->getTargetEntity();
+            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
             $target->attack($ev);
 
             if(!$ev->isCancelled()){
-                $this->attackDelay = 0;
+                $this->interactDelay = 0;
             }
         }
         return true;

@@ -10,6 +10,7 @@ use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
 use pocketmine\entity\Ageable;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
+use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
@@ -65,8 +66,8 @@ class ZombiePigman extends Monster implements Ageable{
         return $this->baby;
     }
 
-    public function hasInteraction(Entity $target, float $distance) : bool{
-        return $this->isAngry() && parent::hasInteraction($target, $distance);
+    public function canInteractWithTarget(Entity $target, float $distance) : bool{
+        return $this->isAngry() && parent::canInteractWithTarget($target, $distance);
     }
 
     public function attack(EntityDamageEvent $source) : void{
@@ -94,20 +95,18 @@ class ZombiePigman extends Monster implements Ageable{
     }
 
     public function interactTarget() : bool{
-        ++$this->attackDelay;
-        //TODO: PigZombie speed
-        /*$target = $this->getTargetEntity();
-        if($this->getSpeed() < 2.5 && $this->isAngry() && $target instanceof Living){
-            $this->setSpeed(2.5);
-        }elseif($this->getSpeed() === 2.5){
-            $this->setSpeed(1.0);
-        }*/
-
-        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+        if(!parent::interactTarget()){
             return false;
         }
 
-        if($this->attackDelay >= 15 && ($damage = $this->getResultDamage()) > 0){
+        $target = $this->getTargetEntity();
+        if($this->getSpeed() < 2.7 && $this->isAngry() && $target instanceof Living){
+            $this->setSpeed(2.7);
+        }elseif($this->getSpeed() === 2.7){
+            $this->setSpeed(1.0);
+        }
+
+        if($this->interactDelay >= 20){
             $pk = new ActorEventPacket();
             $pk->entityRuntimeId = $this->id;
             $pk->event = ActorEventPacket::ARM_SWING;
@@ -115,11 +114,11 @@ class ZombiePigman extends Monster implements Ageable{
                 $viewer->getNetworkSession()->sendDataPacket($pk);
             }
 
-            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
+            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
             $target->attack($ev);
 
             if(!$ev->isCancelled()){
-                $this->attackDelay = 0;
+                $this->interactDelay = 0;
             }
         }
         return true;

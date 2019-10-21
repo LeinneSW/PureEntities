@@ -5,20 +5,17 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\ai\walk;
 
 use leinne\pureentities\entity\ai\EntityNavigator;
+use leinne\pureentities\entity\ai\PathFinder;
 
-use leinne\pureentities\entity\ai\Helper;
 use pocketmine\math\Math;
 use pocketmine\world\Position;
 
 class WalkEntityNavigator extends EntityNavigator{
 
-    /** @var Helper */
-    protected $helper = null;
-
     public function setEnd(Position $pos) : void{
         parent::setEnd($pos);
 
-        $this->getHelper()->reset();
+        $this->getPathFinder()->reset();
     }
 
     public function canGoNextNode(Position $next) : bool{
@@ -37,8 +34,8 @@ class WalkEntityNavigator extends EntityNavigator{
         return $pos;
     }
 
-    public function getHelper() : Helper{
-        return $this->helper ?? $this->helper = new AStarHelper($this);
+    public function getDefaultPathFinder() : PathFinder{
+        return new AStarPathFinder($this);
     }
 
 }

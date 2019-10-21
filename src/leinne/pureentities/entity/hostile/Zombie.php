@@ -54,12 +54,11 @@ class Zombie extends Monster implements Ageable{
     }
 
     public function interactTarget() : bool{
-        ++$this->attackDelay;
-        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+        if(!parent::interactTarget()){
             return false;
         }
 
-        if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
+        if($this->interactDelay >= 20){
             $pk = new ActorEventPacket();
             $pk->entityRuntimeId = $this->id;
             $pk->event = ActorEventPacket::ARM_SWING;
@@ -67,11 +66,12 @@ class Zombie extends Monster implements Ageable{
                 $viewer->getNetworkSession()->sendDataPacket($pk);
             }
 
-            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
+            $target = $this->getTargetEntity();
+            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
             $target->attack($ev);
 
             if(!$ev->isCancelled()){
-                $this->attackDelay = 0;
+                $this->interactDelay = 0;
             }
         }
         return true;

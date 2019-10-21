@@ -29,19 +29,22 @@ abstract class EntityNavigator{
     /** @var EntityBase */
     protected $holder;
 
+    /** @var PathFinder */
+    protected $pathFinder = null;
+
     public function __construct(EntityBase $entity){
         $this->holder = $entity;
     }
 
-    public abstract function getHelper() : Helper;
-
     public abstract function makeRandomGoal() : Position;
+
+    public abstract function getDefaultPathFinder() : PathFinder;
 
     public function update() : void{
         $pos = $this->holder->getLocation();
         $holder = $this->holder;
         $target = $holder->getTargetEntity();
-        if($target === null || !$holder->hasInteraction($target, $near = $pos->distanceSquared($target->getPosition()))){
+        if($target === null || !$holder->canInteractWithTarget($target, $near = $pos->distanceSquared($target->getPosition()))){
             $near = PHP_INT_MAX;
             $target = null;
             foreach($holder->getWorld()->getEntities() as $k => $t){
@@ -49,7 +52,7 @@ abstract class EntityNavigator{
                     $t === $this
                     || !($t instanceof Living)
                     || ($distance = $pos->distanceSquared($t->getPosition())) > $near
-                    || !$holder->hasInteraction($t, $distance)
+                    || !$holder->canInteractWithTarget($t, $distance)
                 ){
                     continue;
                 }
@@ -59,9 +62,8 @@ abstract class EntityNavigator{
             $holder->setTargetEntity($target);
         }
 
-        if($target !== null && $this->getEnd()->distanceSquared($target->getPosition())){
+        if($target !== null && $this->getEnd()->distanceSquared($target->getPosition()) > 1){
             $this->setEnd($target->getPosition());
-            return;
         }
 
         if(
@@ -71,8 +73,8 @@ abstract class EntityNavigator{
             $this->setEnd($this->makeRandomGoal());
         }
 
-        if($this->goalIndex < 0 || empty($this->goal)) {
-            $this->goal = $this->getHelper()->calculate();
+        if($this->holder->onGround && ($this->goalIndex < 0 || empty($this->goal))){
+            $this->goal = $this->getPathFinder()->calculate();
             if($this->goal === null){
                 $this->setEnd($this->makeRandomGoal());
             }else{
@@ -119,6 +121,10 @@ abstract class EntityNavigator{
         $this->goal = [];
         $this->stopDelay = 0;
         $this->goalIndex = -1;
+    }
+
+    public function getPathFinder() : PathFinder{
+        return $this->pathFinder ?? $this->pathFinder = $this->getDefaultPathFinder();
     }
 
 }

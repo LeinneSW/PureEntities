@@ -9,6 +9,7 @@ use pocketmine\block\Door;
 use pocketmine\block\Lava;
 use pocketmine\block\Stair;
 use pocketmine\block\Trapdoor;
+use pocketmine\block\WoodenDoor;
 use pocketmine\math\Facing;
 use pocketmine\math\Math;
 use pocketmine\math\Vector3;
@@ -67,8 +68,8 @@ class EntityAI{
         }
 
         $value = EntityAI::BLOCK;
-        if($block instanceof Door && count($block->getAffectedBlocks()) > 1){ //이웃된 블럭이 있을 때
-            $value = EntityAI::DOOR;
+        if($block instanceof Door && count($block->getAffectedBlocks()) > 1){ //문일때
+            $value = $block instanceof WoodenDoor ? EntityAI::DOOR : EntityAI::WALL; //철문인지 판단
         }elseif($block instanceof Stair){
             $value = EntityAI::BLOCK;
         }else{

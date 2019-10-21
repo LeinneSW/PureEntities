@@ -39,12 +39,16 @@ class Cow extends Animal{
      *
      * @return bool
      */
-    public function hasInteraction(Entity $target, float $distanceSquare) : bool{
+    public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
         return $this->fixedTarget || $target instanceof Player && $target->isAlive() && !$target->closed && $distanceSquare <= 64
             && $target->getInventory()->getItemInHand()->getId() === ItemIds::SEEDS; //TODO: 아이템 유인 구현
     }
 
     public function interactTarget() : bool{
+        if(!parent::interactTarget()){
+            return false;
+        }
+
         // TODO: Implement interactTarget() method.
         return false;
     }

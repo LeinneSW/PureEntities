@@ -41,17 +41,17 @@ class Spider extends Monster{
     }
 
     public function interactTarget() : bool{
-        ++$this->attackDelay;
-        if(($target = $this->checkInteract()) === null || !$this->canAttackTarget()){
+        if(!parent::interactTarget()){
             return false;
         }
 
-        if($this->attackDelay >= 20 && ($damage = $this->getResultDamage()) > 0){
-            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
+        if($this->interactDelay >= 20){
+            $target = $this->getTargetEntity();
+            $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
             $target->attack($ev);
 
             if(!$ev->isCancelled()){
-                $this->attackDelay = 0;
+                $this->interactDelay = 0;
             }
         }
         return true;

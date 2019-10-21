@@ -23,9 +23,6 @@ abstract class Monster extends EntityBase{
 
     /** @var MonsterInventory */
     protected $inventory;
-
-    /** @var int */
-    protected $attackDelay = 0;
     
     /**
      * 유저 커스텀 전용
@@ -76,6 +73,10 @@ abstract class Monster extends EntityBase{
         return false;
     }
 
+    public function canInteractTarget() : bool{
+        return $this->canAttackTarget() && parent::canInteractTarget();
+    }
+
     public function getDefaultHeldItem() : Item{
         return ItemFactory::get(ItemIds::AIR);
     }
@@ -84,7 +85,7 @@ abstract class Monster extends EntityBase{
         return $this->inventory;
     }
 
-    public function hasInteraction(Entity $target, float $distance) : bool{
+    public function canInteractWithTarget(Entity $target, float $distance) : bool{
         return $this->fixedTarget || $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
     }
 

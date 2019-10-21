@@ -40,11 +40,15 @@ class SnowGolem extends Monster{
      *
      * @return bool
      */
-    public function hasInteraction(Entity $target, float $distanceSquare) : bool{
+    public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
         return $this->fixedTarget || $target instanceof Monster && $target->isAlive() && !$target->closed && $distanceSquare <= 196;
     }
 
     public function interactTarget() : bool{
+        if(!parent::interactTarget()){
+            return false;
+        }
+
         // TODO: Implement interactTarget() method.
         return false;
     }
@@ -58,4 +62,5 @@ class SnowGolem extends Monster{
     public function getXpDropAmount() : int{
         return 0;
     }
+
 }

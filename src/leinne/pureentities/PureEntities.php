@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
-use leinne\pureentities\entity\ai\walk\AStarHelper;
+use leinne\pureentities\entity\ai\PathFinder;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\neutral\ZombiePigman;
 use leinne\pureentities\entity\neutral\Spider;
@@ -18,19 +18,25 @@ use leinne\pureentities\entity\hostile\Skeleton;
 use leinne\pureentities\entity\hostile\Zombie;
 use leinne\pureentities\entity\utility\IronGolem;
 use leinne\pureentities\entity\utility\SnowGolem;
+use leinne\pureentities\event\EntityInteractByPlayerEvent;
 use leinne\pureentities\task\AutoSpawnTask;
 
+use leinne\pureentities\vehicle\Vehicle;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockIdentifier;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Living;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\item\SpawnEgg;
+use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
+use pocketmine\network\mcpe\protocol\types\inventory\UseItemOnEntityTransactionData;
 use pocketmine\world\Position;
 use pocketmine\math\Facing;
 use pocketmine\nbt\tag\CompoundTag;
@@ -85,7 +91,9 @@ class PureEntities extends PluginBase implements Listener{
         foreach(EntityFactory::getKnownTypes() as $k => $className){
             /** @var Living|string $className */
             if(is_a($className, EntityBase::class, true) && $className::NETWORK_ID !== -1){
-                ItemFactory::register(new SpawnEgg(ItemIds::SPAWN_EGG, $className::NETWORK_ID, "Spawn " . (new \ReflectionClass($className))->getShortName(), $className), true);
+                try{
+                    ItemFactory::register(new SpawnEgg(ItemIds::SPAWN_EGG, $className::NETWORK_ID, "Spawn " . (new \ReflectionClass($className))->getShortName(), $className), true);
+                }catch(\Exception $ignore){}
             }
         }
 
@@ -102,18 +110,39 @@ class PureEntities extends PluginBase implements Listener{
         }
 
         $astar = $this->data["astar"] ?? [];
-        AStarHelper::setData((int) $astar["maximum-tick"] ?? 200, (int) $astar["block-per-tick"] ?? 100);
+        PathFinder::setData((int) $astar["maximum-tick"] ?? 200, (int) $astar["block-per-tick"] ?? 100);
         $this->getServer()->getLogger()->info(
             TextFormat::AQUA . "\n" .
-            "------------------------------------------------------\n" .
+            "---------------------------------------------------------\n" .
             " _____                _____       _    _ _    _\n" .
             "|  __ \              |  ___|     | |  |_| |  |_|\n" .
             "| |__) |   _ _ __ ___| |__  _ __ | |__ _| |__ _  ___  ___ \n" .
             "|  ___/ | | | '__/ _ \  __|| '_ \| ___| | ___| |/ _ \/ __|\n" .
             "| |   | |_| | | |  __/ |___| | | | |__| | |__| |  __/\__ \\\n" .
             "|_|    \__,_|_|  \___|_____|_| |_|\___|_|\___|_|\___||___/\n" .
-            "------------------------------------------------------\n"
+            "----------------------------------------------------------\n"
         );
+    }
+
+    public function onReceivePacketEvent(DataPacketReceiveEvent $ev) : void{
+        $packet = $ev->getPacket();
+        $player = $ev->getOrigin()->getPlayer();
+        if(
+            $packet instanceof InventoryTransactionPacket
+            && $packet->trData instanceof UseItemOnEntityTransactionData
+            && $packet->trData->getActionType() === UseItemOnEntityTransactionData::ACTION_INTERACT
+        ){
+            $ev->setCancelled();
+            $target = $player->getWorld()->getEntity($packet->trData->getEntityRuntimeId());
+            if($target instanceof EntityBase || $target instanceof Vehicle){
+                $ev = new EntityInteractByPlayerEvent($target, $player, $player->getInventory()->getItemInHand());
+                $ev->call();
+
+                if(!$ev->isCancelled()){
+                    $target->interact($ev->getPlayer(), $ev->getItem());
+                }
+            }
+        }
     }
 
     public function onDisable() : void{
@@ -153,7 +182,8 @@ class PureEntities extends PluginBase implements Listener{
         $item = $ev->getItem();
         $block = $ev->getBlock();
         $player = $ev->getPlayer();
-        if($block->getId() === BlockLegacyIds::JACK_O_LANTERN || $block->getId() === BlockLegacyIds::PUMPKIN){
+        $bid = $block->getId();
+        if($bid === BlockLegacyIds::JACK_O_LANTERN || $bid === BlockLegacyIds::PUMPKIN || $bid === BlockLegacyIds::CARVED_PUMPKIN){
             if(
                 $block->getSide(Facing::DOWN)->getId() === BlockLegacyIds::SNOW_BLOCK
                 && $block->getSide(Facing::DOWN, 2)->getId() === BlockLegacyIds::SNOW_BLOCK
@@ -166,7 +196,7 @@ class PureEntities extends PluginBase implements Listener{
                 }
                 $ev->setCancelled();
                 for($y = 1; $y < 3; $y++){
-                    $block->getPos()->getWorld()->setBlock($block->getPos()->subtract(0, $y, 0), BlockFactory::get(BlockLegacyIds::AIR));
+                    $block->getPos()->getWorld()->setBlock($block->getPos()->subtract(0, $y, 0), VanillaBlocks::AIR());
                 }
                 $entity->spawnToAll();
 
@@ -191,7 +221,6 @@ class PureEntities extends PluginBase implements Listener{
                 }
 
                 $nbt = EntityFactory::createBaseNBT(Position::fromObject($pos = $block->getPos()->add(0.5, -2, 0.5), $block->getPos()->getWorld()));
-                $nbt->setString("Owner", $player->getName());
                 try{
                     $entity = EntityFactory::create(IronGolem::class, $block->getPos()->getWorld(), $nbt);
                 }catch(\Exception $e){
@@ -201,10 +230,10 @@ class PureEntities extends PluginBase implements Listener{
                 $ev->setCancelled();
                 $entity->spawnToAll();
 
-                $down->getPos()->getWorld()->setBlock($pos, BlockFactory::get(BlockLegacyIds::AIR));
-                $down->getPos()->getWorld()->setBlock($first->getPos(), BlockFactory::get(BlockLegacyIds::AIR));
-                $down->getPos()->getWorld()->setBlock($second->getPos(), BlockFactory::get(BlockLegacyIds::AIR));
-                $down->getPos()->getWorld()->setBlock($block->getPos()->add(0, -1, 0), BlockFactory::get(BlockLegacyIds::AIR));
+                $down->getPos()->getWorld()->setBlock($pos, $air = VanillaBlocks::AIR());
+                $down->getPos()->getWorld()->setBlock($first->getPos(), $air);
+                $down->getPos()->getWorld()->setBlock($second->getPos(), $air);
+                $down->getPos()->getWorld()->setBlock($block->getPos()->add(0, -1, 0), $air);
 
                 if($player->hasFiniteResources()){
                     $item->pop();
@@ -213,6 +242,17 @@ class PureEntities extends PluginBase implements Listener{
             }
         }
     }
+
+    //TODO
+    /*private function canSpawnGolem(Position $pos, int $id) : bool{
+        $resultShape = [];
+        for($x = -1; $x < 2; ++$x){
+            for($y = -1; $y > -3; --$y){
+                $resultShape[$x + 1][$y + 2] = $pos->world->getBlock($pos->add($x, $y, 0))->getId() === $id ? "O" : "X";
+            }
+        }
+        return $resultShape == [["O", "X"], ["O", "O"], ["O", "X"]];
+    }*/
 
     //TODO: SilverFish
     /*public function BlockBreakEvent(BlockBreakEvent $ev){
