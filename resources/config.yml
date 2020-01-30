@@ -2,5 +2,6 @@ autospawn:
   enable: true
   spawn-tick: 80
 astar:
-  maximum-tick: 200 #최대 탐색 시간
-  block-per-tick: 100 #1틱당 블럭 탐색 개수
+  enable: true
+  maximum-tick: 150 #최대 탐색 시간
+  block-per-tick: 70 #1틱당 블럭 탐색 개수
