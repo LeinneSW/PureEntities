@@ -47,9 +47,10 @@ abstract class Monster extends EntityBase{
         }
 
         $this->inventory = new MonsterInventory($this);
-        $item = $this->getDefaultHeldItem();
         if($nbt->hasTag("HeldItem")){
             $item = Item::nbtDeserialize($nbt->getCompoundTag("HeldItem"));
+        }else{
+            $item = $this->getDefaultHeldItem();
         }
 
         if(!$item->isNull()){
@@ -74,7 +75,7 @@ abstract class Monster extends EntityBase{
     }
 
     public function canInteractTarget() : bool{
-        return $this->canAttackTarget() && parent::canInteractTarget();
+        return $this->isAttackable() && parent::canInteractTarget();
     }
 
     public function getDefaultHeldItem() : Item{
@@ -89,7 +90,7 @@ abstract class Monster extends EntityBase{
         return $this->fixedTarget || $target instanceof Player && $target->isSurvival() && $target->spawned && $target->isAlive() && !$target->closed && $distance <= 324;
     }
 
-    public function canAttackTarget() : bool{
+    public function isAttackable() : bool{
         return $this->getMaxDamage() > 0 || ($this->allowWeaponDamage && $this->inventory->getItemInHand()->getAttackPoints() > 0);
     }
 

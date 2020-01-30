@@ -27,6 +27,8 @@ class IronGolem extends Monster{
     public $height = 2.7;
     public $eyeHeight = 2.5;
 
+    protected $stepHeight = 0.6;
+
     private $friendly = 0;
 
     //private $owner = "";
@@ -61,6 +63,10 @@ class IronGolem extends Monster{
     /*public function getOwnerName() : string{
         return $this->owner;
     }*/
+
+    public function canSpawnPeaceful() : bool{
+        return true;
+    }
 
     /**
      * $this 와 $target의 관계가 적대관계인지 확인

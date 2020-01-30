@@ -24,9 +24,6 @@ class EntityAI{
     const UP_SLAB = 4;
     const DOOR = 5;
 
-    /** @var int[] */
-    private static $cache = [];
-
     public static function getHash(Vector3 $pos) : string{
         $pos = self::getFloorPos($pos);
         return "{$pos->x}:{$pos->y}:{$pos->z}";
@@ -40,10 +37,6 @@ class EntityAI{
         return $newPos;
     }
 
-    public static function onBlockChanged(Vector3 $pos) : void{
-        unset(self::$cache[self::getHash($pos)]);
-    }
-
     /**
      * 특정 블럭이 어떤 상태인지를 확인해주는 메서드
      *
@@ -53,15 +46,9 @@ class EntityAI{
      */
     public static function checkBlockState($data) : int{
         if($data instanceof Position){
-            if(isset(self::$cache[$hash = self::getHash($data)])){
-                return self::$cache[$hash];
-            }
             $floor = self::getFloorPos($data);
             $block = $data->world->getBlockAt($floor->x, $floor->y, $floor->z);
         }elseif($data instanceof Block){
-            if(isset(self::$cache[$hash = self::getHash($data->getPos())])){
-                return self::$cache[$hash];
-            }
             $block = $data;
         }else{
             throw new \RuntimeException("$data is not Block|Position class");
@@ -71,7 +58,14 @@ class EntityAI{
         if($block instanceof Door && count($block->getAffectedBlocks()) > 1){ //문일때
             $value = $block instanceof WoodenDoor ? EntityAI::DOOR : EntityAI::WALL; //철문인지 판단
         }elseif($block instanceof Stair){
-            $value = EntityAI::BLOCK;
+            //TODO: 계단 위치에 따라 변경
+            /*$blockBoxes = $block->getCollisionBoxes();
+            if(count($blockBoxes) < 3){
+                $pos = $block->getPos();
+                foreach($blockBoxes as $_ => $bb){
+
+                }
+            }*/
         }else{
             $blockBox = $block->getCollisionBoxes()[0] ?? null;
             $boxDiff = $blockBox === null ? 0 : $blockBox->maxY - $blockBox->minY;
@@ -87,7 +81,6 @@ class EntityAI{
                 $value = $blockBox->minY == (int) $blockBox->minY ? EntityAI::SLAB : EntityAI::UP_SLAB;
             }
         }
-        //self::$cache[$hash] = $value;
         return $block instanceof Trapdoor ? EntityAI::PASS : $value; //TODO: 트랩도어, 카펫 등
     }
 

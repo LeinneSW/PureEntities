@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\ai\walk;
 
 use leinne\pureentities\entity\ai\EntityAI;
-use leinne\pureentities\entity\ai\EntityNavigator;
+use leinne\pureentities\entity\ai\navigator\EntityNavigator;
+use leinne\pureentities\entity\ai\navigator\WalkEntityNavigator;
 use leinne\pureentities\entity\EntityBase;
 
 use pocketmine\block\Block;

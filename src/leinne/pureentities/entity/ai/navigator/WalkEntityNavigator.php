@@ -2,25 +2,21 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai\walk;
+namespace leinne\pureentities\entity\ai\navigator;
 
-use leinne\pureentities\entity\ai\EntityNavigator;
-use leinne\pureentities\entity\ai\PathFinder;
+use leinne\pureentities\entity\ai\path\PathFinder;
+use leinne\pureentities\entity\ai\path\astar\AStarPathFinder;
 
+use leinne\pureentities\entity\ai\path\SimplePathFinder;
+use leinne\pureentities\PureEntities;
 use pocketmine\math\Math;
 use pocketmine\world\Position;
 
 class WalkEntityNavigator extends EntityNavigator{
 
-    public function setEnd(Position $pos) : void{
-        parent::setEnd($pos);
-
-        $this->getPathFinder()->reset();
-    }
-
     public function canGoNextNode(Position $next) : bool{
         $pos = $this->holder->getPosition();
-        return abs($pos->x - $next->x) < 0.1 && abs($pos->z - $next->z) < 0.1 && $pos->getFloorY() === $next->getFloorY();
+        return abs($pos->x - $next->x) < 0.1 && abs($pos->z - $next->z) < 0.1;// && $pos->getFloorY() === $next->getFloorY();
     }
 
     public function makeRandomGoal() : Position{
@@ -35,7 +31,7 @@ class WalkEntityNavigator extends EntityNavigator{
     }
 
     public function getDefaultPathFinder() : PathFinder{
-        return new AStarPathFinder($this);
+        return PureEntities::$enableAstar ? new AStarPathFinder($this) : new SimplePathFinder($this);
     }
 
 }

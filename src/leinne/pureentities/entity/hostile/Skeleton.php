@@ -33,6 +33,8 @@ class Skeleton extends Monster{
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
+    protected $stepHeight = 0.6;
+
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 

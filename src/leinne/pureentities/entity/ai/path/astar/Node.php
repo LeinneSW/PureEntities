@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai\walk;
+namespace leinne\pureentities\entity\ai\path\astar;
 
 use pocketmine\world\Position;
 

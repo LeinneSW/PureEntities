@@ -28,6 +28,8 @@ class Creeper extends Monster implements Explosive{
 
     private $force = 3.0;
 
+    protected $stepHeight = 0.6;
+
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
@@ -45,6 +47,18 @@ class Creeper extends Monster implements Explosive{
      */
     public function getInteractDistance() : float{
         return 3.6;
+    }
+
+    public function isAttackable() : bool{
+        return $this->force > 0;
+    }
+
+    public function getForce() : float{
+        return $this->force;
+    }
+
+    public function setForce(float $force) : void{
+        $this->force = $force;
     }
 
     public function explode() : void{
@@ -71,7 +85,7 @@ class Creeper extends Monster implements Explosive{
             return false;
         }
 
-        //TODO: boom event
+        //TODO: explode effect
 
         $this->setSpeed(0.4);
         if(++$this->interactDelay >= 32){

@@ -26,6 +26,8 @@ class Spider extends Monster{
     public $height = 0.9;
     public $eyeHeight = 0.7;
 
+    protected $stepHeight = 0.6;
+
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 

@@ -23,6 +23,8 @@ class Chicken extends Animal{
     public $height = 0.8;
     public $eyeHeight = 0.6;
 
+    protected $stepHeight = 0.6;
+
     public function getDefaultMaxHealth() : int{
         return 4;
     }

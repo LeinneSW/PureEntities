@@ -26,6 +26,8 @@ class Sheep extends Animal{
     public $height = 1.3;
     public $eyeHeight = 1.2;
 
+    protected $stepHeight = 0.6;
+
     /** @var DyeColor */
     private $color;
 

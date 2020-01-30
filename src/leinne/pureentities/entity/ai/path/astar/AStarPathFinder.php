@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai\walk;
+namespace leinne\pureentities\entity\ai\path\astar;
 
 use leinne\pureentities\entity\ai\EntityAI;
-use leinne\pureentities\entity\ai\PathFinder;
+use leinne\pureentities\entity\ai\path\PathFinder;
 
 use pocketmine\math\Facing;
 use pocketmine\math\Math;
@@ -34,11 +34,30 @@ class AStarPathFinder extends PathFinder{
     private $findCount = 0;
 
     /**
+     * 탐색을 시도할 최대 시간입니다
+     *
+     * @var int
+     */
+    protected static $maximumTick = 0;
+
+    /**
+     * 1틱마다 몇개의 블럭을 탐색할지 선택합니다
+     *
+     * @var int
+     */
+    protected static $blockPerTick = 0;
+
+    public static function setData(int $tick, int $block) : void{
+        self::$maximumTick = $tick;
+        self::$blockPerTick = $block;
+    }
+
+    /**
      * @param int $left
      * @param int|null $right
      */
-    protected function sortOpenNode(int $left = 0, ?int $right = null) : void{
-        $right = $right ?? count($this->openNode) - 1;
+    protected function sort(int $left = 0, ?int $right = null) : void{
+        $right = $right ?? (int) (count($this->openNode) / 2);
         if($left >= $right){
             return;
         }
@@ -51,15 +70,13 @@ class AStarPathFinder extends PathFinder{
             }
         }
         [$this->openNode[$left], $this->openNode[$j]] = [$this->openNode[$j], $this->openNode[$left]];
-        $this->sortOpenNode($left, $j - 1);
-        $this->sortOpenNode($j + 1, $right);
+        $this->sort($left, $j - 1);
+        $this->sort($j + 1, $right);
     }
 
-    public function reset(bool $full = true) : void{
-        if($full){
-            $this->findTick = -1;
-            $this->findCount = 0;
-        }
+    public function reset() : void{
+        $this->findTick = -1;
+        $this->findCount = 0;
 
         $this->yCache = [];
         $this->passablity = [];
@@ -71,19 +88,19 @@ class AStarPathFinder extends PathFinder{
     }
 
     /**
-     * 목적지까지의 경로를 구합니다
+     * 최적 경로를 탐색해 결과를 도출합니다
      *
-     * @return Position[]
+     * @return Position[]|null
      */
-    public function calculate() : ?array{
-        if(++$this->findCount > self::$maximumTick){
+    public function search() : ?array{
+        if($this->findCount >= self::$maximumTick){
             return null;
         }
 
-        $end = $this->navigator->getEnd();
+        $end = $this->navigator->getGoal();
         $end->y = $this->calculateYOffset($end);
         if($this->findTick === -1){
-            $this->reset(false);
+            $this->reset();
             $pos = $this->navigator->getHolder()->getPosition();
             $pos->x = Math::floorFloat($pos->x) + 0.5;
             $pos->z = Math::floorFloat($pos->z) + 0.5;
@@ -91,13 +108,14 @@ class AStarPathFinder extends PathFinder{
         }
 
         $finish = false;
+        ++$this->findCount;
         while(++$this->findTick <= self::$blockPerTick){
             if(empty($this->openNode)){
                 $finish = true;
                 break;
             }
 
-            $this->sortOpenNode();
+            $this->sort();
             $parent = array_shift($this->openNode);
             unset($this->openHash[EntityAI::getHash($parent)]);
 
@@ -147,7 +165,7 @@ class AStarPathFinder extends PathFinder{
             }
         }
 
-        if($finish){
+        if($finish){ //탐색 완료
             $last = array_pop($this->closeNode);
             $finish = [$last];
             while(($node = array_pop($this->closeNode)) !== null){
@@ -161,6 +179,7 @@ class AStarPathFinder extends PathFinder{
             return $finish;
         }
 
+        //계속 탐색중
         $this->findTick = 0;
         return [];
     }

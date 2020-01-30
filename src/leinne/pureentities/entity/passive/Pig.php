@@ -23,6 +23,8 @@ class Pig extends Animal{
     public $height = 1.0;
     public $eyeHeight = 1.62;
 
+    protected $stepHeight = 0.6;
+
     public function getDefaultMaxHealth() : int{
         return 10;
     }

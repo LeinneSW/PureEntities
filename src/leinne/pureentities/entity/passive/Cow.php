@@ -23,6 +23,8 @@ class Cow extends Animal{
     public $height = 1.2;
     public $eyeHeight = 1.0;
 
+    protected $stepHeight = 0.6;
+
     public function getDefaultMaxHealth() : int{
         return 10;
     }

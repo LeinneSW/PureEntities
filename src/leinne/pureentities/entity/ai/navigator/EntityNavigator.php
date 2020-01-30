@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\ai;
+namespace leinne\pureentities\entity\ai\navigator;
 
+use leinne\pureentities\entity\ai\path\SimplePathFinder;
 use leinne\pureentities\entity\EntityBase;
+use leinne\pureentities\entity\ai\path\PathFinder;
 
 use pocketmine\entity\Living;
 use pocketmine\world\Position;
@@ -19,12 +21,12 @@ abstract class EntityNavigator{
     private $stopDelay = 0;
 
     /** @var Position  */
-    protected $end;
+    protected $goal;
 
     /** @var Position[] */
-    protected $goal = [];
+    protected $path = [];
     /** @var int */
-    protected $goalIndex = -1;
+    protected $pathIndex = -1;
 
     /** @var EntityBase */
     protected $holder;
@@ -38,7 +40,9 @@ abstract class EntityNavigator{
 
     public abstract function makeRandomGoal() : Position;
 
-    public abstract function getDefaultPathFinder() : PathFinder;
+    public function getDefaultPathFinder() : PathFinder{
+        return new SimplePathFinder($this);
+    }
 
     public function update() : void{
         $pos = $this->holder->getLocation();
@@ -62,39 +66,39 @@ abstract class EntityNavigator{
             $holder->setTargetEntity($target);
         }
 
-        if($target !== null && $this->getEnd()->distanceSquared($target->getPosition()) > 1){
-            $this->setEnd($target->getPosition());
-        }
-
-        if(
-            $this->stopDelay >= 80
-            || (!empty($this->goal) && $this->goalIndex < 0)
+        if($target !== null){ //따라갈 엔티티가 있는경우
+            if($this->getGoal()->distanceSquared($target->getPosition()) > 0.49){
+                $this->setGoal($target->getPosition());
+            }
+        }elseif( //없는 경우
+            $this->stopDelay >= 80 //장애물에 의해 막혀있거나
+            || (!empty($this->path) && $this->pathIndex < 0) //목표지점에 도달했다면
         ){
-            $this->setEnd($this->makeRandomGoal());
+            $this->setGoal($this->makeRandomGoal());
         }
 
-        if($this->holder->onGround && ($this->goalIndex < 0 || empty($this->goal))){
-            $this->goal = $this->getPathFinder()->calculate();
-            if($this->goal === null){
-                $this->setEnd($this->makeRandomGoal());
+        if($this->holder->onGround && ($this->pathIndex < 0 || empty($this->path))){ //최종 목적지에 도달했거나 목적지가 변경된 경우
+            $this->path = $this->getPathFinder()->search();
+            if($this->path === null){
+                $this->setGoal($this->makeRandomGoal());
             }else{
-                $this->goalIndex = count($this->goal) - 1;
+                $this->pathIndex = count($this->path) - 1;
             }
         }
     }
 
     public function next() : ?Position{
-        if($this->goalIndex >= 0){
-            $next = $this->goal[$this->goalIndex];
+        if($this->pathIndex >= 0){
+            $next = $this->path[$this->pathIndex];
             if($this->canGoNextNode($next)){
-                --$this->goalIndex;
+                --$this->pathIndex;
             }
 
-            if($this->goalIndex < 0){
+            if($this->pathIndex < 0){
                 return null;
             }
         }
-        return $this->goalIndex >= 0 ? $this->goal[$this->goalIndex] : null;
+        return $this->pathIndex >= 0 ? $this->path[$this->pathIndex] : null;
     }
 
     public function addStopDelay(int $add) : void{
@@ -112,15 +116,23 @@ abstract class EntityNavigator{
         return $this->holder;
     }
 
-    public function getEnd() : Position{
-        return $this->end ?? $this->end = $this->makeRandomGoal();
+    public function getGoal() : Position{
+        return $this->goal ?? $this->goal = $this->makeRandomGoal();
     }
 
-    public function setEnd(Position $pos) : void{
-        $this->end = $pos;
-        $this->goal = [];
+    public function setGoal(Position $pos) : void{
+        $this->goal = $pos;
+        $this->path = [];
         $this->stopDelay = 0;
-        $this->goalIndex = -1;
+        $this->pathIndex = -1;
+        $this->getPathFinder()->reset();
+    }
+
+    public function updateGoal() : void{
+        $this->path = [];
+        $this->stopDelay = 0;
+        $this->pathIndex = -1;
+        $this->getPathFinder()->reset();
     }
 
     public function getPathFinder() : PathFinder{

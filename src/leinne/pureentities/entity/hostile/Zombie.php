@@ -27,6 +27,8 @@ class Zombie extends Monster implements Ageable{
     public $height = 1.8;
     public $eyeHeight = 1.62;
 
+    protected $stepHeight = 0.6;
+
     /** @var bool */
     protected $baby = false;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace leinne\pureentities;
 
-use leinne\pureentities\entity\ai\PathFinder;
+use leinne\pureentities\entity\ai\path\astar\AStarPathFinder;
 use leinne\pureentities\entity\EntityBase;
 use leinne\pureentities\entity\neutral\ZombiePigman;
 use leinne\pureentities\entity\neutral\Spider;
@@ -47,6 +47,8 @@ use pocketmine\utils\TextFormat;
 class PureEntities extends PluginBase implements Listener{
 
     private $data = [];
+
+    public static $enableAstar = true;
 
     public function onLoad(){
         /** Register hostile */
@@ -109,8 +111,8 @@ class PureEntities extends PluginBase implements Listener{
             $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), (int) ($this->data["autospawn"]["tick"] ?? 80));
         }
 
-        $astar = $this->data["astar"] ?? [];
-        PathFinder::setData((int) $astar["maximum-tick"] ?? 200, (int) $astar["block-per-tick"] ?? 100);
+        self::$enableAstar = ($this->data["enable"] ?? "") !== "false";
+        AStarPathFinder::setData((int) ($this->data["astar"]["maximum-tick"] ?? 150), (int) ($this->data["astar"]["block-per-tick"] ?? 70));
         $this->getServer()->getLogger()->info(
             TextFormat::AQUA . "\n" .
             "---------------------------------------------------------\n" .
@@ -195,8 +197,12 @@ class PureEntities extends PluginBase implements Listener{
                     return;
                 }
                 $ev->setCancelled();
-                for($y = 1; $y < 3; $y++){
-                    $block->getPos()->getWorld()->setBlock($block->getPos()->subtract(0, $y, 0), VanillaBlocks::AIR());
+
+                $pos = $block->getPos()->asVector3();
+                $air = VanillaBlocks::AIR();
+                for($y = 0; $y < 2; ++$y){
+                    --$pos->y;
+                    $block->getPos()->getWorld()->setBlock($pos, $air);
                 }
                 $entity->spawnToAll();
 

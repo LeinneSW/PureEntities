@@ -22,6 +22,8 @@ class SnowGolem extends Monster{
     public $height = 1.9;
     public $eyeHeight = 2.5;
 
+    protected $stepHeight = 0.6;
+
     public function getDefaultMaxHealth() : int{
         return 10;
     }
