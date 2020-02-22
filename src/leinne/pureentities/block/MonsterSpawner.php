@@ -9,6 +9,7 @@ use leinne\pureentities\tile\MonsterSpawner as TileSpawner;
 use pocketmine\block\MonsterSpawner as PMMonsterSpawner;
 use pocketmine\entity\EntityFactory;
 use pocketmine\player\Player;
+use pocketmine\world\Position;
 
 class MonsterSpawner extends PMMonsterSpawner{
 

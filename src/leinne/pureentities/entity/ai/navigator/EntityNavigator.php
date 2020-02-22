@@ -14,7 +14,7 @@ use pocketmine\world\Position;
 abstract class EntityNavigator{
 
     /**
-     * 엔티티가 같은위치에 벽 등의 장애로 인해 멈춰있던 시간을 나타냅니다
+     * 엔티티가 같은 위치에 벽 등의 장애로 인해 멈춰있던 시간을 나타냅니다
      *
      * @var int
      */

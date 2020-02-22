@@ -107,11 +107,11 @@ class PureEntities extends PluginBase implements Listener{
         $this->data = $this->getConfig()->getAll();
 
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        if(($this->data["autospawn"]["enable"] ?? "true") === "true"){
+        if($this->data["autospawn"]["enable"] ?? true){
             $this->getScheduler()->scheduleRepeatingTask(new AutoSpawnTask(), (int) ($this->data["autospawn"]["tick"] ?? 80));
         }
 
-        self::$enableAstar = ($this->data["enable"] ?? "") !== "false";
+        self::$enableAstar = (bool) ($this->data["astar"]["enable"] ?? false);
         AStarPathFinder::setData((int) ($this->data["astar"]["maximum-tick"] ?? 150), (int) ($this->data["astar"]["block-per-tick"] ?? 70));
         $this->getServer()->getLogger()->info(
             TextFormat::AQUA . "\n" .

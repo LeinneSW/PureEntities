@@ -72,12 +72,10 @@ abstract class EntityBase extends Living{
             return false;
         }
 
-        $location = $this->location;
-        $targetPos = $target->location;
         $width = $this->getInteractDistance() + ($this->width + $target->width) / 2;
-        return abs($location->getX() - $targetPos->x) <= $width
-            && abs($location->getZ() - $targetPos->z) <= $width
-            && abs($location->getY() - $targetPos->y) <= min(1, $this->eyeHeight);
+        return abs($this->location->x - $target->location->x) <= $width
+            && abs($this->location->z - $target->location->z) <= $width
+            && abs($this->location->y - $target->location->y) <= min(1, $this->eyeHeight);
     }
 
     /**
