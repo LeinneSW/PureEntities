@@ -49,9 +49,6 @@ trait WalkEntityTrait{
     /** @var Block */
     private $doorBlock = null;
 
-    /** @var EntityNavigator */
-    protected $navigator = null;
-
     /**
      * @see EntityBase::entityBaseTick()
      *
@@ -77,12 +74,13 @@ trait WalkEntityTrait{
         /** @var Entity $target */
         $target = $this->getTargetEntity();
 
-        $goal = $this->getNavigator()->next();
-        if($goal === null){
+        $next = $this->getNavigator()->next();
+        if($next === null){
             return $hasUpdate;
         }
-        $x = $goal->x - $me->x;
-        $z = $goal->z - $me->z;
+
+        $x = $next->x - $me->x;
+        $z = $next->z - $me->z;
         $diff = abs($x) + abs($z);
         if(!$this->interactTarget() && $diff != 0){
             $hasUpdate = true;
@@ -104,20 +102,20 @@ trait WalkEntityTrait{
                     continue;
                 }
 
-                switch(EntityAI::checkPassablity($this->location, $block)){
-                    case EntityAI::BLOCK:
-                        $hasUpdate = true;
-                        $this->motion->y += 0.52;
-                        break;
-                    case EntityAI::DOOR:
-                        if($this->canBreakDoor()){
-                            $this->checkDoorState = true;
-                            if($this->doorBreakTime <= 0 && ++$this->doorBreakDelay > 20){
-                                $this->doorBlock = $block;
-                                $this->doorBreakTime = 180;
-                            }
+                $pass = EntityAI::checkPassablity($this->location, $block);
+                if($pass == EntityAI::BLOCK){
+                    $hasUpdate = true;
+                    $this->motion->y += 0.52;
+                    break;
+                }elseif($pass == EntityAI::DOOR){
+                    if($this->canBreakDoor()){
+                        $this->checkDoorState = true;
+                        if($this->doorBreakTime <= 0 && ++$this->doorBreakDelay > 20){
+                            $this->doorBlock = $block;
+                            $this->doorBreakTime = 180;
                         }
-                        break;
+                    }
+                    break;
                 }
             }
         }
@@ -175,8 +173,8 @@ trait WalkEntityTrait{
         return $aabb;
     }
 
-    public function getNavigator() : EntityNavigator{
-        return $this->navigator ?? $this->navigator = new WalkEntityNavigator($this);
+    public function getDefaultNavigator() : EntityNavigator{
+        return new WalkEntityNavigator($this);
     }
 
 }

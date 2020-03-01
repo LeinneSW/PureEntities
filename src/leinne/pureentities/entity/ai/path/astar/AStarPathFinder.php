@@ -165,18 +165,18 @@ class AStarPathFinder extends PathFinder{
             }
         }
 
-        if($finish){ //탐색 완료
+        if($finish && count($this->closeNode) > 0){ //탐색 완료
             $last = array_pop($this->closeNode);
-            $finish = [$last];
+            $path = [$last->asPosition()];
             while(($node = array_pop($this->closeNode)) !== null){
                 if($last->getParentNode()->getId() === $node->getId()){
                     $last = $node;
                     if(isset($this->onChange[EntityAI::getHash($node)])){
-                        $finish[] = $node;
+                        $path[] = $node->asPosition();
                     }
                 }
             }
-            return $finish;
+            return $path;
         }
 
         //계속 탐색중

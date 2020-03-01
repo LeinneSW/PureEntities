@@ -29,12 +29,8 @@ class Node extends Position{
     private $parentNode = null;
 
     public static function create(Position $pos, Position $end, ?Node $parent = null) : self{
-        $node = new self;
+        $node = new self($pos->x, $pos->y, $pos->z, $pos->world);
         $node->id = ++Node::$nextId;
-        $node->x = $pos->x;
-        $node->y = $pos->y;
-        $node->z = $pos->z;
-        $node->world = $pos->world;
         $node->heuristic = $pos->distanceSquared($end);
         if($parent !== null){
             $node->parentNode = $parent;

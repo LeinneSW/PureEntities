@@ -36,7 +36,16 @@ abstract class EntityBase extends Living{
     /** @var bool */
     protected $fixedTarget = false;
 
-    public abstract function getNavigator() : EntityNavigator;
+    /** @var EntityNavigator */
+    protected $navigator = null;
+
+    public function getNavigator() : EntityNavigator{
+        return $this->navigator ?? $this->navigator = $this->getDefaultNavigator();
+    }
+
+    public function getDefaultNavigator() : EntityNavigator{
+        return new EntityNavigator($this);
+    }
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -181,8 +190,9 @@ abstract class EntityBase extends Living{
     }
 
     public function setMotion(Vector3 $motion) : bool{
+        $return = parent::setMotion($motion);
         $this->getNavigator()->updateGoal();
-        return parent::setMotion($motion);
+        return $return;
     }
 
     public function checkBoundingBoxState(float $movX, float $movY, float $movZ, float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
