@@ -14,7 +14,7 @@ use pocketmine\world\Position;
 
 class WalkEntityNavigator extends EntityNavigator{
 
-    public function canGoNextNode(Position $next) : bool{
+    public function canGoNextPath(Position $next) : bool{
         $pos = $this->holder->getPosition();
         return abs($pos->x - $next->x) < 0.1 && abs($pos->z - $next->z) < 0.1;// && $pos->getFloorY() === $next->getFloorY();
     }
