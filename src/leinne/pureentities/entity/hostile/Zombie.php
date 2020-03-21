@@ -43,7 +43,7 @@ class Zombie extends Monster implements Ageable{
             $this->eyeHeight = 0.775;
         }
 
-        $this->setSpeed(0.7);
+        $this->setSpeed(0.9);
         $this->setDamages([0, 2, 3, 4]);
     }
 

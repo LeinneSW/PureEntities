@@ -199,7 +199,7 @@ abstract class Monster extends EntityBase{
         }
         $nbt->setTag("MinDamages", new ListTag($min));
         $nbt->setTag("MaxDamages", new ListTag($max));
-        $nbt->setTag("HeldItem", $this->inventory->getItemInHand()->nbtSerialize(-1));
+        $nbt->setTag("HeldItem", $this->inventory->getItemInHand()->nbtSerialize());
         return $nbt;
     }
 

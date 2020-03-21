@@ -60,10 +60,10 @@ class Skeleton extends Monster{
             $baseForce = min((($p ** 2) + $p * 2) / 3, 1);
 
             $nbt = EntityFactory::createBaseNBT(
-                $this->getPosition()->add(0, $this->eyeHeight, 0),
+                $this->location->add(0, $this->eyeHeight, 0),
                 $this->getDirectionVector(),
-                ($this->getLocation()->getYaw() > 180 ? 360 : 0) - $this->getLocation()->getYaw(),
-                -$this->getLocation()->getPitch()
+                ($this->location->yaw > 180 ? 360 : 0) - $this->location->yaw,
+                -$this->location->pitch
             );
             $arrow = new Arrow($this->getWorld(), $nbt, $this, $baseForce >= 1);
             //TODO: 올바른 화살 대미지[1~4(쉬움, 보통), 1~5(어려움)]
@@ -83,7 +83,7 @@ class Skeleton extends Monster{
             }
 
             $this->interactDelay = 0;
-            $ev = new EntityShootBowEvent($this, ItemFactory::get(ItemIds::ARROW, 0, 1), $arrow, $baseForce * 3);
+            $ev = new EntityShootBowEvent($this, $item, $arrow, $baseForce * 3);
             $ev->call();
 
             $entity = $ev->getProjectile();
@@ -99,14 +99,14 @@ class Skeleton extends Monster{
                         $entity->flagForDespawn();
                     }else{
                         $entity->spawnToAll();
-                        $this->getWorld()->addSound($this->getPosition(), new LaunchSound(), $this->getViewers());
+                        $this->getWorld()->addSound($this->location, new LaunchSound(), $this->getViewers());
                     }
                 }else{
                     $entity->spawnToAll();
                 }
             }
         }
-        return $this->getLocation()->distanceSquared($target->getPosition()) <= 7.84; //2.5 ** 2
+        return $this->location->distanceSquared($target->location) <= 7.84; //2.5 ** 2
     }
 
     public function interactTarget() : bool{
