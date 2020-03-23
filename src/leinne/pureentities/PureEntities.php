@@ -147,10 +147,6 @@ class PureEntities extends PluginBase implements Listener{
         }
     }
 
-    public function onDisable() : void{
-        $this->getServer()->getLogger()->info(TextFormat::GOLD . '[PureEntities]Plugin has been disabled');
-    }
-
     public function onInteractEvent(PlayerInteractEvent $ev) : void{
         if($ev->getAction() !== PlayerInteractEvent::RIGHT_CLICK_BLOCK){
             return;

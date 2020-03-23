@@ -12,7 +12,6 @@ use leinne\pureentities\entity\EntityBase;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\world\particle\DestroyBlockParticle;
@@ -163,7 +162,7 @@ trait WalkEntityTrait{
                 }
 
                 if(--$this->doorBreakTime <= 0){
-                    $this->doorBlock->onBreak(ItemFactory::get(ItemIds::AIR));
+                    $this->doorBlock->onBreak(ItemFactory::air());
                     $pos->world->addSound($pos, new DoorCrashSound());
                     $pos->world->addParticle($pos->add(0.5, 0.5, 0.5), new DestroyBlockParticle($this->doorBlock));
                 }
