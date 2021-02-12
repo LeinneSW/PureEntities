@@ -9,8 +9,7 @@ use pocketmine\world\Position;
 
 abstract class PathFinder{
 
-    /** @var EntityNavigator */
-    protected $navigator;
+    protected EntityNavigator $navigator;
 
     public function __construct(EntityNavigator $navigator){
         $this->navigator = $navigator;

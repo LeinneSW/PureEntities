@@ -6,27 +6,24 @@ namespace leinne\pureentities\entity\neutral;
 
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
-
+use pocketmine\entity\EntitySizeInfo;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 
 class Spider extends Monster{
-
     use WalkEntityTrait;
 
-    const NETWORK_ID = EntityLegacyIds::SPIDER;
+    public static function getNetworkTypeId() : string{
+        return EntityIds::SPIDER;
+    }
 
-    //TODO: Spider's Size
-    public $width = 1.4;
-    public $height = 0.9;
-    public $eyeHeight = 0.7;
-
-    protected $stepHeight = 0.6;
+    protected function getInitialSizeInfo() : EntitySizeInfo{
+        return new EntitySizeInfo(0.9, 1.4);
+    }
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -61,15 +58,15 @@ class Spider extends Monster{
 
     public function getDrops() : array{
         $drops = [
-            ItemFactory::get(ItemIds::STRING, 0, mt_rand(0, 2))
+            VanillaItems::STRING()->setCount(mt_rand(0, 2))
         ];
 
         if(
             $this->lastDamageCause instanceof EntityDamageByEntityEvent
             && $this->lastDamageCause->getDamager() instanceof Player
-            && mt_rand(1, 3) === 1
+            && !mt_rand(0, 2)
         ){
-            $drops[] = ItemFactory::get(ItemIds::SPIDER_EYE, 0, 1);
+            $drops[] = VanillaItems::SPIDER_EYE();
         }
         return $drops;
     }

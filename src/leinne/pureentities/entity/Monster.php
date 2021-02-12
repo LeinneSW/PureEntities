@@ -7,34 +7,29 @@ namespace leinne\pureentities\entity;
 use leinne\pureentities\entity\inventory\MonsterInventory;
 
 use pocketmine\entity\Entity;
-use pocketmine\inventory\CallbackInventoryChangeListener;
+use pocketmine\inventory\CallbackInventoryListener;
+use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\ListTag;
+use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\types\inventory\ContainerIds;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
-abstract class Monster extends EntityBase{
+abstract class Monster extends LivingBase{
 
-    /** @var MonsterInventory */
-    protected $inventory;
-    
-    /**
-     * 유저 커스텀 전용
-     *
-     * @var bool
-     */
-    protected $allowWeaponDamage = false;
+    protected MonsterInventory $inventory;
+
+    protected bool $allowWeaponDamage = false;
 
     /** @var float[] */
-    private $minDamage = [0.0, 0.0, 0.0, 0.0];
+    private array $minDamage = [0.0, 0.0, 0.0, 0.0];
     /** @var float[] */
-    private $maxDamage = [0.0, 0.0, 0.0, 0.0];
+    private array $maxDamage = [0.0, 0.0, 0.0, 0.0];
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
@@ -57,16 +52,25 @@ abstract class Monster extends EntityBase{
             $this->inventory->setItemInHand($item);
         }
 
-        $this->inventory->addChangeListeners(CallbackInventoryChangeListener::onAnyChange(
-            function(MonsterInventory $inv) : void{
+        $this->inventory->getListeners()->add(new CallbackInventoryListener(
+            function(Inventory $inv, int $slot, Item $oldItem) : void{
+                /** @var MonsterInventory $inv */
+                $itemStack = TypeConverter::getInstance()->coreItemStackToNet($inv->getItemInHand());
                 foreach($this->getViewers() as $viewer){
-                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $inv->getItemInHand(), 0, ContainerIds::INVENTORY));
+                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $itemStack, 0, ContainerIds::INVENTORY));
+                }
+            },
+            function(Inventory $inv, array $oldContents) : void{
+                /** @var MonsterInventory $inv */
+                $itemStack = TypeConverter::getInstance()->coreItemStackToNet($inv->getItemInHand());
+                foreach($this->getViewers() as $viewer){
+                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $itemStack, 0, ContainerIds::INVENTORY));
                 }
             }
         ));
     }
 
-    public function canBreakDoor() : bool{
+    public function canBreakDoors() : bool{
         return true;
     }
 
@@ -79,7 +83,7 @@ abstract class Monster extends EntityBase{
     }
 
     public function getDefaultHeldItem() : Item{
-        return ItemFactory::get(ItemIds::AIR);
+        return ItemFactory::air();
     }
 
     public function getInventory() : MonsterInventory{
@@ -185,7 +189,7 @@ abstract class Monster extends EntityBase{
     protected function sendSpawnPacket(Player $player) : void{
         parent::sendSpawnPacket($player);
 
-        $player->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->id, $this->inventory->getItemInHand(), 0, ContainerIds::INVENTORY));
+        $player->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->id, TypeConverter::getInstance()->coreItemStackToNet($this->inventory->getItemInHand()), 0, ContainerIds::INVENTORY));
     }
 
     public function saveNBT() : CompoundTag{

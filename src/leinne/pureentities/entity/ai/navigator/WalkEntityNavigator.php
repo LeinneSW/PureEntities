@@ -8,7 +8,6 @@ use leinne\pureentities\entity\ai\path\PathFinder;
 use leinne\pureentities\entity\ai\path\astar\AStarPathFinder;
 use leinne\pureentities\entity\ai\path\SimplePathFinder;
 use leinne\pureentities\PureEntities;
-
 use pocketmine\math\Math;
 use pocketmine\world\Position;
 

@@ -6,45 +6,41 @@ namespace leinne\pureentities\entity\hostile;
 
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
-
 use pocketmine\entity\Ageable;
+use pocketmine\entity\animation\ArmSwingAnimation;
+use pocketmine\entity\EntitySizeInfo;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\ActorEventPacket;
-use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 
 class Zombie extends Monster implements Ageable{
-
     use WalkEntityTrait;
 
-    const NETWORK_ID = EntityLegacyIds::ZOMBIE;
+    protected bool $baby = false;
 
-    public $width = 0.6;
-    public $height = 1.8;
-    public $eyeHeight = 1.62;
+    public static function getNetworkTypeId() : string{
+        return EntityIds::ZOMBIE;
+    }
 
-    protected $stepHeight = 0.6;
-
-    /** @var bool */
-    protected $baby = false;
+    protected function getInitialSizeInfo() : EntitySizeInfo{
+        return new EntitySizeInfo(1.9, 0.6);
+    }
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::BABY, $this->baby = ($nbt->getByte("IsBaby", 0) !== 0));
-
+        $this->baby = $nbt->getByte("IsBaby", 0) !== 0;
+        $this->breakDoor = $nbt->getByte("CanBreakDoors", 1) !== 0;
         if($this->isBaby()){
-            $this->width = 0.3;
-            $this->height = 0.975;
-            $this->eyeHeight = 0.775;
+            $this->setScale(0.5);
         }
 
         $this->setSpeed(0.9);
-        $this->setDamages([0, 2, 3, 4]);
+        $this->setDamages([0, 2.5, 3, 4.5]);
     }
 
     public function getName() : string{
@@ -61,12 +57,7 @@ class Zombie extends Monster implements Ageable{
         }
 
         if($this->interactDelay >= 20){
-            $pk = new ActorEventPacket();
-            $pk->entityRuntimeId = $this->id;
-            $pk->event = ActorEventPacket::ARM_SWING;
-            foreach($this->hasSpawned as $viewer){
-                $viewer->getNetworkSession()->sendDataPacket($pk);
-            }
+            $this->broadcastAnimation(new ArmSwingAnimation($this));
 
             $target = $this->getTargetEntity();
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
@@ -79,27 +70,34 @@ class Zombie extends Monster implements Ageable{
         return true;
     }
 
+    protected function syncNetworkData(EntityMetadataCollection $properties) : void{
+        parent::syncNetworkData($properties);
+
+        $properties->setGenericFlag(EntityMetadataFlags::BABY, $this->baby);
+    }
+
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
         $nbt->setByte("IsBaby", $this->isBaby() ? 1 : 0);
+        $nbt->setByte("CanBreakDoors" , $this->breakDoor ? 1 : 0);
         return $nbt;
     }
 
     public function getDrops() : array{
         $drops = [
-            ItemFactory::get(ItemIds::ROTTEN_FLESH, 0, mt_rand(0, 2))
+            VanillaItems::ROTTEN_FLESH()->setCount(mt_rand(0, 2))
         ];
 
         if(mt_rand(0, 199) < 5){
             switch(mt_rand(0, 2)){
                 case 0:
-                    $drops[] = ItemFactory::get(ItemIds::IRON_INGOT, 0, 1);
+                    $drops[] = VanillaItems::IRON_INGOT();
                     break;
                 case 1:
-                    $drops[] = ItemFactory::get(ItemIds::CARROT, 0, 1);
+                    $drops[] = VanillaItems::CARROT();
                     break;
                 case 2:
-                    $drops[] = ItemFactory::get(ItemIds::POTATO, 0, 1);
+                    $drops[] = VanillaItems::POTATO();
                     break;
             }
         }
@@ -113,5 +111,4 @@ class Zombie extends Monster implements Ageable{
         }
         return 5;
     }
-
 }

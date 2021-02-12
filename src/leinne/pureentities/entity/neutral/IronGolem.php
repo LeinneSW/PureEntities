@@ -2,46 +2,43 @@
 
 declare(strict_types=1);
 
-namespace leinne\pureentities\entity\utility;
+namespace leinne\pureentities\entity\neutral;
 
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
-
+use pocketmine\entity\animation\ArmSwingAnimation;
 use pocketmine\entity\Entity;
+use pocketmine\entity\EntitySizeInfo;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\ActorEventPacket;
-use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
 
 class IronGolem extends Monster{
-
     use WalkEntityTrait;
 
-    const NETWORK_ID = EntityLegacyIds::IRON_GOLEM;
+    private bool $playerCreated = false;
 
-    public $width = 1.4;
-    public $height = 2.7;
-    public $eyeHeight = 2.5;
+    public static function getNetworkTypeId() : string{
+        return EntityIds::IRON_GOLEM;
+    }
 
-    protected $stepHeight = 0.6;
-
-    private $friendly = 0;
-
-    //private $owner = "";
+    protected function getInitialSizeInfo() : EntitySizeInfo{
+        return new EntitySizeInfo(2.9, 1.4);
+    }
 
     public function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        //$this->owner = $nbt->getString("Owner", "");
-        $this->friendly = $nbt->getInt("Friendly", 0);
+        $this->playerCreated = $nbt->getByte("PlayerCreated", 0) !== 0;
 
-        $this->setSpeed(1.3);
-        $this->setMaxDamages([0, 11, 21, 31]);
-        $this->setMinDamages([0, 4, 7, 10]);
+        $this->setSpeed(0.25);
+        $this->setMinDamages([0, 4.75, 7.5, 11.25]);
+        $this->setMaxDamages([0, 11.75, 21.5, 32.25]);
     }
 
     public function getDefaultMaxHealth() : int{
@@ -49,20 +46,12 @@ class IronGolem extends Monster{
     }
 
     public function getName() : string{
-        return 'IronGolem';
+        return "Iron Golem";
     }
 
-    public function isFriendly() : bool{
-        return $this->friendly >= -15;
+    public function isPlayerCreated() : bool{
+        return $this->playerCreated;
     }
-
-    public function setFriendly(int $value) : void{
-        $this->friendly = $value;
-    }
-
-    /*public function getOwnerName() : string{
-        return $this->owner;
-    }*/
 
     public function canSpawnPeaceful() : bool{
         return true;
@@ -77,12 +66,12 @@ class IronGolem extends Monster{
      * @return bool
      */
     public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
-        if($target instanceof Player && ($this->isFriendly() || $target === $this->getOwningEntity() || !$target->isSurvival())){
+        if($target instanceof Player && ($this->isPlayerCreated() || !$target->isSurvival())){
             return false;
         }elseif($target instanceof IronGolem){
             return false;
         }
-        return $this->fixedTarget || ($target instanceof Monster || !$this->isFriendly()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
+        return $this->fixedTarget || ($target instanceof Monster || !$this->isPlayerCreated()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
     }
 
     public function interactTarget() : bool{
@@ -99,12 +88,7 @@ class IronGolem extends Monster{
             }
 
             if($damage >= 0){
-                $pk = new ActorEventPacket();
-                $pk->entityRuntimeId = $this->id;
-                $pk->event = ActorEventPacket::ARM_SWING;
-                foreach($this->hasSpawned as $viewer){
-                    $viewer->getNetworkSession()->sendDataPacket($pk);
-                }
+                $this->broadcastAnimation(new ArmSwingAnimation($this));
 
                 $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
                 $target->attack($ev);
@@ -119,15 +103,14 @@ class IronGolem extends Monster{
 
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
-        //$nbt->setString("Owner", $this->owner);
-        $nbt->setInt("Friendly", $this->friendly);
+        $nbt->setByte("PlayerCreated", $this->playerCreated ? 1 : 0);
         return $nbt;
     }
 
     public function getDrops() : array{
         return [
-            ItemFactory::get(ItemIds::IRON_INGOT, 0, mt_rand(3, 5)),
-            ItemFactory::get(ItemIds::POPPY, 0, mt_rand(0, 2)),
+            VanillaItems::IRON_INGOT()->setCount(mt_rand(3, 5)),
+            ItemFactory::getInstance()->get(ItemIds::POPPY, 0, mt_rand(0, 2)),
         ];
     }
 

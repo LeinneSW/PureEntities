@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace leinne\pureentities\block;
 
 use leinne\pureentities\tile\MonsterSpawner as TileSpawner;
-
 use pocketmine\block\MonsterSpawner as PMMonsterSpawner;
+use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\EntityFactory;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
@@ -45,9 +45,9 @@ class MonsterSpawner extends PMMonsterSpawner{
                 $pos->x += mt_rand(0, 1) ? $newx : -$newx;
                 $pos->z += mt_rand(0, 1) ? $newz : -$newz;
                 $pos->y = $this->calculateYPos($pos);
-                $nbt = EntityFactory::createBaseNBT($pos);
-                $nbt->setString("identifier", $spawner->getEntityId());
-                $entity = EntityFactory::createFromData($spawner->getPos()->getWorld(), $nbt);
+                $nbt = EntityDataHelper::createBaseNBT($pos);
+                $nbt->setString("id", $spawner->getEntityId());
+                $entity = EntityFactory::getInstance()->createFromData($spawner->getPos()->getWorld(), $nbt);
                 if($entity !== null){
                     $entity->spawnToAll();
                 }
@@ -56,7 +56,7 @@ class MonsterSpawner extends PMMonsterSpawner{
     }
 
     public function calculateYPos(Position $pos) : int{
-        //TODO: 몬스터가 박히지 않을 최소한의 Y좌표
+        //TODO: 몬스터가 갇히지 않을 최소한의 Y좌표
         return $pos->y;
     }
 

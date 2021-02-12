@@ -6,62 +6,58 @@ namespace leinne\pureentities\entity\neutral;
 
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
-
 use pocketmine\entity\Ageable;
+use pocketmine\entity\animation\ArmSwingAnimation;
 use pocketmine\entity\Entity;
+use pocketmine\entity\EntitySizeInfo;
 use pocketmine\entity\Human;
 use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\ActorEventPacket;
-use pocketmine\network\mcpe\protocol\types\entity\EntityLegacyIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
+use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
+use pocketmine\player\Player;
 
-class ZombiePigman extends Monster implements Ageable{
-
+class ZombifiedPiglin extends Monster implements Ageable{
     use WalkEntityTrait{
         entityBaseTick as baseTick;
     }
 
-    const NETWORK_ID = EntityLegacyIds::ZOMBIE_PIGMAN;
+    private bool $angry = false;
 
-    public $width = 0.6;
-    public $height = 1.8;
-    public $eyeHeight = 1.62;
+    protected bool $baby = false;
 
-    protected $stepHeight = 0.6;
+    public static function getNetworkTypeId() : string{
+        return EntityIds::ZOMBIE_PIGMAN;
+    }
 
-    /** @var int */
-    private $angry = 0;
-
-    /** @var bool */
-    protected $baby = false;
+    protected function getInitialSizeInfo() : EntitySizeInfo{
+        return new EntitySizeInfo(1.9, 0.6);
+    }
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->setAngry($nbt->getInt('Angry', 0));
-        $this->getNetworkProperties()->setGenericFlag(EntityMetadataFlags::BABY, $this->baby = $nbt->getByte("IsBaby", 0) !== 0);
-
+        $this->baby = $nbt->getByte("IsBaby", 0) !== 0;
+        $this->angry = $nbt->getByte('Angry', 0) !== 0;
+        $this->breakDoor = $nbt->getByte("CanBreakDoors", 1) !== 0;
         if($this->isBaby()){
-            $this->width = 0.3;
-            $this->height = 0.975;
-            $this->eyeHeight = 0.775;
+            $this->setScale(0.5);
         }
 
-        $this->setDamages([0, 5, 9, 13]);
+        $this->setDamages([0, 5, 8, 12]);
     }
 
     public function getDefaultHeldItem() : Item{
-        return ItemFactory::get(ItemIds::GOLD_SWORD);
+        return VanillaItems::GOLDEN_SWORD();
     }
 
     public function getName() : string{
-        return 'Zombie Pigman';
+        return 'Zombified Piglin';
     }
 
     public function isBaby() : bool{
@@ -76,21 +72,22 @@ class ZombiePigman extends Monster implements Ageable{
         parent::attack($source);
 
         if(!$source->isCancelled() && $source instanceof EntityDamageByEntityEvent && $source->getDamager() instanceof Human){
-            $this->setAngry();
+            $this->setAngry(true);
         }
     }
 
     public function isAngry() : bool{
-        return $this->angry > 0;
+        return $this->angry;
     }
 
-    public function setAngry(?int $second = null) : void{
-        $this->angry = ($second ?? mt_rand(20, 40)) * 20;
+    public function setAngry(bool $value) : void{
+        $this->angry = $value;
     }
 
     protected function entityBaseTick(int $tickDiff = 1) : bool{
-        if($this->isAlive() && $this->angry > 0){
-            --$this->angry;
+        if($this->isAlive() && $this->angry){
+            //TODO: 얘 화 어떻게 풀림?
+            //--$this->angry;
         }
 
         return $this->baseTick($tickDiff);
@@ -109,12 +106,7 @@ class ZombiePigman extends Monster implements Ageable{
         }
 
         if($this->interactDelay >= 20){
-            $pk = new ActorEventPacket();
-            $pk->entityRuntimeId = $this->id;
-            $pk->event = ActorEventPacket::ARM_SWING;
-            foreach($this->hasSpawned as $viewer){
-                $viewer->getNetworkSession()->sendDataPacket($pk);
-            }
+            $this->broadcastAnimation(new ArmSwingAnimation($this));
 
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
             $target->attack($ev);
@@ -126,15 +118,40 @@ class ZombiePigman extends Monster implements Ageable{
         return true;
     }
 
+    protected function syncNetworkData(EntityMetadataCollection $properties) : void{
+        parent::syncNetworkData($properties);
+
+        $properties->setGenericFlag(EntityMetadataFlags::BABY, $this->baby);
+        $properties->setGenericFlag(EntityMetadataFlags::ANGRY, $this->angry);
+    }
+
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
-        $nbt->setInt("Angry", $this->angry);
-        $nbt->setByte("IsBaby", $this->isBaby() ? 1 : 0);
+        $nbt->setByte("IsBaby", $this->baby ? 1 : 0);
+        $nbt->setByte("IsAngry", $this->angry ? 1 : 0);
+        $nbt->setByte("CanBreakDoors" , $this->breakDoor ? 1 : 0);
         return $nbt;
     }
 
     public function getDrops() : array{
-        return [];
+        $drops = [
+            VanillaItems::ROTTEN_FLESH()->setCount(mt_rand(0, 1)),
+            VanillaItems::GOLD_NUGGET()->setCount(mt_rand(0, 1)),
+        ];
+
+        if(
+            $this->lastDamageCause instanceof EntityDamageByEntityEvent
+            && $this->lastDamageCause->getDamager() instanceof Player
+        ){
+            if(mt_rand(0, 199) < 5){
+                $drops[] = VanillaItems::GOLD_INGOT();
+            }
+
+            if(mt_rand(0, 199) < 17){
+                $drops[] = VanillaItems::GOLDEN_SWORD();
+            }
+        }
+        return $drops;
     }
 
     public function getXpDropAmount() : int{

@@ -4,59 +4,55 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\tile;
 
-use pocketmine\math\Vector3;
+use pocketmine\data\bedrock\LegacyEntityIdToStringIdMap;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\block\tile\Spawnable;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\network\mcpe\protocol\AddActorPacket;
-use pocketmine\world\World;
 
 class MonsterSpawner extends Spawnable{
 
-    /** @var string */
-    protected $entityTypeId;
+    protected ?string $entityTypeId = null;
 
-    /** @var int */
-    protected $spawnRange;
+    protected int $spawnRange;
 
-    /** @var int */
-    protected $minSpawnDelay;
+    protected int $minSpawnDelay;
 
-    /** @var int */
-    protected $maxSpawnDelay;
+    protected int $maxSpawnDelay;
 
-    /** @var int */
-    protected $maxNearbyEntities;
+    protected int $maxNearbyEntities;
 
-    /** @var int */
-    protected $requiredPlayerRange;
+    protected int $requiredPlayerRange;
 
-    /** @var int */
-    public $delay = 0;
+    public int $delay = 0;
 
-    public function __construct(World $world, Vector3 $pos){
-        parent::__construct($world, $pos);
+    public function addAdditionalSpawnData(CompoundTag $tag) : void{
+        $tag->setString("EntityIdentifier", $this->entityTypeId);
     }
 
     public function readSaveData(CompoundTag $nbt) : void{
         if($nbt->hasTag("EntityId", IntTag::class)){
-            $this->entityTypeId = AddActorPacket::LEGACY_ID_MAP_BC[$nbt->getInt("EntityId")] ?? ":";
+            $this->setEntityId(LegacyEntityIdToStringIdMap::getInstance()->legacyToString($nbt->getInt("EntityId")));
         }elseif($nbt->hasTag("EntityIdentifier", StringTag::class)){
-            $this->entityTypeId = $nbt->getString("EntityIdentifier");
-        }else{
-            $this->entityTypeId = ":";
+            $this->setEntityId($nbt->getString("EntityIdentifier"));
         }
 
-        $this->spawnRange = $nbt->getShort('SpawnRange', 8);
-        $this->minSpawnDelay = $nbt->getInt('MinSpawnDelay', 200);
-        $this->maxSpawnDelay = $nbt->getInt('MaxSpawnDelay', 8000);
+        $this->setSpawnRange($nbt->getShort('SpawnRange', 8));
+        $this->setSpawnDelay($nbt->getInt('MinSpawnDelay', 200), $nbt->getInt('MaxSpawnDelay', 8000));
         $this->maxNearbyEntities = $nbt->getShort('MaxNearbyEntities', 25);
         $this->requiredPlayerRange = $nbt->getShort('RequiredPlayerRange', 20);
     }
 
     public function hasValidEntityId() : bool{
-        return $this->entityTypeId > 0;
+        return $this->entityTypeId !== null;
+    }
+
+    public function getEntityId() : string{
+        return $this->entityTypeId;
+    }
+
+    public function getSpawnRange() : int{
+        return $this->spawnRange;
     }
 
     public function getMinSpawnDelay() : int{
@@ -64,23 +60,35 @@ class MonsterSpawner extends Spawnable{
     }
 
     public function getMaxSpawnDelay() : int{
-        return $this->minSpawnDelay;
+        return $this->maxSpawnDelay;
     }
 
-    public function addAdditionalSpawnData(CompoundTag $tag) : void{
-        $tag->setString("EntityIdentifier", $this->entityTypeId);
+    public function getMaxNearbyEntities() : int{
+        return $this->maxNearbyEntities;
     }
 
-    public function setSpawnEntityType(int $entityId) : void{
+    public function getRequiredPlayerRange() : int{
+        return $this->requiredPlayerRange;
+    }
+
+    public function setEntityId(?string $entityId) : bool{
+        if($entityId !== null && LegacyEntityIdToStringIdMap::getInstance()->stringToLegacy($entityId) === null){
+            return false;
+        }
         $this->entityTypeId = $entityId;
+        return true;
+    }
+
+    public function setSpawnRange(int $range) : void{
+        $this->spawnRange = max(1, $range);
     }
 
     public function setMinSpawnDelay(int $minDelay) : void{
-        $this->minSpawnDelay = $minDelay;
+        $this->minSpawnDelay = max(0, $minDelay);
     }
 
     public function setMaxSpawnDelay(int $maxDelay) : void{
-        $this->maxSpawnDelay = $maxDelay;
+        $this->maxSpawnDelay = max(0, $maxDelay);
     }
 
     public function setSpawnDelay(int $minDelay, int $maxDelay) : void{
@@ -88,32 +96,16 @@ class MonsterSpawner extends Spawnable{
             return;
         }
 
-        $this->minSpawnDelay = $minDelay;
-        $this->maxSpawnDelay = $maxDelay;
-    }
-
-    public function setRequiredPlayerRange(int $range) : void{
-        $this->requiredPlayerRange = $range;
-    }
-
-    public function getRequiredPlayerRange() : int{
-        return $this->requiredPlayerRange;
+        $this->setMinSpawnDelay($minDelay);
+        $this->setMaxSpawnDelay($maxDelay);
     }
 
     public function setMaxNearbyEntities(int $count) : void{
         $this->maxNearbyEntities = $count;
     }
 
-    public function getMaxNearbyEntities() : int{
-        return $this->maxNearbyEntities;
-    }
-
-    public function getSpawnRange() : int{
-        return $this->spawnRange;
-    }
-
-    public function getEntityId() : string{
-        return $this->entityTypeId;
+    public function setRequiredPlayerRange(int $range) : void{
+        $this->requiredPlayerRange = $range;
     }
 
     protected function writeSaveData(CompoundTag $nbt) : void{

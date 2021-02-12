@@ -8,25 +8,17 @@ use pocketmine\world\Position;
 
 class Node extends Position{
 
-    private static $nextId = 0;
+    private static int $nextId = 0;
 
-    /** @var int */
-    private $id;
+    private int $id;
     
-    /**
-     * 현재까지 이동한 거리
-     * @var float
-     */
-    private $goal = 0.0;
+    /** 현재까지 이동한 거리 */
+    private float $goal = 0.0;
 
-    /**
-     * 휴리스틱 값
-     * @var float
-     */
-    private $heuristic = 0.0;
-    
-    /** @var Node|null */
-    private $parentNode = null;
+    /** 휴리스틱 값 */
+    private float $heuristic = 0.0;
+
+    private ?Node $parentNode = null;
 
     public static function create(Position $pos, Position $end, ?Node $parent = null) : self{
         $node = new self($pos->x, $pos->y, $pos->z, $pos->world);

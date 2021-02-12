@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\inventory;
 
 use leinne\pureentities\entity\Monster;
-
 use pocketmine\inventory\BaseInventory;
 use pocketmine\item\Item;
 
 class MonsterInventory extends BaseInventory{
 
-    /** @var Monster */
-    protected $holder;
+    protected Monster $holder;
 
     public function __construct(Monster $mob){
         $this->holder = $mob;

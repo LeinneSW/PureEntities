@@ -7,7 +7,6 @@ namespace leinne\pureentities\entity\ai;
 use pocketmine\block\Block;
 use pocketmine\block\Door;
 use pocketmine\block\Lava;
-use pocketmine\block\Stair;
 use pocketmine\block\Trapdoor;
 use pocketmine\block\WoodenDoor;
 use pocketmine\math\Facing;
@@ -30,7 +29,7 @@ class EntityAI{
     }
 
     public static function getFloorPos(Vector3 $pos) : Position{
-        $newPos = new Position(Math::floorFloat($pos->x), $pos->getFloorY(), Math::floorFloat($pos->z));
+        $newPos = new Position(Math::floorFloat($pos->x), $pos->getFloorY(), Math::floorFloat($pos->z), null);
         if($pos instanceof Position){
             $newPos->world = $pos->world;
         }
@@ -57,18 +56,15 @@ class EntityAI{
         $value = EntityAI::BLOCK;
         if($block instanceof Door && count($block->getAffectedBlocks()) > 1){ //문일때
             $value = $block instanceof WoodenDoor ? EntityAI::DOOR : EntityAI::WALL; //철문인지 판단
-        }elseif($block instanceof Stair){
-            //TODO: 계단 위치에 따라 변경
-            /*$blockBoxes = $block->getCollisionBoxes();
-            if(count($blockBoxes) < 3){
-                $pos = $block->getPos();
-                foreach($blockBoxes as $_ => $bb){
-
-                }
-            }*/
         }else{
+            $min = 256;
+            $max = -1;
+            foreach($block->getCollisionBoxes() as $_ => $bb){
+                $min = min($min, $bb->minY);
+                $max = max($max, $bb->maxY);
+            }
             $blockBox = $block->getCollisionBoxes()[0] ?? null;
-            $boxDiff = $blockBox === null ? 0 : $blockBox->maxY - $blockBox->minY;
+            $boxDiff = $blockBox === null ? 0 : $max - $min;
             if($boxDiff <= 0){
                 if($block instanceof Lava){ //통과 가능 블럭중 예외처리
                     $value = EntityAI::WALL;

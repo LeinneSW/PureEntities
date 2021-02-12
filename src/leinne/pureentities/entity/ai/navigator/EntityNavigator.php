@@ -4,55 +4,34 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\ai\navigator;
 
-use leinne\pureentities\entity\ai\path\SimplePathFinder;
-use leinne\pureentities\entity\EntityBase;
+use leinne\pureentities\entity\LivingBase;
 use leinne\pureentities\entity\ai\path\PathFinder;
-
 use pocketmine\entity\Living;
 use pocketmine\math\Math;
 use pocketmine\world\Position;
 
-class EntityNavigator{
+abstract class EntityNavigator{
 
-    /**
-     * 엔티티가 같은 위치에 벽 등의 장애로 인해 멈춰있던 시간을 나타냅니다
-     *
-     * @var int
-     */
-    private $stopDelay = 0;
+    /** 벽 등의 장애로 인해 멈춰있는 시간을 나타냅니다 */
+    private int $stopDelay = 0;
 
-    /** @var Position  */
-    protected $goal;
+    protected ?Position $goal = null;
 
     /** @var Position[] */
-    protected $path = [];
-    /** @var int */
-    protected $pathIndex = -1;
+    protected ?array $path = [];
 
-    /** @var EntityBase */
-    protected $holder;
+    protected int $pathIndex = -1;
 
-    /** @var PathFinder */
-    protected $pathFinder = null;
+    protected LivingBase $holder;
 
-    public function __construct(EntityBase $entity){
+    protected ?PathFinder $pathFinder = null;
+
+    public abstract function makeRandomGoal() : Position;
+
+    public abstract function getDefaultPathFinder() : PathFinder;
+
+    public function __construct(LivingBase $entity){
         $this->holder = $entity;
-    }
-
-    public function makeRandomGoal() : Position{
-        $x = mt_rand(10, 30);
-        $y = mt_rand(10, 30);
-        $z = mt_rand(10, 30);
-
-        $pos = $this->holder->getPosition();
-        $pos->x = Math::floorFloat($pos->x) + 0.5 + (mt_rand(0, 1) ? $x : -$x);
-        $pos->y = Math::floorFloat($pos->z) + 0.5 + (mt_rand(0, 1) ? $y : -$y);
-        $pos->z = Math::floorFloat($pos->z) + 0.5 + (mt_rand(0, 1) ? $z : -$z);
-        return $pos;
-    }
-
-    public function getDefaultPathFinder() : PathFinder{
-        return new SimplePathFinder($this);
     }
 
     public function update() : void{
@@ -60,9 +39,10 @@ class EntityNavigator{
         $holder = $this->holder;
         $target = $holder->getTargetEntity();
         if($target === null || !$holder->canInteractWithTarget($target, $near = $pos->distanceSquared($target->getPosition()))){
+            //$target = $pos->world->getNearestEntity($pos, 0, Living::class); TODO: 엔티티의 최대 탐지 거리 메서드를 추가하여 매우 빠른 엔티티 탐색
             $near = PHP_INT_MAX;
             $target = null;
-            foreach($holder->getWorld()->getEntities() as $k => $t){
+            foreach($holder->getWorld()->getEntities() as $k => $t){ //이것이 굉장한 렉을 유발함
                 if(
                     $t === $this
                     || !($t instanceof Living)
@@ -120,12 +100,12 @@ class EntityNavigator{
         return $this->holder->getPosition()->distanceSquared($path) < 0.04;
     }
 
-    public function getHolder() : EntityBase{
+    public function getHolder() : LivingBase{
         return $this->holder;
     }
 
     public function getGoal() : Position{
-        return $this->goal ?? $this->goal = $this->makeRandomGoal();
+        return $this->goal ??= $this->makeRandomGoal();
     }
 
     public function setGoal(Position $pos) : void{
@@ -138,13 +118,13 @@ class EntityNavigator{
             Math::floorFloat($pos->x) !== Math::floorFloat($this->goal->x) ||
             (int) $pos->y !== (int) $this->goal->y ||
             Math::floorFloat($pos->z) !== Math::floorFloat($this->goal->z)
-        ){ //위치가 변경된 경우
+        ){ //최종 목적지의 정수값이 변경된 경우
             $this->path = [];
             $this->stopDelay = 0;
             $this->pathIndex = -1;
             $this->getPathFinder()->reset();
-        }elseif(count($this->path) > 0){
-            $this->path[0] = $pos;
+        }elseif(count($this->path) > 0){ //현재 진행중인 경로가 있을경우
+            $this->path[0] = $pos; //마지막 경로를 변경한다
         }
         $this->goal = $pos;
     }
@@ -157,7 +137,7 @@ class EntityNavigator{
     }
 
     public function getPathFinder() : PathFinder{
-        return $this->pathFinder ?? $this->pathFinder = $this->getDefaultPathFinder();
+        return $this->pathFinder ??= $this->getDefaultPathFinder();
     }
 
 }

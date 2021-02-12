@@ -12,14 +12,11 @@ use pocketmine\item\Item;
 use pocketmine\player\Player;
 
 class EntityInteractByPlayerEvent extends EntityEvent implements Cancellable{
-
     use CancellableTrait;
 
-    /** @var Player */
-    private $player;
+    private Player $player;
 
-    /** @var Item */
-    private $item;
+    private Item $item;
 
     public function __construct(Entity $entity, Player $player, Item $item){
         $this->entity = $entity;

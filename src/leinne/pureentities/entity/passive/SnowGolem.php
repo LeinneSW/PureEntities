@@ -4,53 +4,59 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\entity\passive;
 
-use leinne\pureentities\entity\Animal;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
+use leinne\pureentities\entity\Monster;
+use leinne\pureentities\sound\ShearSound;
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntitySizeInfo;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\Shears;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\player\Player;
 
-class Pig extends Animal{
+class SnowGolem extends Monster{
     use WalkEntityTrait;
 
-    private bool $saddle = false;
+    private bool $pumpkin = true;
+
+    public static function getNetworkTypeId() : string{
+        return EntityIds::SNOW_GOLEM;
+    }
+
+    protected function getInitialSizeInfo() : EntitySizeInfo{
+        return new EntitySizeInfo(1.8, 0.4);
+    }
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->saddle = $nbt->getByte("Saddle", 0) !== 0;
-    }
-
-    public static function getNetworkTypeId() : string{
-        return EntityIds::PIG;
-    }
-
-    protected function getInitialSizeInfo() : EntitySizeInfo{
-        return new EntitySizeInfo(0.9, 0.9);
+        $this->pumpkin = $nbt->getByte("Pumpkin", 1) !== 0;
     }
 
     public function getDefaultMaxHealth() : int{
-        return 10;
+        return 4;
     }
 
     public function getName() : string{
-        return 'Pig';
+        return 'Snow Golem';
     }
 
     public function interact(Player $player, Item $item) : bool{
-        //TODO: 안장 기능
+        if($item instanceof Shears && $this->pumpkin){
+            $item->applyDamage(1);
+            $this->pumpkin = false;
+            $this->getWorld()->addSound($this->location, new ShearSound());
+            return true;
+        }
         return false;
     }
 
     public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
-        return false; //TODO: 아이템 유인 구현
+        return false; //TODO: 적대감 변경
     }
 
     public function interactTarget() : bool{
@@ -58,28 +64,29 @@ class Pig extends Animal{
             return false;
         }
 
-        // TODO: 동물 AI 기능
+        //TODO: 눈덩이 던지기
         return false;
     }
 
     protected function syncNetworkData(EntityMetadataCollection $properties) : void{
         parent::syncNetworkData($properties);
 
-        $properties->setGenericFlag(EntityMetadataFlags::SADDLED, $this->saddle);
+        $properties->setGenericFlag(EntityMetadataFlags::SHEARED, !$this->pumpkin);
+    }
+
+    public function saveNBT() : CompoundTag{
+        $nbt = parent::saveNBT();
+        $nbt->setByte("Pumpkin", $this->pumpkin ? 1 : 0);
+        return $nbt;
     }
 
     public function getDrops() : array{
-        $drops = [
-            ItemFactory::getInstance()->get($this->isOnFire() ? ItemIds::COOKED_PORKCHOP : ItemIds::RAW_PORKCHOP, 0, mt_rand(1, 3))
+        return [
+            VanillaItems::SNOWBALL()->setCount(mt_rand(0, 15))
         ];
-        if($this->saddle){
-            $drops[] = ItemFactory::getInstance()->get(ItemIds::SADDLE);
-        }
-        return $drops;
     }
 
     public function getXpDropAmount() : int{
-        return mt_rand(1, 3);
+        return 0;
     }
-
 }

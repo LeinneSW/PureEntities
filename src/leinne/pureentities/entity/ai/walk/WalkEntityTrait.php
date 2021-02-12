@@ -7,12 +7,10 @@ namespace leinne\pureentities\entity\ai\walk;
 use leinne\pureentities\entity\ai\EntityAI;
 use leinne\pureentities\entity\ai\navigator\EntityNavigator;
 use leinne\pureentities\entity\ai\navigator\WalkEntityNavigator;
-use leinne\pureentities\entity\EntityBase;
-
+use leinne\pureentities\entity\LivingBase;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\item\ItemFactory;
-use pocketmine\math\AxisAlignedBB;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\world\particle\DestroyBlockParticle;
 use pocketmine\world\Position;
@@ -20,46 +18,29 @@ use pocketmine\world\sound\DoorBumpSound;
 use pocketmine\world\sound\DoorCrashSound;
 
 /**
- * This trait override most methods in the {@link EntityBase} abstract class.
+ * This trait override most methods in the {@link LivingBase} abstract class.
  */
 trait WalkEntityTrait{
 
-    /**
-     * 문을 부수기까지의 시간을 저장합니다
-     *
-     * @var int
-     */
-    private $doorBreakTime = 0;
+    /** 문을 부수기까지의 시간을 저장합니다 */
+    private int $doorBreakTime = 0;
+
+    /** 문을 부술지 판단합니다 */
+    private int $doorBreakDelay = 0;
+
+    /** 가야할 블럭이 문인지 확인합니다 */
+    private bool $checkDoorState = false;
+
+    private ?Block $doorBlock = null;
 
     /**
-     * 문을 부술지 판단합니다
-     *
-     * @var int
-     */
-    private $doorBreakDelay = 0;
-
-    /**
-     * 가야할 블럭이 문인지 확인합니다
-     *
-     * @var bool
-     */
-    private $checkDoorState = false;
-
-    /** @var Block */
-    private $doorBlock = null;
-
-    /**
-     * @see EntityBase::entityBaseTick()
-     *
      * @param int $tickDiff
      *
      * @return bool
+     *@see LivingBase::entityBaseTick()
+     *
      */
     protected function entityBaseTick(int $tickDiff = 1) : bool{
-        if($this->closed){
-            return false;
-        }
-
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
         if(!$this->isMovable()){
@@ -83,9 +64,9 @@ trait WalkEntityTrait{
         $diff = abs($x) + abs($z);
         if(!$this->interactTarget() && $diff != 0){
             $hasUpdate = true;
-            $ground = $this->onGround ? 0.125 : 0.001;
-            $this->motion->x += $this->getSpeed() * $ground * $x / $diff;
-            $this->motion->z += $this->getSpeed() * $ground * $z / $diff;
+            $motion = ($this->onGround ? 0.125 : 0.001) * $this->getSpeed() * $tickDiff / $diff;
+            $this->motion->x += $x * $motion;
+            $this->motion->z += $z * $motion;
         }
 
         $door = $this->checkDoorState;
@@ -95,7 +76,7 @@ trait WalkEntityTrait{
         }
         $this->checkDoorState = false;
         if($hasUpdate && $this->onGround){
-            /** @var EntityBase $this */
+            /** @var LivingBase $this */
             foreach($this->getWorld()->getCollisionBlocks($this->boundingBox->addCoord($this->motion->x, $this->motion->y, $this->motion->z)) as $_ => $block){
                 if($block->getCollisionBoxes()[0]->maxY - $this->boundingBox->minY > 1){
                     continue;
@@ -104,10 +85,10 @@ trait WalkEntityTrait{
                 $pass = EntityAI::checkPassablity($this->location, $block);
                 if($pass == EntityAI::BLOCK){
                     $hasUpdate = true;
-                    $this->motion->y += 0.52;
+                    $this->jump();
                     break;
                 }elseif($pass == EntityAI::DOOR){
-                    if($this->canBreakDoor()){
+                    if($this->canBreakDoors() && $target !== null){
                         $this->checkDoorState = true;
                         if($this->doorBreakTime <= 0 && ++$this->doorBreakDelay > 20){
                             $this->doorBlock = $block;
@@ -121,13 +102,13 @@ trait WalkEntityTrait{
 
         if($door && !$this->checkDoorState && $this->doorBlock !== null){
             $pos = $this->doorBlock->getPos();
-            $pos->world->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_STOP_BREAK);
+            $pos->world->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEventPacket::EVENT_BLOCK_STOP_BREAK, 0, $pos));
             $this->doorBlock = null;
         }
 
         $this->setRotation(
             rad2deg(atan2($z, $x)) - 90.0,
-            $target === null ? 0.0 : rad2deg(-atan2($target->location->y - $me->y, sqrt(($target->location->x - $me->x) ** 2 + ($target->location->z - $me->z) ** 2)))
+            $target === null ? 0.0 : rad2deg(-atan2($target->location->y - $this->location->y, sqrt(($target->location->x - $this->location->x) ** 2 + ($target->location->z - $this->location->z) ** 2)))
         );
 
         return $hasUpdate;
@@ -135,26 +116,25 @@ trait WalkEntityTrait{
 
 
     /**
-     * @see EntityBase::checkBoundingBoxState()
-     *
      * @param float $movX
      * @param float $movY
      * @param float $movZ
      * @param float $dx
      * @param float $dy
      * @param float $dz
+     *@see LivingBase::move()
      *
-     * @return AxisAlignedBB
      */
-    public function checkBoundingBoxState(float $movX, float $movY, float $movZ, float &$dx, float &$dy, float &$dz) : AxisAlignedBB{
-        $aabb = parent::checkBoundingBoxState($movX, $movY, $movZ, $dx, $dy, $dz);
-        $delay = (int) ($movX != $dx) + (int) ($movZ != $dz);
+    public function move(float $dx, float $dy, float $dz) : void{
+        $before = $this->getPosition();
+        parent::move($dx, $dy, $dz);
+        $delay = (int) ($this->location->x - $before->x != $dx) + (int) ($this->location->z - $before->z != $dz);
         if($delay > 0 && $this->checkDoorState){
             $delay = -1;
             if($this->doorBlock !== null){
                 $pos = $this->doorBlock->getPos();
                 if($this->doorBreakTime === 180){
-                    $pos->world->broadcastLevelEvent($pos, LevelEventPacket::EVENT_BLOCK_START_BREAK, 364);
+                    $pos->world->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEventPacket::EVENT_BLOCK_START_BREAK, 364, $pos));
                 }
 
                 if($this->doorBreakTime % mt_rand(3, 20) === 0){
@@ -169,7 +149,6 @@ trait WalkEntityTrait{
             }
         }
         $this->getNavigator()->addStopDelay($delay);
-        return $aabb;
     }
 
     public function getDefaultNavigator() : EntityNavigator{

@@ -14,48 +14,36 @@ use pocketmine\world\Position;
 class AStarPathFinder extends PathFinder{
 
     /** @var Node[] */
-    private $openNode = [];
+    private array $openNode = [];
     /** @var Node[] */
-    private $openHash = [];
+    private array $openHash = [];
 
     /** @var Node[] */
-    private $closeNode = [];
+    private array $closeNode = [];
 
-    /** @var array */
-    private $onChange = [];
+    /** @var bool[] */
+    private array $onChange = [];
 
     /** @var int[] */
-    private $yCache = [];
+    private array $yCache = [];
 
     /** @var int[] */
-    private $passablity = [];
+    private array $passablity = [];
 
-    private $findTick = -1;
-    private $findCount = 0;
+    private int $findTick = -1;
+    private int $findCount = 0;
 
-    /**
-     * 탐색을 시도할 최대 시간입니다
-     *
-     * @var int
-     */
-    protected static $maximumTick = 0;
+    /** 탐색을 시도할 최대 시간입니다 */
+    protected static int $maximumTick = 0;
 
-    /**
-     * 1틱마다 몇개의 블럭을 탐색할지 선택합니다
-     *
-     * @var int
-     */
-    protected static $blockPerTick = 0;
+    /** 1틱마다 몇개의 블럭을 탐색할지 선택합니다 */
+    protected static int $blockPerTick = 0;
 
     public static function setData(int $tick, int $block) : void{
         self::$maximumTick = $tick;
         self::$blockPerTick = $block;
     }
 
-    /**
-     * @param int $left
-     * @param int|null $right
-     */
     protected function sort(int $left = 0, ?int $right = null) : void{
         $right = $right ?? (int) (count($this->openNode) / 2);
         if($left >= $right){
@@ -220,7 +208,7 @@ class AStarPathFinder extends PathFinder{
                 }
             }else{
                 if($state === EntityAI::DOOR){
-                    if($this->navigator->getHolder()->canBreakDoor()){
+                    if($this->navigator->getHolder()->canBreakDoors()){
                         $result[] = $near;
                     }
                 }elseif($near->y - $this->calculateYOffset($near) <= 3){
@@ -241,7 +229,7 @@ class AStarPathFinder extends PathFinder{
             }
 
             if($state === EntityAI::DOOR){
-                if($this->navigator->getHolder()->canBreakDoor()){
+                if($this->navigator->getHolder()->canBreakDoors()){
                     $result[] = $near;
                 }
             }elseif($near->y - $this->calculateYOffset($near) <= 3){
