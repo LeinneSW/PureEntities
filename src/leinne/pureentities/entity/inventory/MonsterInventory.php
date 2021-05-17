@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\inventory;
 
 use leinne\pureentities\entity\Monster;
-use pocketmine\inventory\BaseInventory;
+use pocketmine\inventory\SimpleInventory;
 use pocketmine\item\Item;
 
-class MonsterInventory extends BaseInventory{
+class MonsterInventory extends SimpleInventory {
 
     protected Monster $holder;
 

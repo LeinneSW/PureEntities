@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace leinne\pureentities\tile;
 
+use pocketmine\block\tile\Spawnable;
 use pocketmine\data\bedrock\LegacyEntityIdToStringIdMap;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\block\tile\Spawnable;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
 
 class MonsterSpawner extends Spawnable{
 
@@ -31,9 +29,9 @@ class MonsterSpawner extends Spawnable{
     }
 
     public function readSaveData(CompoundTag $nbt) : void{
-        if($nbt->hasTag("EntityId", IntTag::class)){
+        if($nbt->getTag("EntityId") !== null){
             $this->setEntityId(LegacyEntityIdToStringIdMap::getInstance()->legacyToString($nbt->getInt("EntityId")));
-        }elseif($nbt->hasTag("EntityIdentifier", StringTag::class)){
+        }elseif($nbt->getTag("EntityIdentifier") !== null){
             $this->setEntityId($nbt->getString("EntityIdentifier"));
         }
 

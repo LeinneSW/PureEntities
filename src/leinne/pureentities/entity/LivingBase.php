@@ -10,7 +10,6 @@ use pocketmine\entity\Living;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
 use pocketmine\player\Player;
 use pocketmine\world\World;
 
@@ -40,9 +39,9 @@ abstract class LivingBase extends Living{
         parent::initEntity($nbt);
 
         $this->setMaxHealth($health = $nbt->getInt("MaxHealth", $this->getDefaultMaxHealth()));
-        if($nbt->hasTag("HealF", FloatTag::class)){
+        if($nbt->getTag("HealF") !== null){
             $health = $nbt->getFloat("HealF");
-        }elseif($nbt->hasTag("Health")){
+        }elseif($nbt->getTag("Health") !== null){
             $healthTag = $nbt->getTag("Health");
             $health = (float) $healthTag->getValue();
         }
