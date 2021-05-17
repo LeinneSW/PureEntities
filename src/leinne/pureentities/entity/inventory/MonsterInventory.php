@@ -8,7 +8,7 @@ use leinne\pureentities\entity\Monster;
 use pocketmine\inventory\SimpleInventory;
 use pocketmine\item\Item;
 
-class MonsterInventory extends SimpleInventory {
+class MonsterInventory extends SimpleInventory{
 
     protected Monster $holder;
 
