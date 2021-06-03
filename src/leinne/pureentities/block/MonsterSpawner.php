@@ -8,6 +8,8 @@ use leinne\pureentities\tile\MonsterSpawner as TileSpawner;
 use pocketmine\block\MonsterSpawner as PMMonsterSpawner;
 use pocketmine\entity\EntityDataHelper;
 use pocketmine\entity\EntityFactory;
+use pocketmine\math\Facing;
+use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 
@@ -56,8 +58,8 @@ class MonsterSpawner extends PMMonsterSpawner{
     }
 
     public function calculateYPos(Position $pos) : int{
-        //TODO: 몬스터가 갇히지 않을 최소한의 Y좌표
-        return $pos->y;
+        $heightY = $pos->getWorld()->getHighestBlockAt($pos->x, $pos->z) + 1;
+        return $heightY;
     }
 
 }
