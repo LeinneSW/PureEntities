@@ -182,9 +182,8 @@ class AStarPathFinder extends PathFinder{
      */
     public function getNear(Position $pos) : array{
         $result = [];
-        $facing = [Facing::EAST, Facing::WEST, Facing::SOUTH, Facing::NORTH];
         $diagonal = ["1:1" => false, "1:-1" => false, "-1:1" => false, "-1:-1" => false];
-        foreach($facing as $_ => $f){
+        foreach(Facing::HORIZONTAL as $f){
             $near = $pos->getSide($f);
             $state = $this->checkPassablity($near);
             if($state === EntityAI::WALL){

@@ -31,9 +31,9 @@ class MonsterSpawner extends Spawnable{
     }
 
     public function readSaveData(CompoundTag $nbt) : void{
-        if($nbt->hasTag("EntityId", IntTag::class)){
+        if($nbt->getTag("EntityId") instanceof IntTag){
             $this->setEntityId(LegacyEntityIdToStringIdMap::getInstance()->legacyToString($nbt->getInt("EntityId")));
-        }elseif($nbt->hasTag("EntityIdentifier", StringTag::class)){
+        }elseif($nbt->getTag("EntityIdentifier") instanceof StringTag){
             $this->setEntityId($nbt->getString("EntityIdentifier"));
         }
 

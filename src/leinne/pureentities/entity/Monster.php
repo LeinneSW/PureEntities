@@ -17,6 +17,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\types\inventory\ContainerIds;
+use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
 use pocketmine\player\Player;
 use pocketmine\Server;
 
@@ -34,15 +35,15 @@ abstract class Monster extends LivingBase{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        if($nbt->hasTag("MinDamages")){
+        if($nbt->getTag("MinDamages") instanceof ListTag){
             $this->minDamage = $nbt->getListTag("MinDamages")->getAllValues();
         }
-        if($nbt->hasTag("MaxDamages")){
+        if($nbt->getTag("MaxDamages") instanceof ListTag){
             $this->minDamage = $nbt->getListTag("MaxDamages")->getAllValues();
         }
 
         $this->inventory = new MonsterInventory($this);
-        if($nbt->hasTag("HeldItem")){
+        if($nbt->getTag("HeldItem") instanceof CompoundTag){
             $item = Item::nbtDeserialize($nbt->getCompoundTag("HeldItem"));
         }else{
             $item = $this->getDefaultHeldItem();
@@ -189,7 +190,7 @@ abstract class Monster extends LivingBase{
     protected function sendSpawnPacket(Player $player) : void{
         parent::sendSpawnPacket($player);
 
-        $player->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->id, TypeConverter::getInstance()->coreItemStackToNet($this->inventory->getItemInHand()), 0, ContainerIds::INVENTORY));
+        $player->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->id, ItemStackWrapper::legacy(TypeConverter::getInstance()->coreItemStackToNet($this->inventory->getItemInHand())), 0, ContainerIds::INVENTORY));
     }
 
     public function saveNBT() : CompoundTag{
